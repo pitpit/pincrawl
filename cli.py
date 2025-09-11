@@ -80,7 +80,7 @@ def crawl(verbose):
         parsers=[],
         # proxy="stealth",
         only_main_content=True,
-        max_age=172800000)
+        max_age=1000)
 
     # Filter links matching the pattern https://www.leboncoin.fr/ad/*/<integer>
     filtered_links = [
