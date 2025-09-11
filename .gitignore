@@ -1,0 +1,8 @@
+pincrawl.db
+*.db
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pip-cache/

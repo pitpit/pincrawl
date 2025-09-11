@@ -1,0 +1,18 @@
+services:
+  app:
+    image: python:3.12-slim
+    # Mount source for live editing without rebuilds
+    volumes:
+      - ./:/app
+      - .pip-cache:/root/.cache/pip
+    working_dir: /app
+    # Default command (can be overridden when running)
+    entrypoint: ["sh", "-c", "pip install -r requirements.txt && exec \"$@\"", "--"]
+    command: ["python", "cli.py", "--help"]
+    # Allow interactive usage (REPL, stdin)
+    tty: true
+    stdin_open: true
+
+    # Example environment variable (add more as needed)
+    environment:
+      - PYTHONUNBUFFERED=1

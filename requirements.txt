@@ -1,0 +1,8 @@
+# Add your project dependencies here, one per line.
+firecrawl
+pydantic
+click==8.1.7
+tinydb
+python-dotenv
+# Example:
+# requests==2.32.3
