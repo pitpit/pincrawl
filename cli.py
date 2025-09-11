@@ -281,7 +281,7 @@ def scrape(limit, verbose):
                 # Remove from unscraped_ads to avoid marking as ignored later
                 unscraped_ads = [ad for ad in unscraped_ads if ad.get('url') != ad_url]
             else:
-                # No data returned, likely not pinball-related
+                # No data returned
                 if verbose:
                     click.echo(f"  - No json extracted")
         except Exception as e:
@@ -315,6 +315,76 @@ def scrape(limit, verbose):
         click.echo(f"Database location: {db_path}")
 
     db.close()
+
+
+
+@pincrawl.group()
+def ads():
+    """Manage and view ads in the database."""
+    pass
+
+@ads.command("list")
+@click.option("--scraped", type=click.Choice(['0', '1']), help="Filter by scraped status (0=not scraped, 1=scraped)")
+@click.option("--ignored", type=click.Choice(['0', '1']), help="Filter by ignored status (0=not ignored, 1=ignored)")
+def ads_list(scraped, ignored):
+    """Display ads from database with filtering options."""
+
+    # Check if database exists
+    db_path = os.path.join(os.getcwd(), DB_NAME)
+    if not os.path.exists(db_path):
+        raise click.ClickException("Database not found. Please run 'pincrawl init' first.")
+
+    # Initialize database
+    db = TinyDB(db_path)
+    ads_table = db.table('ads')
+
+    # Build query based on filters
+    Ad_query = Query()
+    conditions = []
+
+    if scraped is not None:
+        if scraped == '1':
+            conditions.append(Ad_query.scraped_at != None)
+        else:
+            conditions.append(Ad_query.scraped_at == None)
+
+    if ignored is not None:
+        if ignored == '1':
+            conditions.append(Ad_query.ignored == True)
+        else:
+            conditions.append(Ad_query.ignored == False)
+
+    # Apply filters
+    if conditions:
+        # Combine all conditions with AND
+        query = conditions[0]
+        for condition in conditions[1:]:
+            query = query & condition
+        ads = ads_table.search(query)
+    else:
+        ads = ads_table.all()
+
+    # Display results
+    if not ads:
+        click.echo("No ads found matching the criteria.")
+        db.close()
+        return
+
+    click.echo(f"Found {len(ads)} ads:")
+    click.echo("-" * 80)
+
+    for ad in ads:
+        url = ad.get('url', 'N/A')
+        scraped = "[scraped]" if ad.get('scraped_at') else ""
+        ignored = "[ignored]" if ad.get('ignored', False) else ""
+
+        click.echo(f"{url} {scraped}{ignored}")
+
+    db.close()
+
+# Add the group to pincrawl
+pincrawl.add_command(ads)
+
 
 if __name__ == "__main__":
     pincrawl()
