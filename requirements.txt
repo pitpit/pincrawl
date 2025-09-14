@@ -5,5 +5,6 @@ click==8.1.7
 tinydb
 python-dotenv
 openai
+pinecone
 # Example:
 # requests==2.32.3
