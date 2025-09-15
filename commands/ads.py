@@ -115,8 +115,7 @@ def ads_list(scraped, ignored, identified):
     for ad in ads:
         url = ad.get('url', 'N/A')
         retries = ad.get('retries', 0)
-        retries_text = f"[retries:{retries}]" if retries > 0 else ""
-        scraped = "[scraped]" if ad.get('scraped_at') else ""
+        scraped = "[scraped]" if ad.get('scraped_at') else (f"[retries:{retries}]" if retries > 0 else "")
         identified = "[identified]" if ad.get('identified_at') else ""
         ignored = "[ignored]" if ad.get('ignored', False) else ""
 
@@ -135,7 +134,7 @@ def ads_list(scraped, ignored, identified):
                 product_parts.append(f"{year}")
             product_text = f"{'/'.join(product_parts)}"
 
-        click.echo(f"{url} {retries_text}{scraped}{identified}{ignored} {product_text}")
+        click.echo(f"{url} {scraped}{identified}{ignored} {product_text}")
 
     db.close()
 
