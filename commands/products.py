@@ -2,7 +2,6 @@
 
 import click
 import logging
-from tinydb import TinyDB, Query
 import os
 import json
 from dotenv import load_dotenv
@@ -15,7 +14,6 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 # Global configuration
-DB_NAME = os.getenv("PINCRAWL_DB_NAME", "pincrawl.db")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
@@ -85,7 +83,7 @@ def identify_product_from_text(text):
 
     Returns:
         dict: Product information with opdb_id, ipdb_id, name, manufacturer, year,
-              plus extracted ad info (title, description, price, location)
+              plus extracted ad info (title, description, price amount and currency, location city and zipcode)
         None: If no product could be identified
     """
     # Check if required API keys are available
@@ -110,8 +108,8 @@ Please analyze the ad text and:
 1. AD INFORMATION - Extract these details from the ad:
 - title: A clear, concise title for this ad (what would appear as the listing title)
 - description: The main description text of the ad (without title, price, location)
-- price: The asking price (extract number and currency, e.g., "$1500", "€800")
-- location: The city and zipcode where the item is located
+- price: The asking price (extract amount and currency)
+- location: The location where the item is located (extract city and zipcode)
 
 2. PRODUCT IDENTIFICATION: The pinball machine being sold:
 - Identify the specific pinball machine name
@@ -124,14 +122,10 @@ Return your response as a JSON object with this exact structure:
 "info": {{
     "title": "extracted ad title",
     "description": "extracted ad description",
-    "price": {{
-        "amount": "extracted price without currency as an integer or null if not found",
-        "currency": "EUR"
-    }},
-    "location": {{
-        "city": "city name or null",
-        "zipcode": "zipcode as a string or null"
-    }}
+    "amount": "extracted price amount without currency as an integer or null if not found",
+    "currency": "EUR",
+    "city": "location city name or null",
+    "zipcode": "location zipcode as a string or null"
 }},
 "product": {{
     "name": "exact product name (should match exactly a known product name)",

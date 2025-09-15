@@ -3,17 +3,23 @@
 A simple web crawling CLI tool built with Python and Click, containerized with Docker Compose.
 
 ## Files
-- `docker-compose.yml` – Defines the `app` service using `python:3.12-slim` image.
-- `requirements.txt` – Dependencies including Click for CLI functionality.
-- `cli.py` – Main CLI application with `pincrawl` command.
-- `.dockerignore` – Keeps build context lean.
+- `docker-compose.yml` – Defines the `app` and `postgres` services
+- `requirements.txt` – Dependencies including Click for CLI functionality and PostgreSQL support
+- `cli.py` – Main CLI application with `pincrawl` command
+- `database.py` – PostgreSQL database models and connection management
+- `.dockerignore` – Keeps build context lean
 
 ## Quick Start
 
 Setup environment variables:
 ```bash
 cp .env.dist .env
-# Edit .env and add your Firecrawl API key
+# Edit .env and add your API keys (Firecrawl, OpenAI, Pinecone)
+```
+
+Start the services:
+```bash
+docker-compose up -d postgres
 ```
 
 Initialize the database:

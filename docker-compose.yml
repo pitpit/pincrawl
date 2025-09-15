@@ -1,4 +1,16 @@
 services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: pincrawl
+      POSTGRES_USER: pincrawl
+      POSTGRES_PASSWORD: pincrawl
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
   app:
     image: python:3.12-slim
     # Mount source for live editing without rebuilds
@@ -12,7 +24,17 @@ services:
     # Allow interactive usage (REPL, stdin)
     tty: true
     stdin_open: true
+    depends_on:
+      - postgres
 
-    # Example environment variable (add more as needed)
+    # Environment variables
     environment:
       - PYTHONUNBUFFERED=1
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=pincrawl
+      - DB_USER=pincrawl
+      - DB_PASSWORD=pincrawl
+
+volumes:
+  postgres_data:

@@ -2,7 +2,8 @@
 firecrawl
 pydantic
 click==8.1.7
-tinydb
+sqlalchemy
+psycopg2-binary
 python-dotenv
 openai
 pinecone
