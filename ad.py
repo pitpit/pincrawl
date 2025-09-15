@@ -16,6 +16,9 @@ class Ad(BaseModel):
     """Model representing an advertisement from a crawled website."""
 
     url: HttpUrl = Field(..., description="The URL of the ad")
+    created_at: datetime = Field(default_factory=datetime.now, description="When the record was created")
+    ignored: bool = Field(default=False, description="Whether the ad is ignored and should not be scraped")
+    content: Optional[str] = Field(None, description="The content of the ad (markdown)")
     title: Optional[str] = Field(None, description="The title of the ad")
     description: Optional[str] = Field(None, description="The description of the ad")
     price: Optional[str] = Field(None, description="The price of the item")
@@ -25,11 +28,8 @@ class Ad(BaseModel):
     manufacturer: Optional[str] = Field(None, description="Identified manufacturer")
     year: Optional[str] = Field(None, description="Identified year of manufacture")
     opdb_id: Optional[str] = Field(None, description="OPDB identifier for the product")
-    ipdb_id: Optional[str] = Field(None, description="IPDB identifier for the product")
-    created_at: datetime = Field(default_factory=datetime.now, description="When the record was created")
     scraped_at: Optional[datetime] = Field(None, description="When the ad was last scraped")
     identified_at: Optional[datetime] = Field(None, description="When the product was identified")
-    ignored: bool = Field(default=False, description="Whether the ad is ignored and should not be scraped")
     scrape_id: Optional[str] = Field(None, description="Identifier for the scraping session")
 
     class Config:
@@ -39,46 +39,64 @@ class Ad(BaseModel):
         }
 
     def to_dict(self) -> dict:
-        """Convert the model to a dictionary suitable for TinyDB storage."""
-        data = self.model_dump()
-        # Convert datetime to ISO string for database storage
-        data['created_at'] = self.created_at.isoformat()
-
-        if self.scraped_at:
-            data['scraped_at'] = self.scraped_at.isoformat()
-
-        if self.identified_at:
-            data['identified_at'] = self.identified_at.isoformat()
-
-        # Convert HttpUrl to string for database storage
-        data['url'] = str(self.url)
-        # Handle nested location for backward compatibility
-        if self.location:
-            data['city'] = self.location.city
-            data['zipcode'] = self.location.zipcode
-        else:
-            data['city'] = None
-            data['zipcode'] = None
+        """Convert the Ad instance to a dictionary for TinyDB storage."""
+        data = {
+            "url": str(self.url),
+            "created_at": self.created_at.isoformat(),
+            "ignored": self.ignored,
+            "content": self.content if self.content else None,
+            "title": self.title if self.title else None,
+            "description": self.description if self.description else None,
+            "price": self.price if self.price else None,
+            "location": self.location.model_dump() if self.location else None,
+            "product": self.product,
+            "manufacturer": self.manufacturer,
+            "year": self.year,
+            "opdb_id": self.opdb_id,
+            "scraped_at": self.scraped_at.isoformat() if self.scraped_at else None,
+            "identified_at": self.identified_at.isoformat() if self.identified_at else None,
+            "scrape_id": self.scrape_id if self.scrape_id else None,
+        }
         return data
 
     @classmethod
-    def from_dict(cls, data: dict) -> 'Ad':
-        """Create an Ad instance from a dictionary (e.g., from TinyDB)."""
-        # Convert datetime strings back to datetime objects
-        if 'created_at' in data:
-            data['created_at'] = datetime.fromisoformat(data['created_at'])
+    def from_dict(cls, data: dict) -> "Ad":
+        """Create an Ad instance from a dictionary (typically from TinyDB)."""
+        # Convert string URL to HttpUrl
+        url = data["url"]
 
-        if 'scraped_at' in data and data['scraped_at']:
-            data['scraped_at'] = datetime.fromisoformat(data['scraped_at'])
+        # Convert ISO string dates back to datetime objects
+        created_at = None
+        if data.get("created_at"):
+            created_at = datetime.fromisoformat(data["created_at"])
 
-        if 'identified_at' in data and data['identified_at']:
-            data['identified_at'] = datetime.fromisoformat(data['identified_at'])
+        scraped_at = None
+        if data.get("scraped_at"):
+            scraped_at = datetime.fromisoformat(data["scraped_at"])
 
-        # Handle backward compatibility for city/zipcode fields
-        if 'city' in data or 'zipcode' in data:
-            city = data.pop('city', None)
-            zipcode = data.pop('zipcode', None)
-            if city is not None or zipcode is not None:
-                data['location'] = Location(city=city, zipcode=zipcode)
+        identified_at = None
+        if data.get("identified_at"):
+            identified_at = datetime.fromisoformat(data["identified_at"])
 
-        return cls(**data)
+        # Convert location dict back to Location object
+        location = None
+        if data.get("location"):
+            location = Location(**data["location"])
+
+        return cls(
+            url=url,
+            content=data.get("content"),
+            title=data.get("title"),
+            description=data.get("description"),
+            price=data.get("price"),
+            location=location,
+            product=data.get("product"),
+            manufacturer=data.get("manufacturer"),
+            year=data.get("year"),
+            opdb_id=data.get("opdb_id"),
+            created_at=created_at,
+            scraped_at=scraped_at,
+            identified_at=identified_at,
+            ignored=data.get("ignored", False),
+            scrape_id=data.get("scrape_id"),
+        )

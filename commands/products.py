@@ -16,10 +16,36 @@ DB_NAME = os.getenv("PINCRAWL_DB_NAME", "pincrawl.db")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
-PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME", "pincrawl-products")
-PINECONE_DIMENSION = int(os.getenv("PINECONE_DIMENSION", 1536))
+PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME", "pincrawl-products-3-small")
 PINECONE_METRIC = os.getenv("PINECONE_METRIC", "cosine")
-OPENAI_EMBEDDING_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-ada-002")
+PINECONE_DIMENSION = int(os.getenv("PINECONE_DIMENSION", 512))
+OPENAI_EMBEDDING_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
+
+def text_for_embedding(name, manufacturer=None, year=None, shortname=None):
+    """
+    Create a text string for embedding generation from product details.
+
+    Args:
+        name: Product name
+        manufacturer: Manufacturer name
+        year: Optional manufacture date
+        shortname: Optional short name
+    """
+
+    # Create text for embedding
+    text_parts = []
+    if name:
+        text_parts.append(name)
+    if shortname and shortname != name:
+        text_parts.append(shortname)
+    if manufacturer:
+        text_parts.append(f"by {manufacturer}")
+    if year:
+        text_parts.append(f"from {year}")
+
+    text_for_embedding = " ".join(text_parts)
+
+    return text_for_embedding.strip()
 
 def check_pinecone_index_exists(pc, index_name, should_exist=True):
     """
@@ -49,14 +75,15 @@ def check_pinecone_index_exists(pc, index_name, should_exist=True):
 
 def identify_product_from_text(text, verbose=False):
     """
-    Identify a product using ChatGPT and Pinecone.
+    Identify a product and extract ad information using Pinecone and ChatGPT.
 
     Args:
-        text: Text to analyze for product identification (title + description)
+        text: Text to analyze for product identification and information extraction
         verbose: Whether to output verbose logging
 
     Returns:
-        dict: Product information with opdb_id, ipdb_id, name, manufacturer, year
+        dict: Product information with opdb_id, ipdb_id, name, manufacturer, year,
+              plus extracted ad info (title, description, price, location)
         None: If no product could be identified
     """
     # Check if required API keys are available
@@ -69,30 +96,54 @@ def identify_product_from_text(text, verbose=False):
         # Step 1: Get product suggestions from ChatGPT
         openai.api_key = OPENAI_API_KEY
 
-        if verbose:
-            click.echo(f"  Analyzing text: '{text[:100]}...'")
-
         chatgpt_prompt = f"""
-        You are a product identification expert specializing in pinball machines.
+You are an expert at analyzing pinball machine ads and extracting structured information.
 
-        User query: "{text}"
+Here is a scraped ad in markdown format:
 
-        Based on your knowledge, identify the single best matching real pinball machine for this query.
+```markdown
+{text}
+```
 
-        Return your response as a JSON object with the following structure:
-        {{
-            "name": "exact product name",
-            "manufacturer": "manufacturer name",
-            "year": "year of release as a json number or null",
-            "reason": "brief explanation of why it matches",
-            "features": "notable features or characteristics"
+Please analyze the ad text and:
+
+1. AD INFORMATION - Extract these details from the ad:
+    - title: A clear, concise title for this ad (what would appear as the listing title)
+    - description: The main description text of the ad (without title, price, location)
+    - price: The asking price (extract number and currency, e.g., "$1500", "€800")
+    - location: The city and zipcode where the item is located
+
+2. PRODUCT IDENTIFICATION: The pinball machine being sold:
+    - Identify the specific pinball machine name
+    - Determine the manufacturer
+    - Determine the year of release
+
+
+Return your response as a JSON object with this exact structure:
+{{
+    "info": {{
+        "title": "extracted ad title",
+        "description": "extracted ad description",
+        "price": {{
+            "amount": "extracted price without currency as an integer or null if not found",
+            "currency": "EUR"
+        }},
+        "location": {{
+            "city": "city name or null",
+            "zipcode": "zipcode as a string or null"
         }}
+    }},
+    "product": {{
+        "name": "exact product name (should match exactly a known product name)",
+        "manufacturer": "manufacturer name",
+        "year": "year of release as an integer or null"
+    }}
+}}
 
-        If you cannot identify any relevant pinball machine for this query, return a null as a json.
-
-        Focus on real, commercially released products. Be as specific as possible with product names and manufacturers.
-        Only return valid JSON - no additional text or formatting.
-        """
+Extract ad information even if you cannot identify the specific pinball machine.
+If you cannot identify a pinball machine, set the product field to null.
+Only return valid JSON - no additional text or formatting (do not add fenced code blocks).
+"""
 
         completion = openai.chat.completions.create(
             model=OPENAI_MODEL,
@@ -105,97 +156,98 @@ def identify_product_from_text(text, verbose=False):
         # Check if response is empty or None
         if not response_text or not response_text.strip():
             if verbose:
-                click.echo("  ChatGPT returned empty response")
+                click.echo("✗ ChatGPT returned empty response")
             return None
 
         response_text = response_text.strip()
 
         if verbose:
-            click.echo(f"  ChatGPT raw response: {response_text}")
-
-        # Handle explicit null response
-        if response_text.lower() == 'null':
-            if verbose:
-                click.echo("  ChatGPT explicitly returned null")
-            return None
+            click.echo(f"- ChatGPT Raw response: {response_text}")
 
         # Parse ChatGPT response
         try:
-            chatgpt_match = json.loads(response_text)
-
-            if chatgpt_match is None:
-                if verbose:
-                    click.echo("  No products identified by ChatGPT")
-                return None
-
-            if not isinstance(chatgpt_match, dict):
-                if verbose:
-                    click.echo("  Invalid ChatGPT response format")
-                return None
-
+            chatgpt_response = json.loads(response_text)
         except json.JSONDecodeError as e:
             if verbose:
-                click.echo(f"  Failed to parse ChatGPT response: {str(e)}")
-                click.echo(f"  Raw response: {repr(response_text)}")
+                click.echo(f"✗ Failed to parse ChatGPT response: {str(e)}")
             return None
 
-        # Step 2: Use the result to search Pinecone for exact matches
-        search_name = chatgpt_match.get('name', '')
-        search_manufacturer = chatgpt_match.get('manufacturer', '')
+        if chatgpt_response is None or not isinstance(chatgpt_response, dict):
+            if verbose:
+                click.echo("✗ Invalid ChatGPT response format")
+            return None
 
-        if verbose:
-            click.echo(f"  Searching Pinecone for: '{search_name}' by {search_manufacturer}")
+        # Extract product and ad information
+        info = chatgpt_response.get('info', {})
+        product = chatgpt_response.get('product')
+        name = product.get('name', None) if product else None
+        manufacturer = product.get('manufacturer', None) if product else None
+        year = product.get('year', None) if product else None
 
-        # Initialize Pinecone
-        pc = Pinecone(api_key=PINECONE_API_KEY)
+        if name is None:
+            if verbose:
+                click.echo("✗ No pinball machine identified by ChatGPT")
 
-        # Check if index exists
-        check_pinecone_index_exists(pc, PINECONE_INDEX_NAME, should_exist=True)
-
-        # Get the index
-        index = pc.Index(PINECONE_INDEX_NAME)
-
-        # Create search text for embedding
-        search_text = f"{search_name} {search_manufacturer}"
-
-        # Generate embedding for the search
-        embedding_response = openai.embeddings.create(
-            model=OPENAI_EMBEDDING_MODEL,
-            input=search_text
-        )
-
-        search_embedding = embedding_response.data[0].embedding
-
-        # Search the Pinecone index
-        search_results = index.query(
-            vector=search_embedding,
-            top_k=1,
-            include_metadata=True
-        )
-
-        # Return the Pinecone match
-        if search_results.matches:
-            match = search_results.matches[0]
-            result = {
-                "opdb_id": match.metadata.get('opdb_id'),
-                "ipdb_id": int(match.metadata.get('ipdb_id')) if match.metadata.get('ipdb_id') else None,
-                "name": match.metadata.get('name'),
-                "manufacturer": match.metadata.get('manufacturer'),
-                "year": int(match.metadata.get('manufacture_date')) if match.metadata.get('manufacture_date') else None
+            return {
+                "info": info
             }
 
-            if verbose:
-                click.echo(f"  Found product match: {result.get('name')} by {result.get('manufacturer')}")
+        # Step 2: Use the product info to search Pinecone for OPDB match
+        if name and manufacturer:
 
-            return result
-        else:
-            if verbose:
-                click.echo("  No Pinecone match found")
-            return None
+            search_text = text_for_embedding(name, manufacturer, year)
 
+            if verbose:
+                click.echo(f"- Searching Pinecone for: '{search_text}'")
+
+            # Initialize Pinecone
+            pc = Pinecone(api_key=PINECONE_API_KEY)
+
+            # Check if index exists
+            check_pinecone_index_exists(pc, PINECONE_INDEX_NAME, should_exist=True)
+
+            # Get the index
+            index = pc.Index(PINECONE_INDEX_NAME)
+
+            # Generate embedding for the original text
+            embedding_response = openai.embeddings.create(
+                model=OPENAI_EMBEDDING_MODEL,
+                input=search_text,
+                dimensions=PINECONE_DIMENSION
+            )
+
+            search_embedding = embedding_response.data[0].embedding
+
+            # Search the Pinecone index
+            search_results = index.query(
+                vector=search_embedding,
+                top_k=1,
+                include_metadata=True
+            )
+
+            # Return the Pinecone match with ad info
+            if search_results.matches:
+                match = search_results.matches[0]
+
+                product['opdb_id'] = match.metadata.get('opdb_id')
+                product['name'] = match.metadata.get('name')
+                product['manufacturer'] = match.metadata.get('manufacturer')
+                product['year'] = match.metadata.get('manufacture_date')
+
+                if verbose:
+                    click.echo(f"✓ Matched OPDB pinball: {product}")
+
+            else:
+                if verbose:
+                    click.echo("✗ No OPDB match found")
+
+        return {
+            "info": info,
+            "product": product
+        }
     except Exception as e:
         if verbose:
-            click.echo(f"  Error during product identification: {str(e)}")
+            click.echo(f"✗ Error during product identification: {str(e)}")
         return None
 
 @click.group()
@@ -267,7 +319,7 @@ def products_init(force, verbose):
                 break
             time.sleep(1)
 
-        click.echo(f"SUCCESS: Pinecone index '{PINECONE_INDEX_NAME}' is ready!")
+        click.echo(f"✓ Pinecone index '{PINECONE_INDEX_NAME}' is ready!")
 
         if verbose:
             # Get the index and show stats
@@ -380,20 +432,9 @@ def products_index(limit, verbose):
                 already_indexed_count += 1
                 continue
 
-            # Create text for embedding
-            text_parts = []
-            if name:
-                text_parts.append(name)
-            if shortname and shortname != name:
-                text_parts.append(shortname)
-            if manufacturer_name:
-                text_parts.append(f"by {manufacturer_name}")
-            if manufacture_date:
-                text_parts.append(f"from {manufacture_date}")
+            text_for_embedding = text_for_embedding(name, manufacturer_name, manufacture_date, shortname)
 
-            text_for_embedding = " ".join(text_parts)
-
-            if not text_for_embedding.strip():
+            if not text_for_embedding:
                 if verbose:
                     click.echo(f"Skipping {opdb_id}: no text available for embedding")
                 skipped_count += 1
@@ -406,7 +447,8 @@ def products_index(limit, verbose):
                 # Generate embedding using OpenAI
                 response = openai.embeddings.create(
                     model=OPENAI_EMBEDDING_MODEL,
-                    input=text_for_embedding
+                    input=text_for_embedding,
+                    dimensions=PINECONE_DIMENSION
                 )
 
                 embedding = response.data[0].embedding
@@ -441,43 +483,17 @@ def products_index(limit, verbose):
 
             except Exception as e:
                 if verbose:
-                    click.echo(f"Error processing {opdb_id}: {str(e)}")
+                    click.echo(f"✗ Error processing {opdb_id}: {str(e)}")
                 error_count += 1
                 continue
 
-        click.echo(f"SUCCESS: Processed {processed_count} products")
+        click.echo(f"✓ Processed {processed_count} products")
         if already_indexed_count > 0:
-            click.echo(f"Already indexed: {already_indexed_count} products")
+            click.echo(f"✓ Already indexed: {already_indexed_count} products")
         if skipped_count > 0:
-            click.echo(f"Skipped: {skipped_count} products")
+            click.echo(f"⚠ Skipped: {skipped_count} products")
         if error_count > 0:
-            click.echo(f"Errors: {error_count} products")
+            click.echo(f"✗ Errors: {error_count} products")
 
     except Exception as e:
         raise click.ClickException(f"Failed to populate index: {str(e)}")
-
-@products.command("query")
-@click.argument("query", required=True)
-@click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
-def query_products(query, verbose):
-    """Query products using ChatGPT, then match against Pinecone index to find IDs."""
-
-    # Check if required API keys are available
-    if not OPENAI_API_KEY:
-        raise click.ClickException("OPENAI_API_KEY environment variable is required.")
-
-    if not PINECONE_API_KEY:
-        raise click.ClickException("PINECONE_API_KEY environment variable is required.")
-
-    try:
-        if verbose:
-            click.echo(f"Query: '{query}'")
-
-        # Use the shared product identification function
-        result = identify_product_from_text(query, verbose)
-
-        # Output the result as JSON
-        click.echo(json.dumps(result, indent=2))
-
-    except Exception as e:
-        raise click.ClickException(f"Failed to query products: {str(e)}")

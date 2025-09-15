@@ -52,7 +52,7 @@ def ads_init(force):
 
     db.close()
 
-    click.echo(f"SUCCESS: Database initialized at: {db_path}")
+    click.echo(f"✓ Database initialized at: {db_path}")
 
 @ads.command("list")
 @click.option("--scraped", type=click.Choice(['0', '1']), help="Filter by scraped status (0=not scraped, 1=scraped)")
@@ -120,18 +120,18 @@ def ads_list(scraped, ignored, identified):
         year = ad.get('year')
 
         # Build product info string
-        product_info = ""
+        product_text = ""
         if product:
             product_parts = [product]
             if manufacturer:
                 product_parts.append(f"{manufacturer}")
             if year:
                 product_parts.append(f"{year}")
-            product_info = f"{'/'.join(product_parts)}"
+            product_text = f"{'/'.join(product_parts)}"
         elif ad.get('identified_at'):
-            product_info = "?"
+            product_text = "?"
 
-        click.echo(f"{url} {scraped}{identified}{ignored}: {product_info}")
+        click.echo(f"{url} {scraped}{identified}{ignored}: {product_text}")
 
     db.close()
 
@@ -197,7 +197,7 @@ def ads_crawl(verbose):
         elif verbose:
             click.echo(f" - Skipped (exists): {link}")
 
-    click.echo(f"SUCCESS: Recorded {new_ads_count} new ads in database")
+    click.echo(f"✓ Recorded {new_ads_count} new ads in database")
 
     if verbose:
         click.echo(f"Total ads in database: {len(ads_table)}")
@@ -209,8 +209,9 @@ def ads_crawl(verbose):
 
 @ads.command("scrape")
 @click.option("--limit", "-l", type=int, help="Limit number of ads to scrape")
+@click.option("--force", "-f", is_flag=True, help="Force re-scrape ads that have already been scraped")
 @click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
-def ads_scrape(limit, verbose):
+def ads_scrape(limit, force, verbose):
     """Scrape detailed information from discovered ad URLs."""
 
     # Check if database exists
@@ -230,21 +231,26 @@ def ads_scrape(limit, verbose):
     db = TinyDB(db_path)
     ads_table = db.table('ads')
 
-    # Find ads that haven't been scraped yet
+    # Find ads that need to be scraped
     Ad_query = Query()
-    unscraped_ads = ads_table.search((Ad_query.scraped_at == None) & (Ad_query.ignored == False))
+    if force:
+        # If force is enabled, scrape all non-ignored ads
+        ads_to_scrape = ads_table.search(Ad_query.ignored == False)
+    else:
+        # Normal behavior: only scrape ads that haven't been scraped yet
+        ads_to_scrape = ads_table.search((Ad_query.scraped_at == None) & (Ad_query.ignored == False))
 
-    if not unscraped_ads:
-        click.echo("No unscraped ads found. Run 'pincrawl ads crawl' first to discover ads.")
+    if not ads_to_scrape:
+        click.echo("No ads found to scrape. Run 'pincrawl ads crawl' first to discover ads.")
         db.close()
         return
 
     # Apply limit if specified
     if limit:
-        unscraped_ads = unscraped_ads[:limit]
+        ads_to_scrape = ads_to_scrape[:limit]
 
     if verbose:
-        click.echo(f"Found {len(unscraped_ads)} ads to scrape")
+        click.echo(f"Found {len(ads_to_scrape)} ads to scrape")
 
     # Initialize Firecrawl
     firecrawl = Firecrawl(api_key=FIRECRAWL_API_KEY)
@@ -253,7 +259,7 @@ def ads_scrape(limit, verbose):
     scraped_count = 0
     scraped_urls = set()
 
-    for i, unscraped_ad in enumerate(unscraped_ads, 1):
+    for i, unscraped_ad in enumerate(ads_to_scrape, 1):
         ad_url = unscraped_ad.get('url')
 
         if not ad_url:
@@ -266,64 +272,14 @@ def ads_scrape(limit, verbose):
 
         # Perform the extraction for this single URL
         try:
-            schema = {
-                "type": "object",
-                "required": [
-                    "title",
-                    "description",
-                    "price",
-                    "location"
-                    # "images"
-                ],
-                "properties": {
-                    "title": {
-                        "type": "string"
-                    },
-                    "description": {
-                        "type": "string"
-                    },
-                    "price": {
-                        "type": "string"
-                    },
-                    "location": {
-                        "type": "object",
-                        "required": [
-                            "city",
-                            "zipcode"
-                        ],
-                        "properties": {
-                            "city": {
-                                "type": "string"
-                            },
-                            "zipcode": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                    # "images": {
-                    #     "type": "array",
-                    #     "items": {
-                    #         "type": "object",
-                    #         "required": [],
-                    #         "properties": {}
-                    #     }
-                    # }
-                }
-            }
             data = firecrawl.scrape(
                 ad_url,
                 only_main_content=False,
                 # max_age=0,
-                proxy="stealth",
+                # proxy="stealth",
+                proxy="auto",
                 parsers=[],
-                formats=[
-                    {
-                        "type": "json",
-                        "schema": schema,
-                        "prompt": "Zipcode is a 5-digit number in parentheses after the name of the city. Price is a number with a space as the thousands separator, followed by a space and the € symbol."
-                    },
-                    # "images"
-                ],
+                formats=["markdown"],
                 location={
                     'country': 'FR',
                     'languages': ['fr']
@@ -337,22 +293,17 @@ def ads_scrape(limit, verbose):
             continue
 
         try:
-            # Process the scraped data (should be a single item or empty)
-            if data.metadata.status_code == 200 and data.json:
+            # Process the scraped data (markdown content)
+            if data.metadata.status_code == 200 and data.markdown:
 
-                scraped_ad = data.json
+                markdown_content = data.markdown
 
                 if verbose:
                     click.echo(f"Successfully scraped: {ad_url}")
 
-                # Prepare update data (without product identification)
+                # Prepare update data (store markdown content for later processing)
                 update_data = {
-                    'title': scraped_ad.get('title'),
-                    'description': scraped_ad.get('description'),
-                    'price': scraped_ad.get('price'),
-                    # 'images': scraped_ad.get('images'),
-                    'city': scraped_ad.get('location', {}).get('city'),
-                    'zipcode': scraped_ad.get('location', {}).get('zipcode'),
+                    'content': markdown_content,  # Store full markdown content
                     'scraped_at': datetime.now().isoformat(),
                     'scrape_id': data.metadata.scrape_id
                 }
@@ -361,22 +312,22 @@ def ads_scrape(limit, verbose):
                 ads_table.update(update_data, Ad_query.url == ad_url)
 
                 scraped_count += 1
-                # Remove from unscraped_ads to avoid marking as ignored later
-                unscraped_ads = [ad for ad in unscraped_ads if ad.get('url') != ad_url]
+                # Remove from ads_to_scrape to avoid marking as ignored later
+                ads_to_scrape = [ad for ad in ads_to_scrape if ad.get('url') != ad_url]
             else:
                 # No data returned
                 if verbose:
-                    click.echo(f"  - No json extracted")
+                    click.echo(f"✗ No markdown extracted")
         except Exception as e:
             if verbose:
-                click.echo(f"  ✗ Failed to process scraped item: {str(e)}")
+                click.echo(f"✗ Failed to process scraped item: {str(e)}")
             continue
 
-    click.echo(f"SUCCESS: Scraped {scraped_count} ads")
+    click.echo(f"✓ Scraped {scraped_count} ads")
 
     # Mark all unscraped ads that were not in data as ignored
     ignored_count = 0
-    for unscraped_ad in unscraped_ads:
+    for unscraped_ad in ads_to_scrape:
         ad_url = unscraped_ad.get('url')
         ads_table.update(
             {
@@ -397,8 +348,9 @@ def ads_scrape(limit, verbose):
 
 @ads.command("identify")
 @click.option("--limit", "-l", type=int, help="Limit number of ads to identify")
+@click.option("--force", "-f", is_flag=True, help="Force re-identify ads that have already been identified")
 @click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
-def ads_identify(limit, verbose):
+def ads_identify(limit, force, verbose):
     """Identify products in scraped ads using ChatGPT and Pinecone."""
 
     # Check if database exists
@@ -417,16 +369,27 @@ def ads_identify(limit, verbose):
     # Find ads that are scraped but need identification
     Ad_query = Query()
 
-    # Only identify ads that don't have product information yet
-    ads_to_identify = ads_table.search(
-        (Ad_query.scraped_at != None) &
-        (Ad_query.ignored == False) &
-        (Ad_query.title != None) &
-        (Ad_query.product == None)
-    )
+    # Find ads that need to be identified
+    Ad_query = Query()
+
+    if force:
+        # If force is enabled, identify all scraped ads with content
+        ads_to_identify = ads_table.search(
+            (Ad_query.scraped_at != None) &
+            (Ad_query.ignored == False) &
+            (Ad_query.content != None)
+        )
+    else:
+        # Normal behavior: only identify ads that don't have product information yet
+        ads_to_identify = ads_table.search(
+            (Ad_query.scraped_at != None) &
+            (Ad_query.identified_at == None) &
+            (Ad_query.ignored == False) &
+            (Ad_query.content != None)
+        )
 
     if not ads_to_identify:
-        click.echo("No ads found that need identification. All scraped ads already have product information.")
+        click.echo("No scraped ads with content found. Run 'pincrawl ads scrape' first to scrape ads.")
         db.close()
         return
 
@@ -439,71 +402,76 @@ def ads_identify(limit, verbose):
 
     # Process ads for identification
     identified_count = 0
+    confirmed_count = 0
     failed_count = 0
 
     for i, ad in enumerate(ads_to_identify, 1):
         ad_url = ad.get('url', 'Unknown')
-        title = ad.get('title', '')
-        description = ad.get('description', '')
+        content = ad.get('content', '')
 
-        if not title and not description:
+        if not content:
             if verbose:
-                click.echo(f"Skipping {i}/{len(ads_to_identify)}: No title or description")
+                click.echo(f"Skipping {i}/{len(ads_to_identify)}: No content")
             failed_count += 1
             continue
 
         if verbose:
             click.echo(f"Processing {i}/{len(ads_to_identify)}: {ad_url}")
 
-        # Create search text from title and description
-        search_text = f"{title} {description}".strip()
+        # Use the content for identification
+        search_text = content.strip()
 
         try:
-            # Identify the product using ChatGPT + Pinecone
-            product_info = identify_product_from_text(search_text, verbose)
+            # Identify the product and extract ad info using ChatGPT + Pinecone
+            result = identify_product_from_text(search_text, verbose)
 
-            # Prepare update data
+            info = result.get('info', {})
+            location = info.get('location', {})
+
             update_data = {
-                'identified_at': datetime.now().isoformat()
+                'identified_at': datetime.now().isoformat(),
+                'title': info.get('title', None),
+                'description': info.get('description', None),
+                'price': info.get('price', None),
+                'location': {
+                    'city': location.get('city', None),
+                    'zipcode': location.get('zipcode', None)
+                },
             }
 
-            # Add product information if identified
-            if product_info:
+            product = result.get('product', None)
+
+            if product:
+                if verbose:
+                    click.echo(f"✓ Product identified: {str(product)}")
+
+                identified_count += 1
+
+                opdb_id = product.get('opdb_id', None)
+
                 update_data.update({
-                    'product': product_info.get('name'),
-                    'manufacturer': product_info.get('manufacturer'),
-                    'year': product_info.get('year'),
-                    'opdb_id': product_info.get('opdb_id'),
-                    'ipdb_id': product_info.get('ipdb_id')
+                    'product': product.get('name', None),
+                    'manufacturer': product.get('manufacturer', None),
+                    'year': product.get('year', None),
+                    'opdb_id': opdb_id
                 })
 
-                if verbose:
-                    click.echo(f"  ✓ Product identified: {product_info.get('name')} by {product_info.get('manufacturer')}")
-            else:
-                # Set product fields to None if not identified
-                update_data.update({
-                    'product': None,
-                    'manufacturer': None,
-                    'year': None,
-                    'opdb_id': None,
-                    'ipdb_id': None,
-                    'ignored': True  # Optionally mark as ignored if no product found
-                })
-
-                if verbose:
-                    click.echo(f"  - No product identified")
+                if opdb_id:
+                    confirmed_count += 1
+                    if verbose:
+                        click.echo(f"✓ Product confirmed: {opdb_id}")
 
             # Update the ad record in the database
             ads_table.update(update_data, Ad_query.url == ad.get('url'))
-            identified_count += 1
 
         except Exception as e:
             if verbose:
-                click.echo(f"  ✗ Failed to identify: {str(e)}")
+                click.echo(f"✗ Exception when identifying: {str(e)}")
             failed_count += 1
             continue
 
-    click.echo(f"SUCCESS: Identified products in {identified_count} ads")
+    click.echo(f"Identified products in {identified_count} ads")
+    click.echo(f"Confirmed products in {confirmed_count} ads")
     if failed_count > 0:
         click.echo(f"Failed: {failed_count} ads")
 
