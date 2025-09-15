@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import click
+import logging
 from tinydb import TinyDB, Query
 import os
 import json
@@ -10,6 +11,8 @@ from pinecone import Pinecone
 
 # Load environment variables from .env file
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 # Global configuration
 DB_NAME = os.getenv("PINCRAWL_DB_NAME", "pincrawl.db")
@@ -73,13 +76,12 @@ def check_pinecone_index_exists(pc, index_name, should_exist=True):
 
     return index_exists
 
-def identify_product_from_text(text, verbose=False):
+def identify_product_from_text(text):
     """
     Identify a product and extract ad information using Pinecone and ChatGPT.
 
     Args:
         text: Text to analyze for product identification and information extraction
-        verbose: Whether to output verbose logging
 
     Returns:
         dict: Product information with opdb_id, ipdb_id, name, manufacturer, year,
@@ -88,8 +90,7 @@ def identify_product_from_text(text, verbose=False):
     """
     # Check if required API keys are available
     if not OPENAI_API_KEY or not PINECONE_API_KEY:
-        if verbose:
-            click.echo("Warning: Missing API keys for product identification")
+        logger.warning("Missing API keys for product identification")
         return None
 
     try:
@@ -155,26 +156,22 @@ Only return valid JSON - no additional text or formatting (do not add fenced cod
 
         # Check if response is empty or None
         if not response_text or not response_text.strip():
-            if verbose:
-                click.echo("✗ ChatGPT returned empty response")
+            logger.error("ChatGPT returned empty response")
             return None
 
         response_text = response_text.strip()
 
-        if verbose:
-            click.echo(f"- ChatGPT Raw response: {response_text}")
+        logger.debug(f"ChatGPT Raw response: {response_text}")
 
         # Parse ChatGPT response
         try:
             chatgpt_response = json.loads(response_text)
         except json.JSONDecodeError as e:
-            if verbose:
-                click.echo(f"✗ Failed to parse ChatGPT response: {str(e)}")
+            logger.error(f"Failed to parse ChatGPT response: {str(e)}")
             return None
 
         if chatgpt_response is None or not isinstance(chatgpt_response, dict):
-            if verbose:
-                click.echo("✗ Invalid ChatGPT response format")
+            logger.error("Invalid ChatGPT response format")
             return None
 
         # Extract product and ad information
@@ -185,8 +182,7 @@ Only return valid JSON - no additional text or formatting (do not add fenced cod
         year = product.get('year', None) if product else None
 
         if name is None:
-            if verbose:
-                click.echo("✗ No pinball machine identified by ChatGPT")
+            logger.info("No pinball machine identified by ChatGPT")
 
             return {
                 "info": info
@@ -197,8 +193,7 @@ Only return valid JSON - no additional text or formatting (do not add fenced cod
 
             search_text = text_for_embedding(name, manufacturer, year)
 
-            if verbose:
-                click.echo(f"- Searching Pinecone for: '{search_text}'")
+            logger.info(f"Searching Pinecone for: '{search_text}'")
 
             # Initialize Pinecone
             pc = Pinecone(api_key=PINECONE_API_KEY)
@@ -234,20 +229,17 @@ Only return valid JSON - no additional text or formatting (do not add fenced cod
                 product['manufacturer'] = match.metadata.get('manufacturer')
                 product['year'] = match.metadata.get('manufacture_date')
 
-                if verbose:
-                    click.echo(f"✓ Matched OPDB pinball: {product}")
+                logger.info(f"Matched OPDB pinball: {product}")
 
             else:
-                if verbose:
-                    click.echo("✗ No OPDB match found")
+                logger.warning("No OPDB match found")
 
         return {
             "info": info,
             "product": product
         }
     except Exception as e:
-        if verbose:
-            click.echo(f"✗ Error during product identification: {str(e)}")
+        logger.error(f"Error during product identification: {str(e)}")
         return None
 
 @click.group()
@@ -257,8 +249,7 @@ def products():
 
 @products.command("init")
 @click.option("--force", "-f", is_flag=True, help="Force recreate the index if it already exists")
-@click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
-def products_init(force, verbose):
+def products_init(force):
     """Initialize a Pinecone index for product matching."""
 
     # Check if required API keys are available
@@ -276,12 +267,11 @@ def products_init(force, verbose):
             if not force:
                 raise
 
-            click.echo(f"Deleting existing index: {PINECONE_INDEX_NAME}")
+            logger.info(f"Deleting existing index: {PINECONE_INDEX_NAME}")
             pc.delete_index(PINECONE_INDEX_NAME)
 
             # Wait for deletion to complete
-            import time
-            click.echo("Waiting for index deletion to complete...")
+            logger.info("Waiting for index deletion to complete...")
             while True:
                 try:
                     check_pinecone_index_exists(pc, PINECONE_INDEX_NAME, should_exist=False)
@@ -289,7 +279,7 @@ def products_init(force, verbose):
                 except click.ClickException:
                     time.sleep(1)  # Index still exists, keep waiting
 
-        click.echo(f"Creating Pinecone index: {PINECONE_INDEX_NAME}")
+        logger.info(f"Creating Pinecone index: {PINECONE_INDEX_NAME}")
 
         # Create the index
         pc.create_index(
@@ -305,8 +295,7 @@ def products_init(force, verbose):
         )
 
         # Wait for index to be ready
-        click.echo("Waiting for index to be ready...")
-        import time
+        logger.info("Waiting for index to be ready...")
         while True:
             index_list = pc.list_indexes()
             index_status = None
@@ -319,21 +308,19 @@ def products_init(force, verbose):
                 break
             time.sleep(1)
 
-        click.echo(f"✓ Pinecone index '{PINECONE_INDEX_NAME}' is ready!")
+        logger.info(f"✓ Pinecone index '{PINECONE_INDEX_NAME}' is ready!")
 
-        if verbose:
-            # Get the index and show stats
-            index = pc.Index(PINECONE_INDEX_NAME)
-            stats = index.describe_index_stats()
-            click.echo(f"Index stats: {stats}")
+        # Get the index and show stats
+        index = pc.Index(PINECONE_INDEX_NAME)
+        stats = index.describe_index_stats()
+        logger.debug(f"Index stats: {stats}")
 
     except Exception as e:
         raise click.ClickException(f"Failed to initialize index: {str(e)}")
 
 @products.command("index")
 @click.option("--limit", "-l", type=int, help="Limit number of products to process")
-@click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
-def products_index(limit, verbose):
+def products_index(limit):
     """Populate the Pinecone index from data/opdb.json with product embeddings."""
 
     # Check if required API keys are available
@@ -365,12 +352,12 @@ def products_index(limit, verbose):
         with open(opdb_path, 'r', encoding='utf-8') as f:
             products_data = json.load(f)
 
-        click.echo(f"Loaded {len(products_data)} products from opdb.json")
+        logger.info(f"Loaded {len(products_data)} products from opdb.json")
 
         # Apply limit if specified
         if limit:
             products_data = products_data[:limit]
-            click.echo(f"Processing first {len(products_data)} products (limited)")
+            logger.info(f"Processing first {len(products_data)} products (limited)")
 
         processed_count = 0
         skipped_count = 0
@@ -378,8 +365,7 @@ def products_index(limit, verbose):
         already_indexed_count = 0
 
         # Get list of already indexed product IDs
-        if verbose:
-            click.echo("Checking for already indexed products...")
+        logger.debug("Checking for already indexed products...")
 
         try:
             # Query the index to get all existing IDs (fetch in batches)
@@ -397,11 +383,9 @@ def products_index(limit, verbose):
                 )
                 existing_ids = {match.id for match in dummy_response.matches}
 
-                if verbose:
-                    click.echo(f"Found {len(existing_ids)} already indexed products")
+                logger.debug(f"Found {len(existing_ids)} already indexed products")
         except Exception as e:
-            if verbose:
-                click.echo(f"Warning: Could not check existing products: {str(e)}")
+            logger.warning(f"Could not check existing products: {str(e)}")
             existing_ids = set()
 
         for i, product in enumerate(products_data, 1):
@@ -420,29 +404,25 @@ def products_index(limit, verbose):
                     manufacture_date = None
 
             if not opdb_id:
-                if verbose:
-                    click.echo(f"Skipping product {i}: missing opdb_id")
+                logger.debug(f"Skipping product {i}: missing opdb_id")
                 skipped_count += 1
                 continue
 
             # Check if product is already indexed
             if opdb_id in existing_ids:
-                if verbose:
-                    click.echo(f"Skipping {i}/{len(products_data)}: {name} ({opdb_id}) - already indexed")
+                logger.debug(f"Skipping {i}/{len(products_data)}: {name} ({opdb_id}) - already indexed")
                 already_indexed_count += 1
                 continue
 
             text_for_embedding = text_for_embedding(name, manufacturer_name, manufacture_date, shortname)
 
             if not text_for_embedding:
-                if verbose:
-                    click.echo(f"Skipping {opdb_id}: no text available for embedding")
+                logger.debug(f"Skipping {opdb_id}: no text available for embedding")
                 skipped_count += 1
                 continue
 
             try:
-                if verbose:
-                    click.echo(f"Processing {i}/{len(products_data)}: {name} ({opdb_id})")
+                logger.debug(f"Processing {i}/{len(products_data)}: {name} ({opdb_id})")
 
                 # Generate embedding using OpenAI
                 response = openai.embeddings.create(
@@ -467,10 +447,7 @@ def products_index(limit, verbose):
                 # Remove None values from metadata
                 metadata = {k: v for k, v in metadata.items() if v is not None}
 
-                if verbose:
-                    click.echo(f"Metadata:")
-                    for key, value in metadata.items():
-                        click.echo(f"  {key}: {value}")
+                logger.debug(f"Metadata: {metadata}")
 
                 # Upsert to Pinecone
                 index.upsert([{
@@ -482,8 +459,7 @@ def products_index(limit, verbose):
                 processed_count += 1
 
             except Exception as e:
-                if verbose:
-                    click.echo(f"✗ Error processing {opdb_id}: {str(e)}")
+                logger.error(f"Error processing {opdb_id}: {str(e)}")
                 error_count += 1
                 continue
 

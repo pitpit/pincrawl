@@ -1,14 +1,32 @@
 #!/usr/bin/env python3
 
 import click
+import logging
 from commands.ads import ads
 from commands.products import products
 
+# Configure logging globally
+logging.basicConfig(
+    level=logging.DEBUG,  # Set to DEBUG so all levels can be controlled dynamically
+    format='%(levelname)s - %(message)s',
+    force=True  # Override any existing configuration
+)
+
 @click.group()
+@click.option('--verbose', '-v', count=True, help='Increase verbosity (-v for INFO, -vv for DEBUG)')
 @click.version_option(version="0.1.0", prog_name="pincrawl")
-def pincrawl():
+def pincrawl(verbose):
     """PinCrawl - A powerful web crawling tool."""
-    pass
+
+    # Configure logging level based on verbosity
+    if verbose == 0:
+        log_level = logging.WARNING  # Default: show warnings and errors
+    elif verbose == 1:
+        log_level = logging.INFO     # -v: show info, warnings, and errors
+    else:  # verbose >= 2
+        log_level = logging.DEBUG    # -vv: show everything
+
+    logging.getLogger().setLevel(log_level)
 
 
 # Add the groups to pincrawl

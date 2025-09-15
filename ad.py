@@ -4,7 +4,6 @@ from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel, Field, HttpUrl
 
-
 class Location(BaseModel):
     """Model representing location information."""
 

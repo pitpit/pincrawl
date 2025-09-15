@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import click
+import logging
 from tinydb import TinyDB, Query
 import os
 import json
@@ -14,6 +15,8 @@ from pinecone import Pinecone
 
 # Load environment variables from .env file
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 # Global configuration
 DB_NAME = os.getenv("PINCRAWL_DB_NAME", "pincrawl.db")
@@ -36,10 +39,10 @@ def ads_init(force):
         raise click.ClickException("Database already exists. Use --force to reinitialize.")
 
     if force and os.path.exists(db_path):
-        click.echo("Removing existing database...")
+        logging.info("Removing existing database")
         os.remove(db_path)
 
-    click.echo("Initializing PinCrawl database...")
+    logging.info("Initializing PinCrawl database")
 
     # Create database and ads table
     db = TinyDB(db_path)
@@ -104,7 +107,7 @@ def ads_list(scraped, ignored, identified):
 
     # Display results
     if not ads:
-        click.echo("No ads found matching the criteria.")
+        click.echo("✗ No ads found matching the criteria.")
         db.close()
         return
 
@@ -137,8 +140,7 @@ def ads_list(scraped, ignored, identified):
 
 
 @ads.command("crawl")
-@click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
-def ads_crawl(verbose):
+def ads_crawl():
     """Crawl and discover new ad links."""
 
     # Check if database exists
@@ -146,9 +148,8 @@ def ads_crawl(verbose):
     if not os.path.exists(db_path):
         raise click.ClickException("Database not found. Please run 'pincrawl ads init' first.")
 
-    if verbose:
-        click.echo("Starting PinCrawl in verbose mode...")
-        click.echo(f"Using database: {db_path}")
+    logger.info("Starting PinCrawl...")
+    logger.debug(f"Using database: {db_path}")
 
     # Check if API key is available
     if not FIRECRAWL_API_KEY:
@@ -171,8 +172,7 @@ def ads_crawl(verbose):
         if re.match(r"https://www\.leboncoin\.fr/ad/.+/\d+$", link)
     ]
 
-    if verbose:
-        click.echo(f"Found {len(filtered_links)} ad links")
+    logger.info(f"Found {len(filtered_links)} ad links")
 
     # Initialize database (it should already exist from init command)
     db = TinyDB(db_path)
@@ -192,16 +192,14 @@ def ads_crawl(verbose):
             ads_table.insert(ad.to_dict())
             new_ads_count += 1
 
-            if verbose:
-                click.echo(f" + Added: {link}")
-        elif verbose:
-            click.echo(f" - Skipped (exists): {link}")
+            logger.debug(f"Added: {link}")
+        else:
+            logger.debug(f"Skipped (exists): {link}")
 
     click.echo(f"✓ Recorded {new_ads_count} new ads in database")
 
-    if verbose:
-        click.echo(f"Total ads in database: {len(ads_table)}")
-        click.echo(f"Database location: {db_path}")
+    logger.debug(f"Total ads in database: {len(ads_table)}")
+    logger.debug(f"Database location: {db_path}")
 
     db.close()
 
@@ -210,8 +208,7 @@ def ads_crawl(verbose):
 @ads.command("scrape")
 @click.option("--limit", "-l", type=int, help="Limit number of ads to scrape")
 @click.option("--force", "-f", is_flag=True, help="Force re-scrape ads that have already been scraped")
-@click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
-def ads_scrape(limit, force, verbose):
+def ads_scrape(limit, force):
     """Scrape detailed information from discovered ad URLs."""
 
     # Check if database exists
@@ -219,9 +216,8 @@ def ads_scrape(limit, force, verbose):
     if not os.path.exists(db_path):
         raise click.ClickException("Database not found. Please run 'pincrawl ads init' first.")
 
-    if verbose:
-        click.echo("Starting ad scraping...")
-        click.echo(f"Using database: {db_path}")
+    logger.info("Starting ad scraping...")
+    logger.debug(f"Using database: {db_path}")
 
     # Check if API key is available
     if not FIRECRAWL_API_KEY:
@@ -241,7 +237,7 @@ def ads_scrape(limit, force, verbose):
         ads_to_scrape = ads_table.search((Ad_query.scraped_at == None) & (Ad_query.ignored == False))
 
     if not ads_to_scrape:
-        click.echo("No ads found to scrape. Run 'pincrawl ads crawl' first to discover ads.")
+        click.echo("✗ No ads found to scrape. Run 'pincrawl ads crawl' first to discover ads.")
         db.close()
         return
 
@@ -249,8 +245,7 @@ def ads_scrape(limit, force, verbose):
     if limit:
         ads_to_scrape = ads_to_scrape[:limit]
 
-    if verbose:
-        click.echo(f"Found {len(ads_to_scrape)} ads to scrape")
+    logger.info(f"Found {len(ads_to_scrape)} ads to scrape")
 
     # Initialize Firecrawl
     firecrawl = Firecrawl(api_key=FIRECRAWL_API_KEY)
@@ -263,12 +258,10 @@ def ads_scrape(limit, force, verbose):
         ad_url = unscraped_ad.get('url')
 
         if not ad_url:
-            if verbose:
-                click.echo(f"Skipping (no URL found)")
+            logger.debug(f"Skipping (no URL found)")
             continue
 
-        if verbose:
-            click.echo(f"Processing ad: {ad_url}")
+        logger.debug(f"Processing ad: {ad_url}")
 
         # Perform the extraction for this single URL
         try:
@@ -283,13 +276,12 @@ def ads_scrape(limit, force, verbose):
                 location={
                     'country': 'FR',
                     'languages': ['fr']
-                }
+                },
+                timeout=500
             )
-            if verbose:
-                click.echo(f"Credit used: {data.metadata.credits_used}")
+            logger.debug(f"Credit used: {data.metadata.credits_used}")
         except Exception as e:
-            if verbose:
-                click.echo(f"Failed to scrape: {str(e)}")
+            logger.error(f"Failed to scrape: {str(e)}")
             continue
 
         try:
@@ -298,8 +290,7 @@ def ads_scrape(limit, force, verbose):
 
                 markdown_content = data.markdown
 
-                if verbose:
-                    click.echo(f"Successfully scraped: {ad_url}")
+                logger.debug(f"✓ Successfully scraped")
 
                 # Prepare update data (store markdown content for later processing)
                 update_data = {
@@ -316,11 +307,9 @@ def ads_scrape(limit, force, verbose):
                 ads_to_scrape = [ad for ad in ads_to_scrape if ad.get('url') != ad_url]
             else:
                 # No data returned
-                if verbose:
-                    click.echo(f"✗ No markdown extracted")
+                logger.warning(f"✗ No markdown extracted")
         except Exception as e:
-            if verbose:
-                click.echo(f"✗ Failed to process scraped item: {str(e)}")
+            logger.error(f"✗ Failed to process scraped item: {str(e)}")
             continue
 
     click.echo(f"✓ Scraped {scraped_count} ads")
@@ -337,11 +326,10 @@ def ads_scrape(limit, force, verbose):
             Ad_query.url == ad_url
         )
         ignored_count += 1
-        if verbose:
-            click.echo(f"Marked as ignored: {ad_url}")
+        logger.debug(f"Marked as ignored: {ad_url}")
 
     if ignored_count > 0:
-        click.echo(f"Marked {ignored_count} ads as ignored")
+        click.echo(f"✓ Marked {ignored_count} ads as ignored")
 
     db.close()
 
@@ -349,8 +337,7 @@ def ads_scrape(limit, force, verbose):
 @ads.command("identify")
 @click.option("--limit", "-l", type=int, help="Limit number of ads to identify")
 @click.option("--force", "-f", is_flag=True, help="Force re-identify ads that have already been identified")
-@click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
-def ads_identify(limit, force, verbose):
+def ads_identify(limit, force):
     """Identify products in scraped ads using ChatGPT and Pinecone."""
 
     # Check if database exists
@@ -358,9 +345,8 @@ def ads_identify(limit, force, verbose):
     if not os.path.exists(db_path):
         raise click.ClickException("Database not found. Please run 'pincrawl ads init' first.")
 
-    if verbose:
-        click.echo("Starting ad product identification...")
-        click.echo(f"Using database: {db_path}")
+    logger.info("Starting ad product identification...")
+    logger.debug(f"Using database: {db_path}")
 
     # Initialize database
     db = TinyDB(db_path)
@@ -389,7 +375,7 @@ def ads_identify(limit, force, verbose):
         )
 
     if not ads_to_identify:
-        click.echo("No scraped ads with content found. Run 'pincrawl ads scrape' first to scrape ads.")
+        click.echo("✗ No scraped ads with content found. Run 'pincrawl ads scrape' first to scrape ads.")
         db.close()
         return
 
@@ -397,8 +383,7 @@ def ads_identify(limit, force, verbose):
     if limit:
         ads_to_identify = ads_to_identify[:limit]
 
-    if verbose:
-        click.echo(f"Found {len(ads_to_identify)} ads to identify")
+    logger.info(f"Found {len(ads_to_identify)} ads to identify")
 
     # Process ads for identification
     identified_count = 0
@@ -410,20 +395,18 @@ def ads_identify(limit, force, verbose):
         content = ad.get('content', '')
 
         if not content:
-            if verbose:
-                click.echo(f"Skipping {i}/{len(ads_to_identify)}: No content")
+            logger.debug(f"Skipping {i}/{len(ads_to_identify)}: No content")
             failed_count += 1
             continue
 
-        if verbose:
-            click.echo(f"Processing {i}/{len(ads_to_identify)}: {ad_url}")
+        logger.debug(f"Processing {i}/{len(ads_to_identify)}: {ad_url}")
 
         # Use the content for identification
         search_text = content.strip()
 
         try:
             # Identify the product and extract ad info using ChatGPT + Pinecone
-            result = identify_product_from_text(search_text, verbose)
+            result = identify_product_from_text(search_text)
 
             info = result.get('info', {})
             location = info.get('location', {})
@@ -442,8 +425,7 @@ def ads_identify(limit, force, verbose):
             product = result.get('product', None)
 
             if product:
-                if verbose:
-                    click.echo(f"✓ Product identified: {str(product)}")
+                logger.info(f"✓ Product identified: {str(product)}")
 
                 identified_count += 1
 
@@ -458,26 +440,23 @@ def ads_identify(limit, force, verbose):
 
                 if opdb_id:
                     confirmed_count += 1
-                    if verbose:
-                        click.echo(f"✓ Product confirmed: {opdb_id}")
+                    logger.info(f"✓ Product confirmed: {opdb_id}")
 
             # Update the ad record in the database
             ads_table.update(update_data, Ad_query.url == ad.get('url'))
 
         except Exception as e:
-            if verbose:
-                click.echo(f"✗ Exception when identifying: {str(e)}")
+            logger.error(f"✗ Exception when identifying: {str(e)}")
             failed_count += 1
             continue
 
-    click.echo(f"Identified products in {identified_count} ads")
-    click.echo(f"Confirmed products in {confirmed_count} ads")
+    click.echo(f"✓ Identified products in {identified_count} ads")
+    click.echo(f"✓ Confirmed OPDB products in {confirmed_count} ads")
     if failed_count > 0:
-        click.echo(f"Failed: {failed_count} ads")
+        click.echo(f"✗ Failed in {failed_count} ads")
 
-    if verbose:
-        identified_ads = ads_table.search(Ad_query.product != None)
-        click.echo(f"Total ads with identified products: {len(identified_ads)}")
-        click.echo(f"Database location: {db_path}")
+    identified_ads = ads_table.search(Ad_query.product != None)
+    logger.debug(f"Total ads with identified products: {len(identified_ads)}")
+    logger.debug(f"Database location: {db_path}")
 
     db.close()
