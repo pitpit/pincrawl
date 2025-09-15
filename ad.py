@@ -17,6 +17,7 @@ class Ad(BaseModel):
     url: HttpUrl = Field(..., description="The URL of the ad")
     created_at: datetime = Field(default_factory=datetime.now, description="When the record was created")
     ignored: bool = Field(default=False, description="Whether the ad is ignored and should not be scraped")
+    retries: int = Field(default=0, description="Number of times scraping has been retried")
     content: Optional[str] = Field(None, description="The content of the ad (markdown)")
     title: Optional[str] = Field(None, description="The title of the ad")
     description: Optional[str] = Field(None, description="The description of the ad")
@@ -43,6 +44,7 @@ class Ad(BaseModel):
             "url": str(self.url),
             "created_at": self.created_at.isoformat(),
             "ignored": self.ignored,
+            "retries": self.retries,
             "content": self.content if self.content else None,
             "title": self.title if self.title else None,
             "description": self.description if self.description else None,
@@ -97,5 +99,6 @@ class Ad(BaseModel):
             scraped_at=scraped_at,
             identified_at=identified_at,
             ignored=data.get("ignored", False),
+            retries=data.get("retries", 0),
             scrape_id=data.get("scrape_id"),
         )

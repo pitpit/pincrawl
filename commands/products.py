@@ -93,11 +93,10 @@ def identify_product_from_text(text):
         logger.warning("Missing API keys for product identification")
         return None
 
-    try:
-        # Step 1: Get product suggestions from ChatGPT
-        openai.api_key = OPENAI_API_KEY
+    # Step 1: Get product suggestions from ChatGPT
+    openai.api_key = OPENAI_API_KEY
 
-        chatgpt_prompt = f"""
+    chatgpt_prompt = f"""
 You are an expert at analyzing pinball machine ads and extracting structured information.
 
 Here is a scraped ad in markdown format:
@@ -109,36 +108,36 @@ Here is a scraped ad in markdown format:
 Please analyze the ad text and:
 
 1. AD INFORMATION - Extract these details from the ad:
-    - title: A clear, concise title for this ad (what would appear as the listing title)
-    - description: The main description text of the ad (without title, price, location)
-    - price: The asking price (extract number and currency, e.g., "$1500", "€800")
-    - location: The city and zipcode where the item is located
+- title: A clear, concise title for this ad (what would appear as the listing title)
+- description: The main description text of the ad (without title, price, location)
+- price: The asking price (extract number and currency, e.g., "$1500", "€800")
+- location: The city and zipcode where the item is located
 
 2. PRODUCT IDENTIFICATION: The pinball machine being sold:
-    - Identify the specific pinball machine name
-    - Determine the manufacturer
-    - Determine the year of release
+- Identify the specific pinball machine name
+- Determine the manufacturer
+- Determine the year of release
 
 
 Return your response as a JSON object with this exact structure:
 {{
-    "info": {{
-        "title": "extracted ad title",
-        "description": "extracted ad description",
-        "price": {{
-            "amount": "extracted price without currency as an integer or null if not found",
-            "currency": "EUR"
-        }},
-        "location": {{
-            "city": "city name or null",
-            "zipcode": "zipcode as a string or null"
-        }}
+"info": {{
+    "title": "extracted ad title",
+    "description": "extracted ad description",
+    "price": {{
+        "amount": "extracted price without currency as an integer or null if not found",
+        "currency": "EUR"
     }},
-    "product": {{
-        "name": "exact product name (should match exactly a known product name)",
-        "manufacturer": "manufacturer name",
-        "year": "year of release as an integer or null"
+    "location": {{
+        "city": "city name or null",
+        "zipcode": "zipcode as a string or null"
     }}
+}},
+"product": {{
+    "name": "exact product name (should match exactly a known product name)",
+    "manufacturer": "manufacturer name",
+    "year": "year of release as an integer or null"
+}}
 }}
 
 Extract ad information even if you cannot identify the specific pinball machine.
@@ -146,101 +145,91 @@ If you cannot identify a pinball machine, set the product field to null.
 Only return valid JSON - no additional text or formatting (do not add fenced code blocks).
 """
 
-        completion = openai.chat.completions.create(
-            model=OPENAI_MODEL,
-            messages=[{"role": "user", "content": chatgpt_prompt}],
-            temperature=0.1
-        )
+    completion = openai.chat.completions.create(
+        model=OPENAI_MODEL,
+        messages=[{"role": "user", "content": chatgpt_prompt}],
+        temperature=0.1
+    )
 
-        response_text = completion.choices[0].message.content
+    response_text = completion.choices[0].message.content
 
-        # Check if response is empty or None
-        if not response_text or not response_text.strip():
-            logger.error("ChatGPT returned empty response")
-            return None
+    # Check if response is empty or None
+    if not response_text or not response_text.strip():
+        raise Exception("ChatGPT returned empty response")
 
-        response_text = response_text.strip()
+    response_text = response_text.strip()
 
-        logger.debug(f"ChatGPT Raw response: {response_text}")
+    logger.debug(f"ChatGPT Raw response: {response_text}")
 
-        # Parse ChatGPT response
-        try:
-            chatgpt_response = json.loads(response_text)
-        except json.JSONDecodeError as e:
-            logger.error(f"Failed to parse ChatGPT response: {str(e)}")
-            return None
+    # Parse ChatGPT response
+    chatgpt_response = json.loads(response_text)
+    if chatgpt_response is None or not isinstance(chatgpt_response, dict):
+        raise Exception("Invalid ChatGPT response format")
 
-        if chatgpt_response is None or not isinstance(chatgpt_response, dict):
-            logger.error("Invalid ChatGPT response format")
-            return None
+    # Extract product and ad information
+    info = chatgpt_response.get('info', {})
+    product = chatgpt_response.get('product')
+    name = product.get('name', None) if product else None
+    manufacturer = product.get('manufacturer', None) if product else None
+    year = product.get('year', None) if product else None
 
-        # Extract product and ad information
-        info = chatgpt_response.get('info', {})
-        product = chatgpt_response.get('product')
-        name = product.get('name', None) if product else None
-        manufacturer = product.get('manufacturer', None) if product else None
-        year = product.get('year', None) if product else None
-
-        if name is None:
-            logger.info("No pinball machine identified by ChatGPT")
-
-            return {
-                "info": info
-            }
-
-        # Step 2: Use the product info to search Pinecone for OPDB match
-        if name and manufacturer:
-
-            search_text = text_for_embedding(name, manufacturer, year)
-
-            logger.info(f"Searching Pinecone for: '{search_text}'")
-
-            # Initialize Pinecone
-            pc = Pinecone(api_key=PINECONE_API_KEY)
-
-            # Check if index exists
-            check_pinecone_index_exists(pc, PINECONE_INDEX_NAME, should_exist=True)
-
-            # Get the index
-            index = pc.Index(PINECONE_INDEX_NAME)
-
-            # Generate embedding for the original text
-            embedding_response = openai.embeddings.create(
-                model=OPENAI_EMBEDDING_MODEL,
-                input=search_text,
-                dimensions=PINECONE_DIMENSION
-            )
-
-            search_embedding = embedding_response.data[0].embedding
-
-            # Search the Pinecone index
-            search_results = index.query(
-                vector=search_embedding,
-                top_k=1,
-                include_metadata=True
-            )
-
-            # Return the Pinecone match with ad info
-            if search_results.matches:
-                match = search_results.matches[0]
-
-                product['opdb_id'] = match.metadata.get('opdb_id')
-                product['name'] = match.metadata.get('name')
-                product['manufacturer'] = match.metadata.get('manufacturer')
-                product['year'] = match.metadata.get('manufacture_date')
-
-                logger.info(f"Matched OPDB pinball: {product}")
-
-            else:
-                logger.warning("No OPDB match found")
+    if name is None:
+        logger.info("No pinball machine identified by ChatGPT")
 
         return {
-            "info": info,
-            "product": product
+            "info": info
         }
-    except Exception as e:
-        logger.error(f"Error during product identification: {str(e)}")
-        return None
+
+    # Step 2: Use the product info to search Pinecone for OPDB match
+    if name and manufacturer:
+
+        search_text = text_for_embedding(name, manufacturer, year)
+
+        logger.info(f"Searching Pinecone for: '{search_text}'")
+
+        # Initialize Pinecone
+        pc = Pinecone(api_key=PINECONE_API_KEY)
+
+        # Check if index exists
+        check_pinecone_index_exists(pc, PINECONE_INDEX_NAME, should_exist=True)
+
+        # Get the index
+        index = pc.Index(PINECONE_INDEX_NAME)
+
+        # Generate embedding for the original text
+        embedding_response = openai.embeddings.create(
+            model=OPENAI_EMBEDDING_MODEL,
+            input=search_text,
+            dimensions=PINECONE_DIMENSION
+        )
+
+        search_embedding = embedding_response.data[0].embedding
+
+        # Search the Pinecone index
+        search_results = index.query(
+            vector=search_embedding,
+            top_k=1,
+            include_metadata=True
+        )
+
+        # Return the Pinecone match with ad info
+        if search_results.matches:
+            match = search_results.matches[0]
+
+            product['opdb_id'] = match.metadata.get('opdb_id')
+            product['name'] = match.metadata.get('name')
+            product['manufacturer'] = match.metadata.get('manufacturer')
+            product['year'] = match.metadata.get('manufacture_date')
+
+            logger.info(f"Matched OPDB pinball: {product}")
+
+        else:
+            logger.warning("No OPDB match found")
+
+    return {
+        "info": info,
+        "product": product
+    }
 
 @click.group()
 def products():
