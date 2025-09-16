@@ -2,8 +2,8 @@
 
 import click
 import logging
-from commands.ads import ads
-from commands.products import products
+from pincrawl.commands.ads import ads
+from pincrawl.commands.products import products
 
 # Configure logging globally
 logging.basicConfig(
@@ -33,6 +33,10 @@ def pincrawl(verbose):
 pincrawl.add_command(ads)
 pincrawl.add_command(products)
 
+
+def main():
+    """Entry point for the pincrawl command."""
+    pincrawl()
 
 if __name__ == "__main__":
     pincrawl()

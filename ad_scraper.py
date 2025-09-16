@@ -7,11 +7,10 @@ from datetime import datetime
 from typing import List, Optional, Union
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
-
-from database import Ad, Database
 from firecrawl import Firecrawl
-from product_matcher import ProductMatcher
 from dotenv import load_dotenv
+from pincrawl.database import Ad, Database
+from pincrawl.product_matcher import ProductMatcher
 
 # Load environment variables
 load_dotenv()

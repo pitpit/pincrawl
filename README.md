@@ -1,6 +1,6 @@
 # PinCrawl - Web Crawling Tool
 
-A simple web crawling CLI tool built with Python and Click, containerized with Docker Compose.
+A project for scraping and matching products/ads
 
 ## Files
 - `docker-compose.yml` – Defines the `app` and `postgres` services
@@ -17,9 +17,9 @@ cp .env.dist .env
 # Edit .env and add your API keys (Firecrawl, OpenAI, Pinecone)
 ```
 
-Start the services:
+Start the service:
 ```bash
-docker-compose up -d postgres
+docker-compose run --rm app bash
 ```
 
 Initialize the database:
@@ -44,4 +44,16 @@ pincrawl -vvv scrape
 Scrape detailed information from discovered ads:
 ```bash
 pincrawl -vvv identify
+```
+
+## Quick Start
+
+Dev installation:
+```bash
+pip install -e .
+```
+
+Prod installation:
+```bash
+pip install .
 ```

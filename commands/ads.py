@@ -3,9 +3,9 @@
 import click
 import logging
 from dotenv import load_dotenv
-from database import Database
-from ad_scraper import AdScraper
-from product_matcher import ProductMatcher
+from pincrawl.database import Database
+from pincrawl.ad_scraper import AdScraper
+from pincrawl.product_matcher import ProductMatcher
 
 # Load environment variables from .env file
 load_dotenv()
