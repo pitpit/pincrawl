@@ -12,7 +12,7 @@ Usage:
 import os
 from datetime import datetime
 from typing import Optional
-from sqlalchemy import create_engine, Column, Integer, String, Text, Boolean, DateTime, JSON
+from sqlalchemy import create_engine, Column, Integer, String, Text, Boolean, DateTime, JSON, Index
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.engine import Engine
@@ -113,4 +113,34 @@ class Ad(Base):
     scraped_at = Column(DateTime, nullable=True)
     identified_at = Column(DateTime, nullable=True)
     scrape_id = Column(String, nullable=True)
+
+    # Define indexes for common query patterns
+    __table_args__ = (
+        # Index for filtering by ignored status and created_at (pagination/sorting)
+        Index('ix_ads_ignored_created_at', 'ignored', 'created_at'),
+
+        # Index for filtering by scraped status and scrape_id
+        Index('ix_ads_scraped_at_scrape_id', 'scraped_at', 'scrape_id'),
+
+        # Index for product matching queries
+        Index('ix_ads_product_manufacturer', 'product', 'manufacturer'),
+
+        # Index for location-based queries
+        Index('ix_ads_city_zipcode', 'city', 'zipcode'),
+
+        # Index for price range queries
+        Index('ix_ads_currency_amount', 'currency', 'amount'),
+
+        # Index for identifying processed ads
+        Index('ix_ads_identified_at', 'identified_at'),
+
+        # Index for OPDB matching
+        Index('ix_ads_opdb_id', 'opdb_id'),
+
+        # Index for retry management
+        Index('ix_ads_retries_ignored', 'retries', 'ignored'),
+
+        # Composite index for workflow status tracking
+        Index('ix_ads_workflow_status', 'scraped_at', 'identified_at', 'ignored'),
+    )
 
