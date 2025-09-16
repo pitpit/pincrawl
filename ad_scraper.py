@@ -125,7 +125,7 @@ class AdScraper:
         for link in filtered_links:
             # Check if URL already exists in database
             existing_ads = self.fetch()
-            existing_urls = {ad.url for ad in existing_ads}
+            existing_urls = {ad_record.url for ad_record in existing_ads}
 
             if link not in existing_urls:
                 # Create new ad record using store method
@@ -187,17 +187,14 @@ class AdScraper:
         except Exception as e:
             # Increment retry counter on exception
             ad_record.retries += 1
-            logger.error(f"✗ Failed to scrape {url} (retry {ad_record.retries}/3): {str(e)}")
+            logger.warning(f"✗ Failed to scrape {ad_record.url} (retry {ad_record.retries}/3): {str(e)}")
 
             if ad_record.retries > 3:
                 # Mark as ignored after 3 retries
                 ad_record.ignored = True
-                logger.warning(f"✗ Ad marked as ignored after {ad_record.retries} retries: {url}")
+                logger.error(f"✗ Ad marked as ignored after {ad_record.retries} retries: {ad_record.url}")
 
             return ad_record
-            # # Use store method to update the record with retry/ignored status
-            # self.store(ad_record)
-            # return False
 
     def identify(self, ad_record: Ad, force: bool = False) -> Ad:
         """
@@ -255,7 +252,7 @@ class AdScraper:
 
         return ad_record
 
-    def store(self, ad: Ad) -> bool:
+    def store(self, ad_record: Ad) -> Ad:
         """
         Insert or update an Ad record in the database.
 
@@ -268,9 +265,9 @@ class AdScraper:
         session = self.database.get_db()
 
         try:
-            if ad.url:
+            if ad_record.url:
                 # Check if ad already exists
-                existing = session.query(Ad).filter(Ad.url == ad.url).first()
+                existing = session.query(Ad).filter(Ad.url == ad_record.url).first()
 
                 if existing:
                     # Update existing record
@@ -278,26 +275,25 @@ class AdScraper:
                                'city', 'zipcode', 'product', 'manufacturer', 'year',
                                'opdb_id', 'scraped_at', 'identified_at', 'scrape_id',
                                'retries', 'ignored']:
-                        if hasattr(ad, attr):
-                            setattr(existing, attr, getattr(ad, attr))
+                        if hasattr(ad_record, attr):
+                            setattr(existing, attr, getattr(ad_record, attr))
 
-                    logger.info(f"Updated existing ad: {ad.url}")
+                    logger.info(f"Updated existing ad: {ad_record.url}")
                 else:
                     # Insert new record
-                    session.add(ad)
-                    logger.info(f"Inserted new ad: {ad.url}")
+                    session.add(ad_record)
+                    logger.info(f"Inserted new ad: {ad_record.url}")
             else:
                 # No URL, just insert
-                session.add(ad)
+                session.add(ad_record)
                 logger.info("Inserted new ad without URL")
 
             session.commit()
-            return True
+            return ad_record
 
-        except Exception as e:
-            logger.error(f"Failed to store ad: {str(e)}")
+        except Exception:
             session.rollback()
-            return False
+            raise
 
         finally:
             session.close()

@@ -41,10 +41,6 @@ Scrape detailed information from discovered ads:
 ```bash
 pincrawl -vvv scrape
 ```
-Scrape detailed information from discovered ads:
-```bash
-pincrawl -vvv identify
-```
 
 ## Quick Start
 

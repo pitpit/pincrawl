@@ -121,7 +121,7 @@ def ads_crawl():
 @click.option("--limit", "-l", type=int, help="Limit number of ads to scrape")
 @click.option("--force", "-f", is_flag=True, help="Force re-scrape ads that have already been scraped")
 def ads_scrape(limit, force):
-    """Scrape detailed information from discovered ad URLs."""
+    """Scrape detailed information from discovered ad URLs and identify products."""
 
     logger.info("Starting ads scraping...")
 
@@ -145,6 +145,8 @@ def ads_scrape(limit, force):
 
         # Scrape each ad using AdScraper
         scraped_count = 0
+        identified_count = 0
+        confirmed_count = 0
 
         for i, ad_record in enumerate(ads_to_scrape, 1):
             try:
@@ -152,71 +154,37 @@ def ads_scrape(limit, force):
 
                 # Use AdScraper to scrape the individual ad
                 ad_record = scraper.scrape(ad_record, force=force)
-                scraper.store(ad_record)
                 scraped_count += 1
 
                 logger.info(f"✓ Successfully scraped: {ad_record.url}")
+
+                # Identify product if enabled and content is available
+                if ad_record.content:
+                    logger.info(f"Identifying product for: {ad_record.url}")
+                    ad_record = scraper.identify(ad_record, force=force)
+                    identified_count += 1
+
+                    logger.info(f"✓ Successfully identified product: {ad_record.url}")
+
+                    if ad_record.opdb_id:
+                        logger.info(f"✓ Successfully confirmed product: {ad_record.url}")
+                        confirmed_count += 1
+
+
+                scraper.store(ad_record)
+
             except Exception as e:
-                logger.error(f"✗ Exception when scraping {ad_record.url}: {str(e)}")
+                logger.exception(f"✗ Exception when scraping {ad_record.url}: {str(e)}")
+
                 continue
 
         click.echo(f"✓ Scraped {scraped_count} ads")
+        click.echo(f"✓ Identified product in {identified_count} ads")
+        click.echo(f"✓ Confirmed product {confirmed_count} ads")
 
     except Exception as e:
         raise click.ClickException(f"Scraping failed: {str(e)}")
 
 
-@ads.command("identify")
-@click.option("--limit", "-l", type=int, help="Limit number of ads to identify")
-@click.option("--force", "-f", is_flag=True, help="Force re-identify ads that have already been identified")
-def ads_identify(limit, force):
-    """Identify products in scraped ads using ChatGPT and Pinecone."""
-
-    logger.info("Starting ads identify...")
-
-    # Find ads that need to be identified using fetch method
-    if force:
-        # If force is enabled, identify all scraped ads with content
-        ads_to_identify = scraper.fetch(scraped=True, ignored=False, content=True)
-    else:
-        # Normal behavior: only identify ads that don't have product information yet
-        ads_to_identify = scraper.fetch(scraped=True, identified=False, ignored=False, content=True)
-
-    if not ads_to_identify:
-        raise click.ClickException("✗ No scraped ads with content found. Run 'pincrawl ads scrape' first to scrape ads.")
-
-    # Apply limit if specified
-    if limit:
-        ads_to_identify = ads_to_identify[:limit]
-
-    logger.info(f"Found {len(ads_to_identify)} ads to identify")
-
-    # Process ads for identification
-    identified_count = 0
-    confirmed_count = 0
-
-    for i, ad_record in enumerate(ads_to_identify, 1):
-        try:
-            logger.info(f"Processing {i}/{len(ads_to_identify)}: {ad_record.url}")
-
-            # Use AdScraper to identify the product
-            ad_record = scraper.identify(ad_record, force=force)
-            scraper.store(ad_record)
-            identified_count += 1
-
-            # Check if it has OPDB confirmation (this requires re-fetching the record)
-            if ad_record.opdb_id:
-                confirmed_count += 1
-
-        except Exception as e:
-            logger.error(f"✗ Exception when identifying {ad_record.url}: {str(e)}")
-            continue
-
-    click.echo(f"✓ Identified products in {identified_count} ads")
-    click.echo(f"✓ Confirmed OPDB products in {confirmed_count} ads")
-
-    # Get final count of identified ads
-    identified_ads = scraper.fetch(identified=True)
-    logger.debug(f"Total ads with identified products: {len(identified_ads)}")
 
 

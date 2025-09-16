@@ -83,64 +83,61 @@ class ProductMatcher:
         Args:
             force: Force recreate the index if it already exists
         """
+        # Check if index already exists
         try:
-            # Check if index already exists
-            try:
-                self._check_pinecone_index_exists(should_exist=False)
-            except click.ClickException:
-                if not force:
-                    raise
+            self._check_pinecone_index_exists(should_exist=False)
+        except click.ClickException:
+            if not force:
+                raise
 
-                logger.info(f"Deleting existing index: {self.pinecone_index_name}")
-                self.pc.delete_index(self.pinecone_index_name)
+            logger.info(f"Deleting existing index: {self.pinecone_index_name}")
+            self.pc.delete_index(self.pinecone_index_name)
 
-                # Wait for deletion to complete
-                logger.info("Waiting for index deletion to complete...")
-                while True:
-                    try:
-                        self._check_pinecone_index_exists(should_exist=False)
-                        break  # Index doesn't exist anymore, deletion complete
-                    except click.ClickException:
-                        time.sleep(1)  # Index still exists, keep waiting
-
-            logger.info(f"Creating Pinecone index: {self.pinecone_index_name}")
-
-            # Create the index
-            self.pc.create_index(
-                name=self.pinecone_index_name,
-                dimension=self.pinecone_dimension,
-                metric=self.pinecone_metric,
-                spec={
-                    "serverless": {
-                        "cloud": "aws",
-                        "region": "us-east-1"
-                    }
-                }
-            )
-
-            # Wait for index to be ready
-            logger.info("Waiting for index to be ready...")
+            # Wait for deletion to complete
+            logger.info("Waiting for index deletion to complete...")
             while True:
-                index_list = self.pc.list_indexes()
-                index_status = None
-                for idx in index_list:
-                    if idx.name == self.pinecone_index_name:
-                        index_status = idx.status
-                        break
+                try:
+                    self._check_pinecone_index_exists(should_exist=False)
+                    break  # Index doesn't exist anymore, deletion complete
+                except click.ClickException:
+                    time.sleep(1)  # Index still exists, keep waiting
 
-                if index_status and index_status.ready:
+        logger.info(f"Creating Pinecone index: {self.pinecone_index_name}")
+
+        # Create the index
+        self.pc.create_index(
+            name=self.pinecone_index_name,
+            dimension=self.pinecone_dimension,
+            metric=self.pinecone_metric,
+            spec={
+                "serverless": {
+                    "cloud": "aws",
+                    "region": "us-east-1"
+                }
+            }
+        )
+
+        # Wait for index to be ready
+        logger.info("Waiting for index to be ready...")
+        while True:
+            index_list = self.pc.list_indexes()
+            index_status = None
+            for idx in index_list:
+                if idx.name == self.pinecone_index_name:
+                    index_status = idx.status
                     break
-                time.sleep(1)
 
-            logger.info(f"✓ Pinecone index '{self.pinecone_index_name}' is ready!")
+            if index_status and index_status.ready:
+                break
+            time.sleep(1)
 
-            # Get the index and show stats
-            index = self.pc.Index(self.pinecone_index_name)
-            stats = index.describe_index_stats()
-            logger.debug(f"Index stats: {stats}")
+        logger.info(f"✓ Pinecone index '{self.pinecone_index_name}' is ready!")
 
-        except Exception as e:
-            raise Exception(f"Failed to initialize index: {str(e)}")
+        # Get the index and show stats
+        index = self.pc.Index(self.pinecone_index_name)
+        stats = index.describe_index_stats()
+        logger.debug(f"Index stats: {stats}")
+
 
     def index(self, limit=None):
         """
@@ -157,137 +154,133 @@ class ProductMatcher:
         if not os.path.exists(opdb_path):
             raise FileNotFoundError(f"Data file not found: {opdb_path}")
 
+        # Check if index exists
+        self._check_pinecone_index_exists(should_exist=True)
+
+        # Get the index
+        index = self.pc.Index(self.pinecone_index_name)
+
+        # Load opdb.json
+        with open(opdb_path, 'r', encoding='utf-8') as f:
+            products_data = json.load(f)
+
+        logger.info(f"Loaded {len(products_data)} products from opdb.json")
+
+        # Apply limit if specified
+        if limit:
+            products_data = products_data[:limit]
+            logger.info(f"Processing first {len(products_data)} products (limited)")
+
+        processed_count = 0
+        skipped_count = 0
+        error_count = 0
+        already_indexed_count = 0
+
+        # Get list of already indexed product IDs
+        logger.info("Checking for already indexed products...")
+
         try:
-            # Check if index exists
-            self._check_pinecone_index_exists(should_exist=True)
+            # Query the index to get all existing IDs (fetch in batches)
+            existing_ids = set()
+            stats = index.describe_index_stats()
+            total_vectors = stats.total_vector_count
 
-            # Get the index
-            index = self.pc.Index(self.pinecone_index_name)
+            if total_vectors > 0:
+                # Fetch existing IDs by querying with a dummy vector
+                # This is a workaround since Pinecone doesn't have a direct "list all IDs" method
+                dummy_response = index.query(
+                    vector=[0.0] * self.pinecone_dimension,
+                    top_k=min(10000, total_vectors),  # Pinecone max is 10k per query
+                    include_metadata=False
+                )
+                existing_ids = {match.id for match in dummy_response.matches}
 
-            # Load opdb.json
-            with open(opdb_path, 'r', encoding='utf-8') as f:
-                products_data = json.load(f)
+                logger.info(f"Found {len(existing_ids)} already indexed products")
+        except Exception as e:
+            logger.warning(f"Could not check existing products: {str(e)}")
+            existing_ids = set()
 
-            logger.info(f"Loaded {len(products_data)} products from opdb.json")
+        for i, product in enumerate(products_data, 1):
+            opdb_id = product.get('opdb_id')
+            name = product.get('name', '')
+            shortname = product.get('shortname', '')
+            manufacturer = product.get('manufacturer', {})
+            manufacturer_name = manufacturer.get('name', '') if manufacturer else ''
+            manufacture_date_str = product.get('manufacture_date', '')
+            manufacture_date = None
+            if manufacture_date_str:
+                try:
+                    # Extract year from date string (format: YYYY-MM-DD)
+                    manufacture_date = manufacture_date_str.split('-')[0]
+                except (ValueError, IndexError):
+                    manufacture_date = None
 
-            # Apply limit if specified
-            if limit:
-                products_data = products_data[:limit]
-                logger.info(f"Processing first {len(products_data)} products (limited)")
+            if not opdb_id:
+                logger.info(f"Skipping product {i}: missing opdb_id")
+                skipped_count += 1
+                continue
 
-            processed_count = 0
-            skipped_count = 0
-            error_count = 0
-            already_indexed_count = 0
+            # Check if product is already indexed
+            if opdb_id in existing_ids:
+                logger.info(f"Skipping {i}/{len(products_data)}: {name} ({opdb_id}) - already indexed")
+                already_indexed_count += 1
+                continue
 
-            # Get list of already indexed product IDs
-            logger.info("Checking for already indexed products...")
+            embedding_text = self._text_for_embedding(name, manufacturer_name, manufacture_date, shortname)
+
+            if not embedding_text:
+                logger.info(f"Skipping {opdb_id}: no text available for embedding")
+                skipped_count += 1
+                continue
 
             try:
-                # Query the index to get all existing IDs (fetch in batches)
-                existing_ids = set()
-                stats = index.describe_index_stats()
-                total_vectors = stats.total_vector_count
+                logger.info(f"Processing {i}/{len(products_data)}: {name} ({opdb_id})")
 
-                if total_vectors > 0:
-                    # Fetch existing IDs by querying with a dummy vector
-                    # This is a workaround since Pinecone doesn't have a direct "list all IDs" method
-                    dummy_response = index.query(
-                        vector=[0.0] * self.pinecone_dimension,
-                        top_k=min(10000, total_vectors),  # Pinecone max is 10k per query
-                        include_metadata=False
-                    )
-                    existing_ids = {match.id for match in dummy_response.matches}
+                # Generate embedding using OpenAI
+                response = openai.embeddings.create(
+                    model=self.openai_embedding_model,
+                    input=embedding_text,
+                    dimensions=self.pinecone_dimension
+                )
 
-                    logger.info(f"Found {len(existing_ids)} already indexed products")
+                embedding = response.data[0].embedding
+
+                # Prepare metadata
+                metadata = {
+                    'text': embedding_text,
+                    'name': name,
+                    'shortname': shortname,
+                    'manufacturer': manufacturer_name,
+                    'manufacture_date': manufacture_date,
+                    'opdb_id': opdb_id,
+                    'ipdb_id': product.get('ipdb_id')
+                }
+
+                # Remove None values from metadata
+                metadata = {k: v for k, v in metadata.items() if v is not None}
+
+                logger.debug(f"Metadata: {metadata}")
+
+                # Upsert to Pinecone
+                index.upsert([{
+                    'id': opdb_id,
+                    'values': embedding,
+                    'metadata': metadata
+                }])
+
+                processed_count += 1
+
             except Exception as e:
-                logger.warning(f"Could not check existing products: {str(e)}")
-                existing_ids = set()
+                logger.exception(f"Error processing {opdb_id}: {str(e)}")
+                error_count += 1
+                continue
 
-            for i, product in enumerate(products_data, 1):
-                opdb_id = product.get('opdb_id')
-                name = product.get('name', '')
-                shortname = product.get('shortname', '')
-                manufacturer = product.get('manufacturer', {})
-                manufacturer_name = manufacturer.get('name', '') if manufacturer else ''
-                manufacture_date_str = product.get('manufacture_date', '')
-                manufacture_date = None
-                if manufacture_date_str:
-                    try:
-                        # Extract year from date string (format: YYYY-MM-DD)
-                        manufacture_date = manufacture_date_str.split('-')[0]
-                    except (ValueError, IndexError):
-                        manufacture_date = None
-
-                if not opdb_id:
-                    logger.info(f"Skipping product {i}: missing opdb_id")
-                    skipped_count += 1
-                    continue
-
-                # Check if product is already indexed
-                if opdb_id in existing_ids:
-                    logger.info(f"Skipping {i}/{len(products_data)}: {name} ({opdb_id}) - already indexed")
-                    already_indexed_count += 1
-                    continue
-
-                embedding_text = self._text_for_embedding(name, manufacturer_name, manufacture_date, shortname)
-
-                if not embedding_text:
-                    logger.info(f"Skipping {opdb_id}: no text available for embedding")
-                    skipped_count += 1
-                    continue
-
-                try:
-                    logger.info(f"Processing {i}/{len(products_data)}: {name} ({opdb_id})")
-
-                    # Generate embedding using OpenAI
-                    response = openai.embeddings.create(
-                        model=self.openai_embedding_model,
-                        input=embedding_text,
-                        dimensions=self.pinecone_dimension
-                    )
-
-                    embedding = response.data[0].embedding
-
-                    # Prepare metadata
-                    metadata = {
-                        'text': embedding_text,
-                        'name': name,
-                        'shortname': shortname,
-                        'manufacturer': manufacturer_name,
-                        'manufacture_date': manufacture_date,
-                        'opdb_id': opdb_id,
-                        'ipdb_id': product.get('ipdb_id')
-                    }
-
-                    # Remove None values from metadata
-                    metadata = {k: v for k, v in metadata.items() if v is not None}
-
-                    logger.debug(f"Metadata: {metadata}")
-
-                    # Upsert to Pinecone
-                    index.upsert([{
-                        'id': opdb_id,
-                        'values': embedding,
-                        'metadata': metadata
-                    }])
-
-                    processed_count += 1
-
-                except Exception as e:
-                    logger.error(f"Error processing {opdb_id}: {str(e)}")
-                    error_count += 1
-                    continue
-
-            return {
-                'processed': processed_count,
-                'already_indexed': already_indexed_count,
-                'skipped': skipped_count,
-                'errors': error_count
-            }
-
-        except Exception as e:
-            raise Exception(f"Failed to populate index: {str(e)}")
+        return {
+            'processed': processed_count,
+            'already_indexed': already_indexed_count,
+            'skipped': skipped_count,
+            'errors': error_count
+        }
 
     def search(self, text):
         """
