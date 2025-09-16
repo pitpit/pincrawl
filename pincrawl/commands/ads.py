@@ -154,22 +154,22 @@ def ads_scrape(limit, force):
 
                 # Use AdScraper to scrape the individual ad
                 ad_record = scraper.scrape(ad_record, force=force)
-                scraped_count += 1
 
-                logger.info(f"✓ Successfully scraped: {ad_record.url}")
+                if ad_record.scraped_at:
+                    logger.info(f"✓ Successfully scraped: {ad_record.url}")
+                    scraped_count += 1
 
                 # Identify product if enabled and content is available
                 if ad_record.content:
                     logger.info(f"Identifying product for: {ad_record.url}")
                     ad_record = scraper.identify(ad_record, force=force)
-                    identified_count += 1
-
-                    logger.info(f"✓ Successfully identified product: {ad_record.url}")
+                    if ad_record.identified_at:
+                        logger.info(f"✓ Successfully identified product: {ad_record.url}")
+                        identified_count += 1
 
                     if ad_record.opdb_id:
                         logger.info(f"✓ Successfully confirmed product: {ad_record.url}")
                         confirmed_count += 1
-
 
                 scraper.store(ad_record)
 
