@@ -12,14 +12,14 @@ Usage:
 import os
 from datetime import datetime
 from typing import Optional
-from sqlalchemy import create_engine, Column, Integer, String, Text, Boolean, DateTime, JSON, Index
+from sqlalchemy import create_engine, Column, Integer, String, Text, Boolean, DateTime, JSON, Index, UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.engine import Engine
 from dotenv import load_dotenv
 
 # Module exports
-__all__ = ['Database', 'Ad']
+__all__ = ['Database', 'Ad', 'Sub']
 
 # Load environment variables
 load_dotenv()
@@ -142,5 +142,20 @@ class Ad(Base):
 
         # Composite index for workflow status tracking
         Index('ix_ads_workflow_status', 'scraped_at', 'identified_at', 'ignored'),
+    )
+
+class Sub(Base):
+    """SQLAlchemy model for subscriptions table."""
+
+    __tablename__ = "subs"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    email = Column(String, nullable=False, index=True)
+    opdb_id = Column(String, nullable=False, index=True)
+    created_at = Column(DateTime, default=datetime.now, nullable=False)
+
+    # Define unique constraint on email + opdb_id combination
+    __table_args__ = (
+        UniqueConstraint('email', 'opdb_id', name='unique_email_opdb_id'),
     )
 

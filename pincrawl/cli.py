@@ -4,6 +4,7 @@ import click
 import logging
 from pincrawl.commands.ads import ads
 from pincrawl.commands.products import products
+from pincrawl.commands.subs import subs
 
 # Configure logging globally
 logging.basicConfig(
@@ -32,6 +33,7 @@ def pincrawl(verbose):
 # Add the groups to pincrawl
 pincrawl.add_command(ads)
 pincrawl.add_command(products)
+pincrawl.add_command(subs)
 
 
 def main():

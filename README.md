@@ -54,3 +54,21 @@ Prod installation:
 ```bash
 pip install .
 ```
+
+## Cronjobs
+
+First cronjob runs every 5minutes between 8o am and midnight:
+
+```
+*/5 8-23 * * * pincrawl crawl >> /var/log/pincrawl.log 2>&1
+```
+
+Second cronjob runs every 5minutes between 8o am and midnight, but 2min after:
+
+```
+2-59/5 8-23 * * * pincrawl scrape --limit=5 >> /var/log/pincrawl.log 2>&1
+```
+
+## TODO
+
+- check opdb_id when creating a subscription

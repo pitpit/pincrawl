@@ -22,27 +22,6 @@ def ads():
     """Manage and view ads in the database."""
     pass
 
-@ads.command("init")
-@click.option("--force", "-f", is_flag=True, help="Force reinitialize even if database exists")
-def ads_init(force):
-    """Initialize the PinCrawl database."""
-    try:
-        if force:
-            # If force is specified, destroy existing database schema
-            try:
-                database.destroy_db()
-                click.echo(f"✓ Destroyed existing database schema")
-            except RuntimeError:
-                # Database wasn't initialized yet, that's okay
-                pass
-
-        # Initialize database connection and create tables
-        engine = database.init_db()
-        click.echo(f"✓ Database initialized successfully")
-
-    except Exception as e:
-        raise click.ClickException(f"Failed to initialize database: {str(e)}")
-
 @ads.command("list")
 @click.option("--scraped", type=click.Choice(['0', '1']), help="Filter by scraped status (0=not scraped, 1=scraped)")
 @click.option("--ignored", type=click.Choice(['0', '1']), help="Filter by ignored status (0=not ignored, 1=ignored)")
