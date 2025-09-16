@@ -13,18 +13,18 @@ logging.basicConfig(
 )
 
 @click.group()
-@click.option('--verbose', '-v', count=True, help='Increase verbosity (-v for INFO, -vv for DEBUG)')
+@click.option('--verbose', '-v', count=True, help='Increase verbosity (-v for WARNING, -vv for INFO, -vvv for DEBUG)')
 @click.version_option(version="0.1.0", prog_name="pincrawl")
 def pincrawl(verbose):
     """PinCrawl - A powerful web crawling tool."""
 
     # Configure logging level based on verbosity
-    if verbose == 0:
+    if verbose == 0 or verbose == 1:
         log_level = logging.WARNING  # Default: show warnings and errors
-    elif verbose == 1:
-        log_level = logging.INFO     # -v: show info, warnings, and errors
-    else:  # verbose >= 2
-        log_level = logging.DEBUG    # -vv: show everything
+    elif verbose == 2:
+        log_level = logging.INFO     # -vv: show info, warnings, and errors
+    else:  # verbose >= 3
+        log_level = logging.DEBUG    # -vvv: show everything
 
     logging.getLogger().setLevel(log_level)
 

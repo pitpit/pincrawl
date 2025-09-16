@@ -1,4 +1,13 @@
-"""Database configuration and models for PostgreSQL."""
+"""Database configuration and models for PostgreSQL.
+
+Usage:
+    db = Database()
+    db.init_db()
+    session = db.get_db()
+    # ... use session
+    session.close()
+    db.close_db()
+"""
 
 import os
 from datetime import datetime
@@ -8,6 +17,9 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.engine import Engine
 from dotenv import load_dotenv
+
+# Module exports
+__all__ = ['Database', 'Ad']
 
 # Load environment variables
 load_dotenv()
@@ -24,8 +36,65 @@ DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NA
 
 # SQLAlchemy setup
 Base = declarative_base()
-engine: Optional[Engine] = None
-SessionLocal: Optional[sessionmaker] = None
+
+class Database:
+    """Database manager class that handles SQLAlchemy connections and sessions."""
+
+    def __init__(self, database_url: Optional[str] = None):
+        """Initialize the Database instance.
+
+        Args:
+            database_url: Optional database URL. If not provided, uses the default from environment.
+        """
+        self.database_url = database_url or DATABASE_URL
+        self.engine: Optional[Engine] = None
+        self.session_local: Optional[sessionmaker] = None
+
+    def init_db(self) -> Engine:
+        """Initialize database connection and create tables."""
+        self.engine = create_engine(self.database_url)
+        self.session_local = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
+
+        # Create tables
+        Base.metadata.create_all(bind=self.engine)
+
+        return self.engine
+
+    def get_db(self) -> Session:
+        """Get database session."""
+        if self.session_local is None:
+            self.init_db()
+
+        db = self.session_local()
+        try:
+            return db
+        except Exception:
+            db.close()
+            raise
+
+    def close_db(self):
+        """Close database connection."""
+        if self.engine:
+            self.engine.dispose()
+            self.engine = None
+            self.session_local = None
+
+    def destroy_db(self):
+        """Drop all tables and destroy the database schema."""
+        if self.engine is None:
+            self.init_db()
+
+        # Drop all tables
+        Base.metadata.drop_all(bind=self.engine)
+
+        # Clean up connections
+        if self.session_local:
+            self.session_local.close_all()
+            self.session_local = None
+
+        if self.engine:
+            self.engine.dispose()
+            self.engine = None
 
 class Ad(Base):
     """SQLAlchemy model for ads table."""
@@ -52,53 +121,3 @@ class Ad(Base):
     identified_at = Column(DateTime, nullable=True)
     scrape_id = Column(String, nullable=True)
 
-def init_db():
-    """Initialize database connection and create tables."""
-    global engine, SessionLocal
-
-    engine = create_engine(DATABASE_URL)
-    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-    # Create tables
-    Base.metadata.create_all(bind=engine)
-
-    return engine
-
-
-def get_db() -> Session:
-    """Get database session."""
-    if SessionLocal is None:
-        init_db()
-
-    db = SessionLocal()
-    try:
-        return db
-    except Exception:
-        db.close()
-        raise
-
-def close_db():
-    """Close database connection."""
-    global engine
-    if engine:
-        engine.dispose()
-
-
-def destroy_db():
-    """Drop all tables and destroy the database schema."""
-    global engine, SessionLocal
-
-    if engine is None:
-        init_db()
-
-    # Drop all tables
-    Base.metadata.drop_all(bind=engine)
-
-    # Reset global variables
-    if SessionLocal:
-        SessionLocal.close_all()
-        SessionLocal = None
-
-    if engine:
-        engine.dispose()
-        engine = None
