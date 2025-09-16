@@ -24,15 +24,8 @@ __all__ = ['Database', 'Ad']
 # Load environment variables
 load_dotenv()
 
-# Database configuration
-DB_HOST = os.getenv("DB_HOST", "localhost")
-DB_PORT = os.getenv("DB_PORT", "5432")
-DB_NAME = os.getenv("DB_NAME", "pincrawl")
-DB_USER = os.getenv("DB_USER", "pincrawl")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "pincrawl")
-
 # Create database URL
-DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+DATABASE_URL = os.getenv("DATABASE_URL", f"postgresql://pincrawl:pincrawl@localhost:5432/pincrawl")
 
 # SQLAlchemy setup
 Base = declarative_base()

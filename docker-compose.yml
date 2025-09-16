@@ -30,11 +30,7 @@ services:
     # Environment variables
     environment:
       - PYTHONUNBUFFERED=1
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_NAME=pincrawl
-      - DB_USER=pincrawl
-      - DB_PASSWORD=pincrawl
+      - DATABASE_URL=postgresql://pincrawl:pincrawl@postgres:5432/pincrawl
 
 volumes:
   postgres_data:
