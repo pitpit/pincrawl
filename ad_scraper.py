@@ -9,8 +9,8 @@ from sqlalchemy import and_
 from sqlalchemy.orm import Session
 from firecrawl import Firecrawl
 from dotenv import load_dotenv
-from pincrawl.database import Ad, Database
-from pincrawl.product_matcher import ProductMatcher
+from database import Ad, Database
+from product_matcher import ProductMatcher
 
 # Load environment variables
 load_dotenv()

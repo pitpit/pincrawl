@@ -2,8 +2,8 @@
 
 import click
 import logging
-from pincrawl.commands.ads import ads
-from pincrawl.commands.products import products
+from commands.ads import ads
+from commands.products import products
 
 # Configure logging globally
 logging.basicConfig(

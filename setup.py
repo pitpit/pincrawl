@@ -16,11 +16,12 @@ setup(
     version='0.1.0',
     description='A project for scraping and matching products/ads',
     author='pitpit',
-    package_dir={'pincrawl': '.'},
+    packages=find_packages(where='.'),
+    package_dir={'': '.'},
     install_requires=read_requirements(),
     entry_points={
         'console_scripts': [
-            'pincrawl=pincrawl.cli:main',
+            'pincrawl=cli:main',
         ],
     },
     include_package_data=True,
