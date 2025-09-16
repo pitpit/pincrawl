@@ -255,6 +255,7 @@ class AdScraper:
 
         except Exception as e:
             # As soon as we've got a retry we whant to set proxy to "stealth" to not fail further
+            logger.warning("Switching to stealth proxy due to error")
             self.proxy = "stealth"
 
             # Increment retry counter on exception

@@ -134,8 +134,9 @@ def ads_scrape(limit, force):
             # Normal behavior: only scrape ads that haven't been scraped yet
             ads_to_scrape = scraper.fetch(scraped=False, ignored=False)
 
-        if not ads_to_scrape:
-            raise click.ClickException("✗ No ads found to scrape. Run 'pincrawl ads crawl' first to discover ads.")
+            if not ads_to_scrape:
+                click.echo("✓ No ads found to scrape.")
+                return
 
         # Apply limit if specified
         if limit:
