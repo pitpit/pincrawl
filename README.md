@@ -20,6 +20,7 @@ cp .env.dist .env
 Start the service:
 ```bash
 docker-compose run --rm app bash
+pip install -e .
 ```
 
 Initialize the database:

@@ -2,7 +2,7 @@
 
 import click
 from dotenv import load_dotenv
-from product_matcher import ProductMatcher
+from pincrawl.product_matcher import ProductMatcher
 
 # Load environment variables from .env file
 load_dotenv()

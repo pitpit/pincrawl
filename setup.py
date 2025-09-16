@@ -16,8 +16,7 @@ setup(
     version='0.1.0',
     description='A project for scraping and matching products/ads',
     author='pitpit',
-    packages=find_packages(where='.'),
-    package_dir={'': '.'},
+    packages=find_packages(),
     install_requires=read_requirements(),
     entry_points={
         'console_scripts': [
