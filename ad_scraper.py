@@ -94,6 +94,75 @@ class AdScraper:
         finally:
             session.close()
 
+    def count(self,
+              scraped: Optional[bool] = None,
+              identified: Optional[bool] = None,
+              ignored: Optional[bool] = None,
+              content: Optional[bool] = None) -> int:
+        """
+        Count ads in database with optional filtering.
+
+        Args:
+            scraped: Filter by scraped status (None=no filter, True=scraped, False=not scraped)
+            identified: Filter by identified status (None=no filter, True=identified, False=not identified)
+            ignored: Filter by ignored status (None=no filter, True=ignored, False=not ignored)
+            content: Filter by content status (None=no filter, True=has content, False=no content)
+
+        Returns:
+            Count of Ad objects matching the criteria
+        """
+        session = self.database.get_db()
+
+        try:
+            query = session.query(Ad)
+
+            # Apply filters based on parameters (same logic as fetch method)
+            if scraped is not None:
+                if scraped:
+                    query = query.filter(Ad.scraped_at.isnot(None))
+                else:
+                    query = query.filter(Ad.scraped_at.is_(None))
+
+            if identified is not None:
+                if identified:
+                    query = query.filter(Ad.product.isnot(None))
+                else:
+                    query = query.filter(Ad.product.is_(None))
+
+            if ignored is not None:
+                query = query.filter(Ad.ignored == ignored)
+
+            if content is not None:
+                if content:
+                    query = query.filter(Ad.content.isnot(None))
+                else:
+                    query = query.filter(Ad.content.is_(None))
+
+            return query.count()
+
+        finally:
+            session.close()
+
+    def exists(self, url: str) -> bool:
+        """
+        Check if an ad with the given URL already exists in the database.
+
+        Args:
+            url: The URL to check for existence
+
+        Returns:
+            True if the ad exists, False otherwise
+        """
+        session = self.database.get_db()
+
+        try:
+            # Use EXISTS query for optimal performance
+            exists_query = session.query(Ad).filter(Ad.url == url).exists()
+            return session.query(exists_query).scalar()
+
+        finally:
+            session.close()
+
     def crawl(self) -> int:
         """
         Crawl and discover new ad links from the source.
@@ -123,11 +192,8 @@ class AdScraper:
         new_ads_count = 0
 
         for link in filtered_links:
-            # Check if URL already exists in database
-            existing_ads = self.fetch()
-            existing_urls = {ad_record.url for ad_record in existing_ads}
-
-            if link not in existing_urls:
+            # Check if URL already exists in database using efficient exists query
+            if not self.exists(link):
                 # Create new ad record using store method
                 ad_record = Ad(url=link)
 

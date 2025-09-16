@@ -108,8 +108,8 @@ def ads_crawl():
 
         click.echo(f"✓ Recorded {new_ads_count} new ads in database")
 
-        # Get total count using fetch
-        total_ads = len(scraper.fetch())
+        # Get total count using count method
+        total_ads = scraper.count()
         logger.debug(f"Total ads in database: {total_ads}")
 
     except Exception as e:
