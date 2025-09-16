@@ -45,6 +45,9 @@ class AdScraper:
         # Initialize ProductMatcher for identification
         self.product_matcher = matcher
 
+        # Initialize proxy setting
+        self.proxy = "basic"
+
     def fetch(self,
               scraped: Optional[bool] = None,
               identified: Optional[bool] = None,
@@ -228,7 +231,7 @@ class AdScraper:
             data = self.firecrawl.scrape(
                 ad_record.url,
                 only_main_content=False,
-                proxy="auto",
+                proxy=self.proxy,
                 parsers=[],
                 formats=["markdown"],
                 location={
@@ -251,11 +254,14 @@ class AdScraper:
                 raise Exception("No markdown content extracted")
 
         except Exception as e:
+            # As soon as we've got a retry we whant to set proxy to "stealth" to not fail further
+            self.proxy = "stealth"
+
             # Increment retry counter on exception
             ad_record.retries += 1
             logger.warning(f"✗ Failed to scrape {ad_record.url} (retry {ad_record.retries}/3): {str(e)}")
 
-            if ad_record.retries > 3:
+            if ad_record.retries >= 3:
                 # Mark as ignored after 3 retries
                 ad_record.ignored = True
                 logger.error(f"✗ Ad marked as ignored after {ad_record.retries} retries: {ad_record.url}")
