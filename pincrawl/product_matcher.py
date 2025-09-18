@@ -322,7 +322,7 @@ Return your response as a JSON object with this exact structure:
 {{
 "info": {{
     "title": "extracted ad title. Escape double quotes with a backslash and remove non-ascii chars.",
-    "description": "extracted ad description. Escape double quotes with a backslash and remove non-ascii chars.",
+    "description": "extracted ad description. Escape double quotes with a backslash and remove non-ascii chars. Transform newlines to spaces.",
     "amount": "extracted price amount without currency as an integer or null if not found",
     "currency": "EUR",
     "city": "location city name or null",
@@ -354,7 +354,7 @@ Only return valid JSON - no additional text or formatting (do not add fenced cod
 
         response_text = response_text.strip()
 
-        logger.debug(f"ChatGPT Raw response: {repr(response_text)}")
+        logger.debug(f"ChatGPT Raw response: {response_text}")
 
         # Parse ChatGPT response
         chatgpt_response = json.loads(response_text)
