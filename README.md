@@ -17,9 +17,9 @@ cp .env.dist .env
 # Edit .env and add your API keys (Firecrawl, OpenAI, Pinecone)
 ```
 
-Start the service:
+Start the console:
 ```bash
-docker-compose run --rm app bash
+docker-compose run --rm console bash
 pip install -e .
 ```
 
@@ -67,6 +67,12 @@ Second cronjob runs every 5minutes between 8o am and midnight (utc+2), but 2min 
 
 ```
 2-59/5 6-21 * * * pincrawl scrape --limit=5 >> /var/log/pincrawl.log 2>&1
+```
+
+Third cronjob runs every 5minutes between 8o am and midnight (utc+2), but 2min after:
+
+```
+4-59/5 6-21 * * * pincrawl subs send >> /var/log/pincrawl.log 2>&1
 ```
 
 ## TODO
