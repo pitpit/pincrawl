@@ -57,16 +57,16 @@ pip install .
 
 ## Cronjobs
 
-First cronjob runs every 5minutes between 8o am and midnight:
+First cronjob runs every 5minutes between 8o am and midnight (utc+2):
 
 ```
-*/5 8-23 * * * pincrawl crawl >> /var/log/pincrawl.log 2>&1
+*/5 6-21 * * * pincrawl crawl >> /var/log/pincrawl.log 2>&1
 ```
 
-Second cronjob runs every 5minutes between 8o am and midnight, but 2min after:
+Second cronjob runs every 5minutes between 8o am and midnight (utc+2), but 2min after:
 
 ```
-2-59/5 8-23 * * * pincrawl scrape --limit=5 >> /var/log/pincrawl.log 2>&1
+2-59/5 6-21 * * * pincrawl scrape --limit=5 >> /var/log/pincrawl.log 2>&1
 ```
 
 ## TODO

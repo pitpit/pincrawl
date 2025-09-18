@@ -2,13 +2,9 @@
 
 import click
 import logging
-from dotenv import load_dotenv
 from pincrawl.database import Database
 from pincrawl.ad_scraper import AdScraper
 from pincrawl.product_matcher import ProductMatcher
-
-# Load environment variables from .env file
-load_dotenv()
 
 logger = logging.getLogger(__name__)
 

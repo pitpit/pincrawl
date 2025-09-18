@@ -12,14 +12,15 @@ Usage:
 import os
 from datetime import datetime
 from typing import Optional
-from sqlalchemy import create_engine, Column, Integer, String, Text, Boolean, DateTime, JSON, Index, UniqueConstraint
+from sqlalchemy import create_engine, Column, Integer, String, Text, Boolean, DateTime, JSON, Index, UniqueConstraint, Enum
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.engine import Engine
 from dotenv import load_dotenv
+import enum
 
 # Module exports
-__all__ = ['Database', 'Ad', 'Sub']
+__all__ = ['Database', 'Ad', 'Sub', 'Task']
 
 # Load environment variables
 load_dotenv()
@@ -29,6 +30,12 @@ DATABASE_URL = os.getenv("DATABASE_URL", f"postgresql://pincrawl:pincrawl@localh
 
 # SQLAlchemy setup
 Base = declarative_base()
+
+class TaskStatus(enum.Enum):
+    """Enum for task status values."""
+    IN_PROGRESS = "IN_PROGRESS"
+    SUCCESS = "SUCCESS"
+    FAIL = "FAIL"
 
 class Database:
     """Database manager class that handles SQLAlchemy connections and sessions."""
@@ -157,5 +164,25 @@ class Sub(Base):
     # Define unique constraint on email + opdb_id combination
     __table_args__ = (
         UniqueConstraint('email', 'opdb_id', name='unique_email_opdb_id'),
+    )
+
+
+class Task(Base):
+    """SQLAlchemy model for tasks table."""
+
+    __tablename__ = "tasks"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    name = Column(String, nullable=False, index=True)
+    status = Column(Enum(TaskStatus), default=TaskStatus.IN_PROGRESS, nullable=False)
+    created_at = Column(DateTime, default=datetime.now, nullable=False)
+
+    # Define indexes for common query patterns
+    __table_args__ = (
+        # Index for filtering by name and created_at (to find latest task by name)
+        Index('ix_tasks_name_created_at', 'name', 'created_at'),
+
+        # Index for status filtering
+        Index('ix_tasks_status', 'status'),
     )
 

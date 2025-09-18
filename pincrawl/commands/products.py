@@ -1,11 +1,5 @@
-#!/usr/bin/env python3
-
 import click
-from dotenv import load_dotenv
 from pincrawl.product_matcher import ProductMatcher
-
-# Load environment variables from .env file
-load_dotenv()
 
 # service instances
 matcher = ProductMatcher()

@@ -2,9 +2,16 @@
 
 import click
 import logging
+import os
+from datetime import datetime
+from dotenv import load_dotenv
 from pincrawl.commands.ads import ads
 from pincrawl.commands.products import products
 from pincrawl.commands.subs import subs
+from pincrawl.commands.mailer import mailer
+
+# Load environment variables
+load_dotenv()
 
 # Configure logging globally
 logging.basicConfig(
@@ -31,6 +38,7 @@ def pincrawl(verbose):
 
 
 # Add the groups to pincrawl
+pincrawl.add_command(mailer)
 pincrawl.add_command(ads)
 pincrawl.add_command(products)
 pincrawl.add_command(subs)
