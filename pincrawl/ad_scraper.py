@@ -15,6 +15,8 @@ from pincrawl.product_matcher import ProductMatcher
 # Load environment variables
 load_dotenv()
 
+SCRAPING_RETRIES = int(os.getenv("SCRAPING_RETRIES", 9))
+
 logger = logging.getLogger(__name__)
 
 
@@ -260,10 +262,10 @@ class AdScraper:
 
             # Increment retry counter on exception
             ad_record.retries += 1
-            logger.warning(f"✗ Failed to scrape {ad_record.url} (retry {ad_record.retries}/3): {str(e)}")
+            logger.warning(f"✗ Failed to scrape {ad_record.url} (retry {ad_record.retries}/{SCRAPING_RETRIES}): {str(e)}")
 
-            if ad_record.retries >= 3:
-                # Mark as ignored after 3 retries
+            if ad_record.retries >= SCRAPING_RETRIES:
+                # Mark as ignored after several retries
                 ad_record.ignored = True
                 logger.error(f"✗ Ad marked as ignored after {ad_record.retries} retries: {ad_record.url}")
 
