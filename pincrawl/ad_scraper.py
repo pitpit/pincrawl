@@ -11,11 +11,14 @@ from firecrawl import Firecrawl
 from dotenv import load_dotenv
 from pincrawl.database import Ad, Database
 from pincrawl.product_matcher import ProductMatcher
+import time
 
 # Load environment variables
 load_dotenv()
 
-SCRAPING_RETRIES = int(os.getenv("SCRAPING_RETRIES", 9))
+SCRAPE_MAX_RETRIES = int(os.getenv("SCRAPE_MAX_RETRIES", 9))
+CRAWL_MAX_RETRIES = int(os.getenv("CRAWL_MAX_RETRIES", 3))
+RETRY_DELAY = int(os.getenv("RETRY_DELAY", 3))
 
 logger = logging.getLogger(__name__)
 
@@ -168,24 +171,46 @@ class AdScraper:
         finally:
             session.close()
 
-    def crawl(self) -> int:
+    def crawl(self) -> [Ad]:
         """
         Crawl and discover new ad links from the source.
 
         Returns:
             Number of new ads discovered
         """
-        logger.info("Starting ad crawl...")
 
-        # Scrape the search results page for ad links
-        data = self.firecrawl.scrape(
-            "https://www.leboncoin.fr/recherche?text=flipper+-pincab&shippable=1&price=200-max&owner_type=all&sort=time&order=desc",
-            formats=["links"],
-            parsers=[],
-            only_main_content=True,
-            max_age=0
-        )
+        credits_used = 0
 
+        # Scrape the search results page for ad links with retry logic
+        for attempt in range(CRAWL_MAX_RETRIES):
+            try:
+                data = self.firecrawl.scrape(
+                    "https://www.leboncoin.fr/recherche?text=flipper+-pincab&shippable=1&price=200-max&owner_type=all&sort=time&order=desc",
+                    proxy=self.proxy,
+                    formats=["links"],
+                    parsers=[],
+                    only_main_content=True,
+                    max_age=0,
+                )
+
+                credits_used += data.metadata.credits_used
+
+                if data.metadata.status_code >= 300:
+                    raise Exception(f"Server error {data.metadata.status_code}")
+
+                break  # Exit loop on success
+
+            except Exception as e:
+                if attempt < CRAWL_MAX_RETRIES - 1:
+                    logger.warning(f"Scraping failed on attempt {attempt + 1}/{CRAWL_MAX_RETRIES}: {str(e)}")
+
+                    time.sleep(RETRY_DELAY)
+                else:
+                    raise Exception(f"Failed to crawl ads after {CRAWL_MAX_RETRIES} attempts: {str(e)}")
+
+        logger.info(f"Credit used: {credits_used}")
+
+        ad_records = []
         # Filter links matching the pattern https://www.leboncoin.fr/ad/*/<integer>
         filtered_links = [
             link for link in data.links
@@ -194,22 +219,18 @@ class AdScraper:
 
         logger.info(f"Found {len(filtered_links)} ad links")
 
-        new_ads_count = 0
-
         for link in filtered_links:
             # Check if URL already exists in database using efficient exists query
             if not self.exists(link):
                 # Create new ad record using store method
                 ad_record = Ad(url=link)
 
-                self.store(ad_record)
-                new_ads_count += 1
+                ad_records.append(ad_record)
                 logger.info(f"Added: {link}")
             else:
                 logger.info(f"Skipped (exists): {link}")
 
-        logger.info(f"Recorded {new_ads_count} new ads in database")
-        return new_ads_count
+        return ad_records
 
     def scrape(self, ad_record: Ad, force: bool = False) -> Ad:
         """
@@ -220,56 +241,67 @@ class AdScraper:
             force: If True, re-scrape even if already scraped
 
         Returns:
-            True if scraping was successful, False otherwise
+            Ad record with scraped content
         """
-        logger.info(f"Scraping ad: {ad_record.url}")
 
         # Check if already scraped and force is not enabled
         if not force and ad_record.scraped_at is not None:
             raise Exception(f"Ad already scraped: {ad_record.url}")
 
-        # Perform the scraping
-        try:
-            data = self.firecrawl.scrape(
-                ad_record.url,
-                only_main_content=False,
-                proxy=self.proxy,
-                parsers=[],
-                formats=["markdown"],
-                location={
-                    'country': 'FR',
-                    'languages': ['fr']
-                },
-                timeout=self.pinecone_timeout
-            )
+        credits_used = 0
+        # Perform the scraping with retry logic
+        for attempt in range(SCRAPE_MAX_RETRIES):
+            try:
+                data = self.firecrawl.scrape(
+                    ad_record.url,
+                    only_main_content=False,
+                    proxy=self.proxy,
+                    parsers=[],
+                    formats=["markdown"],
+                    location={
+                        'country': 'FR',
+                        'languages': ['fr']
+                    },
+                    timeout=self.pinecone_timeout
+                )
 
-            logger.info(f"Credit used: {data.metadata.credits_used}")
+                credits_used += data.metadata.credits_used
 
-            # Process the scraped data
-            if data.metadata.status_code == 200 and data.markdown:
-                ad_record.content = data.markdown
-                ad_record.scraped_at = datetime.now()
-                ad_record.scrape_id = data.metadata.scrape_id
+                if data.metadata.status_code >= 500:
+                    raise Exception(f"Server error {data.metadata.status_code}")
 
-                return ad_record
-            else:
+                break  # Exit loop on success
+
+            except Exception as e:
+                # As soon as we've got a retry we want to set proxy to "stealth" to not fail further
+                # if attempt == 0:  # Only log this once on first failure
+                #     logger.warning("Switching to stealth proxy due to error")
+                #     self.proxy = "stealth"
+
+                if attempt < SCRAPE_MAX_RETRIES - 1:
+                    logger.warning(f"✗ Failed to scrape {ad_record.url} (attempt {attempt + 1}/{SCRAPE_MAX_RETRIES}): {str(e)}")
+
+                    time.sleep(RETRY_DELAY)
+                else:
+                    raise Exception(f"Failed to scrape {ad_record.url} after {SCRAPE_MAX_RETRIES} attempts: {str(e)}")
+
+
+        logger.info(f"Credit used: {credits_used}")
+
+        # Process the scraped data
+        if data.metadata.status_code == 200:
+            if not data.markdown:
                 raise Exception("No markdown content extracted")
 
-        except Exception as e:
-            # As soon as we've got a retry we whant to set proxy to "stealth" to not fail further
-            logger.warning("Switching to stealth proxy due to error")
-            self.proxy = "stealth"
+            ad_record.content = data.markdown
+            ad_record.scraped_at = datetime.now()
+            ad_record.scrape_id = data.metadata.scrape_id
+        else:
+            logger.warning(f"✗ Unexpected response for {ad_record.url}: status {data.metadata.status_code}")
+            ad_record.ignored = True
 
-            # Increment retry counter on exception
-            ad_record.retries += 1
-            logger.warning(f"✗ Failed to scrape {ad_record.url} (retry {ad_record.retries}/{SCRAPING_RETRIES}): {str(e)}")
 
-            if ad_record.retries >= SCRAPING_RETRIES:
-                # Mark as ignored after several retries
-                ad_record.ignored = True
-                logger.error(f"✗ Ad marked as ignored after {ad_record.retries} retries: {ad_record.url}")
-
-            return ad_record
+        return ad_record
 
     def identify(self, ad_record: Ad, force: bool = False) -> Ad:
         """
@@ -279,7 +311,6 @@ class AdScraper:
             ad_record: Tthe ad to scrape
             force: If True, re-identify even if already identified
         """
-        logger.info(f"Identifying product in ad: {ad_record.url}")
 
         if not ad_record.content:
             raise Exception(f"Ad has no content to identify: {ad_record.url}")
@@ -349,7 +380,7 @@ class AdScraper:
                     for attr in ['content', 'title', 'description', 'amount', 'currency',
                                'city', 'zipcode', 'product', 'manufacturer', 'year',
                                'opdb_id', 'scraped_at', 'identified_at', 'scrape_id',
-                               'retries', 'ignored']:
+                               'ignored']:
                         if hasattr(ad_record, attr):
                             setattr(existing, attr, getattr(ad_record, attr))
 

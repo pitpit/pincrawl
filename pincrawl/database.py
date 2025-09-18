@@ -105,7 +105,6 @@ class Ad(Base):
     url = Column(String, unique=True, index=True, nullable=False)
     created_at = Column(DateTime, default=datetime.now, nullable=False)
     ignored = Column(Boolean, default=False, nullable=False)
-    retries = Column(Integer, default=0, nullable=False)
     content = Column(Text, nullable=True)
     title = Column(String, nullable=True)
     description = Column(Text, nullable=True)
@@ -143,9 +142,6 @@ class Ad(Base):
 
         # Index for OPDB matching
         Index('ix_ads_opdb_id', 'opdb_id'),
-
-        # Index for retry management
-        Index('ix_ads_retries_ignored', 'retries', 'ignored'),
 
         # Composite index for workflow status tracking
         Index('ix_ads_workflow_status', 'scraped_at', 'identified_at', 'ignored'),

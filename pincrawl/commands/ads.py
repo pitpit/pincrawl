@@ -39,8 +39,7 @@ def ads_list(scraped, ignored, identified):
 
     for ad in ads:
         url = ad.url
-        retries = ad.retries
-        scraped = "[scraped]" if ad.scraped_at else (f"[retries:{retries}]" if retries > 0 else "")
+        scraped = "[scraped]" if ad.scraped_at else ""
         identified = "[identified]" if ad.identified_at else ""
         ignored = "[ignored]" if ad.ignored else ""
 
@@ -79,9 +78,13 @@ def ads_crawl():
 
     try:
         # Use AdScraper to crawl for new ads
-        new_ads_count = scraper.crawl()
+        ad_records = scraper.crawl()
 
-        click.echo(f"✓ Recorded {new_ads_count} new ads in database")
+        # Store each new ad record
+        for ad_record in ad_records:
+            scraper.store(ad_record)
+
+        click.echo(f"✓ Recorded {len(ad_records)} new ads in database")
 
         # Get total count using count method
         total_ads = scraper.count()
