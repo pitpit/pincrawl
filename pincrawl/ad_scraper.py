@@ -202,7 +202,7 @@ class AdScraper:
 
             except Exception as e:
                 if attempt < CRAWL_MAX_RETRIES - 1:
-                    logger.warning(f"Scraping failed on attempt {attempt + 1}/{CRAWL_MAX_RETRIES}: {str(e)}")
+                    logger.warning(f"Crawling failed on attempt {attempt + 1}/{CRAWL_MAX_RETRIES}: {str(e)}")
 
                     time.sleep(RETRY_DELAY)
                 else:

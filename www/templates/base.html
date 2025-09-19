@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Pincrawl Dashboard{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'pinball-red': '#FF3366',
+                        'pinball-blue': '#0066FF',
+                        'pinball-yellow': '#FFCC00',
+                        'pinball-green': '#00FF66',
+                        'pinball-purple': '#9933FF',
+                        'pinball-dark': '#1a1a2e',
+                        'pinball-darker': '#16213e',
+                    },
+                    fontFamily: {
+                        'arcade': ['Courier New', 'monospace'],
+                    },
+                    animation: {
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'bounce-slow': 'bounce 3s infinite',
+                    },
+                    keyframes: {
+                        glow: {
+                            'from': {
+                                'box-shadow': '0 0 5px #fff, 0 0 10px #fff, 0 0 15px #0066FF, 0 0 20px #0066FF'
+                            },
+                            'to': {
+                                'box-shadow': '0 0 10px #fff, 0 0 20px #fff, 0 0 30px #0066FF, 0 0 40px #0066FF'
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+        }
+        .pinball-gradient {
+            background: linear-gradient(45deg, #FF3366, #0066FF, #FFCC00, #00FF66, #9933FF);
+            background-size: 400% 400%;
+            animation: gradient-shift 8s ease infinite;
+        }
+        @keyframes gradient-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .neon-border {
+            border: 2px solid transparent;
+            background: linear-gradient(45deg, #FF3366, #0066FF, #FFCC00) border-box;
+            -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: destination-out;
+            mask-composite: exclude;
+        }
+    </style>
+</head>
+<body class="font-arcade text-white">
+    {% block content %}{% endblock %}
+</body>
+</html>

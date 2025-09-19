@@ -78,3 +78,11 @@ Third cronjob runs every 5minutes between 8o am and midnight (utc+2), but 2min a
 ## TODO
 
 - check opdb_id when creating a subscription
+
+## 3rd party tools
+
+* https://app.mailersend.com/dashboard
+* https://dashboard.render.com/
+* https://platform.openai.com/
+* https://www.firecrawl.dev/app/logs
+* https://app.pinecone.io/

@@ -15,9 +15,9 @@ services:
     image: python:3.12-slim
     # Mount source for live editing without rebuilds
     volumes:
-      - ./:/console
+      - ./:/app
       - .pip-cache:/root/.cache/pip
-    working_dir: /console
+    working_dir: /app
     # Default command (can be overridden when running)
     entrypoint: ["sh", "-c", "pip install -e . && exec \"$@\"", "--"]
     command: ["python", "cli.py", "--help"]
@@ -31,6 +31,23 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - DATABASE_URL=postgresql://pincrawl:pincrawl@postgres:5432/pincrawl
+
+  www:
+    image: python:3.12-slim
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./www:/app
+      - .pip-cache:/root/.cache/pip
+    working_dir: /app
+    command: ["sh", "-c", "pip install -r requirements.txt && uvicorn main:app --host 0.0.0.0 --port 8080 --reload"]
+    env_file:
+      - ./www/.env
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    depends_on:
+      - postgres
 
 volumes:
   postgres_data:
