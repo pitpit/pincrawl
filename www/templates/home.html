@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Pincrawl - Find your dream pinball machine{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-dark-grey flex flex-col">
+
+    {% include "header.html" %}
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8 w-full">
+        <!-- Welcome Message -->
+        {% if message %}
+        <div class="mb-8 p-4 bg-medium-grey border border-retro-green">
+            <p class="text-retro-green font-medium retro-glow">{{ message }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Hero Section with Search -->
+        <div class="text-center mt-12 mb-12 ">
+            <h2 class="text-3xl font-bold text-retro-cyan mb-4 retro-glow">Your next pinball is just an alert away</h2>
+            <p class="text-xl text-gray-300 mb-8">
+                Be the first to know when a machine goes up for sale!
+            </p>
+            <!-- Search Bar -->
+            <div class="max-w-2xl mx-auto">
+                <form method="post" action="/search" class="relative">
+                    <div class="relative flex items-stretch">
+                        <input
+                            type="text"
+                            name="query"
+                            placeholder="Search for pinball machines..."
+                            value="{{ search_query or '' }}"
+                            class="w-full px-6 py-4 text-lg text-white bg-medium-grey border border-retro-cyan focus:outline-none focus:border-retro-pink focus:ring-1 focus:ring-retro-pink transition-all duration-300 placeholder-gray-500 h-14"
+                        >
+                        <button
+                            type="submit"
+                            class="px-8 py-4 bg-retro-cyan text-black font-bold hover:bg-retro-pink transition-all duration-300 border border-retro-cyan hover:border-retro-pink h-14"
+                        >
+                            SEARCH
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- How It Works Section -->
+    <section class="bg-dark-grey py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-retro-white mb-8 retro-glow">How does it work?</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-darker-grey p-6 border border-retro-white text-center">
+                    <div class="text-6xl mb-4">1</div>
+                    <h3 class="text-xl font-bold text-retro-white mb-4">Subscribe to pinballs</h3>
+                    <p class="text-gray-300">Tell us which pinball machines you’re hunting for.</p>
+                </div>
+                <div class="bg-darker-grey p-6 border border-retro-white text-center">
+                    <div class="text-6xl mb-4">2</div>
+                    <h3 class="text-xl font-bold text-retro-white mb-4">Get instant alerts</h3>
+                    <p class="text-gray-300">We’ll email you within minutes when a matching machine goes up for sale.</p>
+                </div>
+                <div class="bg-darker-grey p-6 border border-retro-white text-center">
+                    <div class="text-6xl mb-4">3</div>
+                    <h3 class="text-xl font-bold text-retro-white mb-4">Be first in line</h3>
+                    <p class="text-gray-300">Jump on the deal before anyone else.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section - Positioned above footer -->
+    <!--<section class="bg-dark-grey py-8 ">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <h2 class="text-3xl font-bold  mb-8 retro-glow">Stats</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-darker-grey p-6 border border-retro-white">
+                        <div class="text-3xl font-bold retro-glow">2500</div>
+                        <div class="text-gray-400">Machines in database</div>
+                    </div>
+                    <div class="bg-darker-grey p-6 border border-retro-white">
+                        <div class="text-3xl font-bold retro-glow">1,234</div>
+                        <div class="text-gray-400">Scraped Ads</div>
+                    </div>
+                    <div class="bg-darker-grey p-6 border border-retro-green">
+                        <div class="text-3xl font-bold retro-glow text-retro-green">89</div>
+                        <div class="text-gray-400 text-retro-green">Discovered pinballs</div>
+                    </div>
+            </div>
+        </div>
+    </section>-->
+
+    {% include "footer.html" %}
+</div>
+{% endblock %}

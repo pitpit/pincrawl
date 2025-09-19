@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-app = FastAPI(title="Pincrawl Web Dashboard")
+app = FastAPI(title="Pincrawl")
 
 # Add session middleware
 app.add_middleware(SessionMiddleware, secret_key=os.getenv("SESSION_SECRET_KEY", "dev-secret-key"))
@@ -66,9 +66,9 @@ def get_authenticated_user(request: Request):
 
 @app.get("/", response_class=HTMLResponse)
 async def homepage(request: Request, user=Depends(get_authenticated_user)):
-    """Protected homepage - dashboard only for authenticated users"""
+    """Protected homepage - only for authenticated users"""
     return templates.TemplateResponse(
-        "dashboard.html",
+        "home.html",
         {"request": request, "user": user}
     )
 
@@ -129,9 +129,9 @@ async def search(request: Request, user=Depends(get_authenticated_user)):
     form = await request.form()
     search_query = form.get("query", "")
 
-    # For now, just return to dashboard with a message
+    # For now, just return to homepage with a message
     return templates.TemplateResponse(
-        "dashboard.html",
+        "home.html",
         {
             "request": request,
             "user": user,

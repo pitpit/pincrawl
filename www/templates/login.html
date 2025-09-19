@@ -3,30 +3,28 @@
 {% block title %}Login - Pincrawl{% endblock %}
 
 {% block content %}
-<div class="min-h-screen flex items-center justify-center">
+<div class="min-h-screen flex items-center justify-center bg-dark-grey">
     <div class="max-w-md w-full space-y-8 p-8">
         <!-- Logo and Title -->
         <div class="text-center">
-            <div class="text-6xl mb-4">🎯</div>
-            <h1 class="text-4xl font-bold pinball-gradient bg-clip-text text-transparent mb-2">
-                PINCRAWL
-            </h1>
-            <p class="text-xl text-gray-300">
-                Buy your pinball machine<br/>before others
-            </p>
+            <a href="/" class="inline-block">
+                <h1 class="text-4xl font-bold text-retro-cyan retro-glow mb-4 hover:text-retro-pink transition-colors duration-300">
+                    PINCRAWL
+                </h1>
+            </a>
         </div>
 
         <!-- Login Card -->
-        <div class="bg-pinball-darker p-8 rounded-lg border border-pinball-blue/30 shadow-2xl">
+        <div class="bg-darker-grey p-8 retro-border">
             <div class="text-center mb-6">
-                <h2 class="text-2xl font-bold text-pinball-yellow">
-                    🔐 Authentication Required
+                <h2 class="text-xl font-bold text-retro-cyan retro-glow">
+                    Authentication Required
                 </h2>
             </div>
 
             <!-- Login Button -->
             <div class="text-center">
-                <a href="/login" class="inline-block w-full px-6 py-3 bg-gradient-to-r from-pinball-blue to-pinball-purple text-white font-bold rounded-lg hover:from-pinball-purple hover:to-pinball-blue transition-all duration-300 transform hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-pinball-yellow/50">
+                <a href="/login" class="inline-block w-full px-6 py-3 bg-medium-grey text-retro-cyan font-bold border border-retro-cyan hover:bg-retro-cyan hover:text-black transition-all duration-300 retro-glow">
                     LOGIN
                 </a>
             </div>
