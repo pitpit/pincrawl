@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 import openai
 from pinecone import Pinecone
 import click
-from .database import Database, Product
+from .database import Database, Product, Sub
 from sqlalchemy import case, func, text, Integer
 
 # Module exports
@@ -571,15 +571,16 @@ Only return valid JSON - no additional text or formatting (do not add fenced cod
 
         return text_for_embedding.strip()
 
-    def _apply_filters(self, db_query, manufacturer=None, year_min=None, year_max=None):
+    def _apply_filters(self, db_query, manufacturer=None, year_min=None, year_max=None, subscribed_only=None):
         """
-        Apply manufacturer and year filters to a database query.
+        Apply manufacturer, year, and subscription filters to a database query.
 
         Args:
             db_query: SQLAlchemy query object
             manufacturer: Optional manufacturer filter
             year_min: Optional minimum year filter
             year_max: Optional maximum year filter
+            subscribed_only: Optional filter to show only subscribed products for an email
 
         Returns:
             Modified query object with filters applied
@@ -606,9 +607,15 @@ Only return valid JSON - no additional text or formatting (do not add fenced cod
             except (ValueError, TypeError):
                 logger.warning(f"Invalid year_max value: {year_max}")
 
+        # Apply subscription filter if specified
+        if subscribed_only:
+            logger.info(f"Filtering by subscriptions for user: '{subscribed_only}'")
+            # Join with subscriptions table to only show subscribed products
+            db_query = db_query.join(Sub, Product.opdb_id == Sub.opdb_id).filter(Sub.email == subscribed_only)
+
         return db_query
 
-    def fetch(self, query = None, manufacturer = None, year_min = None, year_max = None, offset = 0, limit = 10):
+    def fetch(self, query = None, manufacturer = None, year_min = None, year_max = None, subscribed_only = False, offset = 0, limit = 10):
         """
         List products from database or search using Pinecone index.
 
@@ -617,6 +624,7 @@ Only return valid JSON - no additional text or formatting (do not add fenced cod
             manufacturer: Optional manufacturer filter
             year_min: Optional minimum year filter
             year_max: Optional maximum year filter
+            subscribed_only: Optional filter to show only subscribed products
             offset: Number of products to skip (for pagination)
             limit: Maximum number of products to return
 
@@ -624,7 +632,7 @@ Only return valid JSON - no additional text or formatting (do not add fenced cod
             dict: Contains 'products' list and 'total' count
         """
 
-        logger.info(f"Fetching products from database with offset={offset}, limit={limit}, manufacturer={manufacturer}, year_min={year_min}, year_max={year_max}")
+        logger.info(f"Fetching products from database with offset={offset}, limit={limit}, manufacturer={manufacturer}, year_min={year_min}, year_max={year_max}, subscribed_only={subscribed_only}")
 
         try:
             # Initialize database
@@ -634,6 +642,9 @@ Only return valid JSON - no additional text or formatting (do not add fenced cod
 
             # Start with base query
             db_query = session.query(Product)
+
+            # Apply filters
+            db_query = self._apply_filters(db_query, manufacturer, year_min, year_max, subscribed_only)
 
 
             if query is not None and query.strip() != "":
@@ -654,7 +665,7 @@ Only return valid JSON - no additional text or formatting (do not add fenced cod
                 )
 
                 # Re-apply filters to ranked query (since we changed the query structure)
-                db_query = self._apply_filters(db_query, manufacturer, year_min, year_max)
+                db_query = self._apply_filters(db_query, manufacturer, year_min, year_max, subscribed_only)
 
                 db_query = db_query.order_by(rank_score.desc())
 
@@ -667,10 +678,6 @@ Only return valid JSON - no additional text or formatting (do not add fenced cod
                 # Get just the first item (Product) from each tuple for logging
                 products = [result[0] for result in results]
             else:
-
-                # Apply filters
-                db_query = self._apply_filters(db_query, manufacturer, year_min, year_max)
-
                 # No search query - standard alphabetical listing
                 total = db_query.count()
                 db_query = db_query.order_by(Product.name)

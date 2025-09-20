@@ -98,11 +98,28 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="mt-2 text-right">
-                        <a href="/pinballs" class="text-retro-cyan hover:text-retro-pink text-sm transition-colors duration-200">
-                            Clear filters
-                        </a>
+
+                        <!-- Subscribed filter checkbox and Clear filters -->
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <input
+                                    type="checkbox"
+                                    name="subscribed"
+                                    id="subscribed"
+                                    value="true"
+                                    {% if subscribed %}checked{% endif %}
+                                    class="w-4 h-4 text-retro-cyan bg-medium-grey border-retro-cyan rounded focus:ring-retro-pink focus:ring-1"
+                                >
+                                <label for="subscribed" class="ml-2 text-retro-cyan font-bold">
+                                    Show only subscribed pinballs
+                                </label>
+                            </div>
+                            <div>
+                                <a href="/pinballs" class="text-retro-cyan hover:text-retro-pink text-sm transition-colors duration-200">
+                                    Clear filters
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -178,6 +195,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const yearRangeMax = document.getElementById('year_range_max');
     const yearDisplay = document.getElementById('year_display');
     const manufacturerSelect = document.getElementById('manufacturer');
+    const subscribedCheckbox = document.getElementById('subscribed');
     const form = document.querySelector('form');
 
     function updateDisplay() {
@@ -194,6 +212,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Immediate reload for manufacturer dropdown
     manufacturerSelect.addEventListener('change', function() {
+        submitForm();
+    });
+
+    // Immediate reload for subscribed checkbox
+    subscribedCheckbox.addEventListener('change', function() {
         submitForm();
     });
 

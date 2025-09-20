@@ -145,17 +145,28 @@ async def logout(request: Request):
 
 
 @app.get("/pinballs")
-async def products(request: Request, query: str = None, manufacturer: str = None, year_min: int = None, year_max: int = None, page: int = 1, user=Depends(get_authenticated_user)):
+async def products(request: Request, query: str = None, manufacturer: str = None, year_min: int = None, year_max: int = None, subscribed: bool = False, page: int = 1, user=Depends(get_authenticated_user)):
     """Handle pinballs listing with pagination and search functionality"""
 
-    logger.info(f"Products endpoint called with query='{query}', manufacturer='{manufacturer}', year_min={year_min}, year_max={year_max}, page={page}")
+    logger.info(f"Products endpoint called with query='{query}', manufacturer='{manufacturer}', year_min={year_min}, year_max={year_max}, subscribed={subscribed}, page={page}")
 
     # Pagination settings
     offset = (page - 1) * PRODUCTS_PER_PAGE
 
+    # Get user email for subscription filtering
+    subscribed = user.get('email') if user and subscribed else None
+
     # Initialize ProductMatcher and get products
     matcher = ProductMatcher()
-    result = matcher.fetch(query=query, manufacturer=manufacturer, year_min=year_min, year_max=year_max, offset=offset, limit=PRODUCTS_PER_PAGE)
+    result = matcher.fetch(
+        query=query,
+        manufacturer=manufacturer,
+        year_min=year_min,
+        year_max=year_max,
+        subscribed_only=subscribed,
+        offset=offset,
+        limit=PRODUCTS_PER_PAGE
+    )
 
     # Get list of all manufacturers for dropdown
     manufacturers = matcher.get_manufacturers()
@@ -165,6 +176,7 @@ async def products(request: Request, query: str = None, manufacturer: str = None
 
     # Calculate pagination
     total_pages = result['total'] // PRODUCTS_PER_PAGE
+    total_pages = 1 if total_pages == 0 else total_pages
 
     return templates.TemplateResponse(
         "products.html",
@@ -177,6 +189,7 @@ async def products(request: Request, query: str = None, manufacturer: str = None
             "selected_manufacturer": manufacturer,
             "year_min": year_min,
             "year_max": year_max,
+            "subscribed": subscribed,
             "min_year": year_range['min_year'],
             "max_year": year_range['max_year'],
             "current_page": page,
