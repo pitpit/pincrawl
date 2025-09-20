@@ -16,7 +16,7 @@ load_dotenv()
 # Configure logging globally
 logging.basicConfig(
     level=logging.DEBUG,  # Set to DEBUG so all levels can be controlled dynamically
-    format='%(levelname)s - %(message)s',
+    format='%(levelname)s: %(message)s',
     force=True  # Override any existing configuration
 )
 

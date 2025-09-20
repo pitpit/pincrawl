@@ -323,7 +323,7 @@ class AdScraper:
         search_text = ad_record.content.strip()
 
         # Identify the product and extract ad info using ChatGPT + Pinecone
-        result = self.product_matcher.search(search_text)
+        result = self.product_matcher.guess(search_text)
 
         info = result.get('info', {})
 

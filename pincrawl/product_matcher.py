@@ -8,6 +8,8 @@ from dotenv import load_dotenv
 import openai
 from pinecone import Pinecone
 import click
+from .database import Database, Product
+from sqlalchemy import case, func, text
 
 # Module exports
 __all__ = ['ProductMatcher']
@@ -138,6 +140,23 @@ class ProductMatcher:
         stats = index.describe_index_stats()
         logger.debug(f"Index stats: {stats}")
 
+    def _open_opdb_json(self):
+        """
+        Load and return the contents of the opdb.json file.
+
+        Returns:
+            list: List of products from opdb.json
+        """
+        opdb_path = os.path.join(os.getcwd(), "data", "opdb.json")
+        if not os.path.exists(opdb_path):
+            raise FileNotFoundError(f"Data file not found: {opdb_path}")
+
+        with open(opdb_path, 'r', encoding='utf-8') as f:
+            products_data = json.load(f)
+
+        logger.info(f"Loaded {len(products_data)} products from opdb.json")
+
+        return products_data
 
     def index(self, limit=None):
         """
@@ -149,10 +168,6 @@ class ProductMatcher:
         Returns:
             dict: Statistics about the indexing process
         """
-        # Check if opdb.json exists
-        opdb_path = os.path.join(os.getcwd(), "data", "opdb.json")
-        if not os.path.exists(opdb_path):
-            raise FileNotFoundError(f"Data file not found: {opdb_path}")
 
         # Check if index exists
         self._check_pinecone_index_exists(should_exist=True)
@@ -161,10 +176,7 @@ class ProductMatcher:
         index = self.pc.Index(self.pinecone_index_name)
 
         # Load opdb.json
-        with open(opdb_path, 'r', encoding='utf-8') as f:
-            products_data = json.load(f)
-
-        logger.info(f"Loaded {len(products_data)} products from opdb.json")
+        products_data = self._load_opdb_json()
 
         # Apply limit if specified
         if limit:
@@ -282,7 +294,115 @@ class ProductMatcher:
             'errors': error_count
         }
 
-    def search(self, text):
+    def populate(self, force=False):
+        """
+        Populate the database with products from opdb.json file.
+
+        Args:
+            force (bool): If True, repopulate even if data already exists
+        """
+        # Initialize database
+        db = Database()
+        db.init_db()
+        session = db.get_db()
+
+        try:
+            # Check if we already have products (unless force is True)
+            if not force:
+                existing_count = session.query(Product).count()
+                if existing_count > 0:
+                    logger.info(f"Database already contains {existing_count} products. Use force=True to repopulate.")
+                    return
+
+            # Clear existing data if force is True
+            if force:
+                logger.info("Clearing existing products...")
+                session.query(Product).delete()
+                session.commit()
+
+            # Load opdb.json file
+            products_data = self._open_opdb_json()
+
+            processed_count = 0
+            skipped_count = 0
+            error_count = 0
+            updated_count = 0
+            for i, product_data in enumerate(products_data, 1):
+                try:
+                    opdb_id = product_data.get('opdb_id')
+                    ipdb_id = product_data.get('ipdb_id')
+                    name = product_data.get('name', '')
+                    shortname = product_data.get('shortname', '')
+                    manufacturer_data = product_data.get('manufacturer', {})
+                    manufacturer = manufacturer_data.get('name', '') if manufacturer_data else ''
+                    product_type = product_data.get('type', '')
+                    manufacture_date_str = product_data.get('manufacture_date', '')
+
+                    # Extract year from date string (format: YYYY-MM-DD)
+                    year = None
+                    if manufacture_date_str:
+                        try:
+                            year = manufacture_date_str.split('-')[0]
+                        except (ValueError, IndexError):
+                            year = None
+                    if not opdb_id:
+                        logger.warning(f"Skipping product {i}: missing opdb_id")
+                        skipped_count += 1
+                        continue
+
+                    if not name:
+                        logger.warning(f"Skipping product {i} ({opdb_id}): missing name")
+                        skipped_count += 1
+                        continue
+
+                    # Create new product
+                    new_product = Product(
+                        opdb_id=opdb_id,
+                        ipdb_id=ipdb_id,
+                        name=name,
+                        shortname=shortname,
+                        manufacturer=manufacturer,
+                        type=product_type,
+                        year=year
+                    )
+                    session.add(new_product)
+                    processed_count += 1
+                    logger.info(f"Added {i}/{len(products_data)}: {name} ({opdb_id})")
+
+                    # Commit every 100 records to avoid memory issues
+                    if i % 100 == 0:
+                        session.commit()
+                        logger.info(f"Committed batch at record {i}")
+
+                except Exception as e:
+                    logger.error(f"Error processing product {i}: {e}")
+                    error_count += 1
+                    session.rollback()
+                    continue
+
+            # Final commit
+            session.commit()
+            logger.info("Database population completed successfully")
+
+            Product.update_search_vectors(session)
+
+            return {
+                'processed': processed_count,
+                'updated': updated_count,
+                'skipped': skipped_count,
+                'errors': error_count,
+                'total': len(products_data)
+            }
+
+        except Exception as e:
+            logger.error(f"Error during population: {e}")
+            session.rollback()
+            raise
+        finally:
+            session.close()
+            db.close_db()
+
+    def guess(self, text):
         """
         Search for products using the provided text.
 
@@ -450,3 +570,70 @@ Only return valid JSON - no additional text or formatting (do not add fenced cod
         text_for_embedding = " ".join(text_parts)
 
         return text_for_embedding.strip()
+
+    def fetch(self, q = None, offset = 0, limit = 10):
+        """
+        List products from database or search using Pinecone index.
+
+        Args:
+            query: Optional search query to filter products (uses Pinecone if provided)
+            offset: Number of products to skip (for pagination)
+            limit: Maximum number of products to return
+
+        Returns:
+            dict: Contains 'products' list and 'total' count
+        """
+
+        logger.info(f"Fetching products from database with offset={offset}, limit={limit}")
+
+
+        try:
+
+            # Initialize database
+            db = Database()
+            db.init_db()
+            session = db.get_db()
+
+            # Query products with pagination - get a larger set first for proper total count
+            query = session.query(Product)
+
+            if q is not None and q.strip() != "":
+                logger.info(f"Searching with full-text search for: '{q}'")
+
+                # Create plainto_tsquery for the search
+                ts_query = func.plainto_tsquery('english', q)
+
+                # Filter products that match the search query
+                query = query.filter(Product.search_vector.op('@@')(ts_query))
+
+                # Add ranking for better results ordering
+                rank_score = func.ts_rank(Product.search_vector, ts_query).label('rank_score')
+
+                # Modify query to include rank score and order by it
+                query = session.query(Product, rank_score).filter(
+                    Product.search_vector.op('@@')(ts_query)
+                ).order_by(rank_score.desc())
+
+                # Get total count
+                total = query.count()
+
+                # Apply pagination
+                results = query.offset(offset).limit(limit).all()
+
+                # Get just the first item (Product) from each tuple for logging
+                products = [result[0] for result in results]
+            else:
+                # No search query - standard alphabetical listing
+                total = query.count()
+                query = query.order_by(Product.name)
+                products = query.offset(offset).limit(limit).all()
+            logger.info(f"Loaded {len(products)} products from database (page {offset//limit + 1})")
+
+        finally:
+            session.close()
+            db.close_db()
+
+        return {
+            'products': products,
+            'total': total
+        }

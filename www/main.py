@@ -2,6 +2,10 @@
 
 import os
 import json
+import sys
+# import sys
+import logging
+import re
 from urllib.parse import quote_plus, urlencode
 from urllib.request import urlopen
 
@@ -12,14 +16,29 @@ from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 from authlib.integrations.starlette_client import OAuth
 from dotenv import load_dotenv
+from pincrawl.product_matcher import ProductMatcher
 
 # Load environment variables
 load_dotenv()
 
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(levelname)s: %(message)s',
+    handlers=[logging.StreamHandler(sys.stdout)]
+)
+
+# Setup logging
+logger = logging.getLogger(__name__)
+# logging.getLogger("pincrawl").setLevel(logging.DEBUG)
+
 app = FastAPI(title="Pincrawl")
 
+SESSION_SECRET_KEY = os.getenv("SESSION_SECRET_KEY")
+if not SESSION_SECRET_KEY:
+    raise ValueError("SESSION_SECRET_KEY environment variable is required")
+
 # Add session middleware
-app.add_middleware(SessionMiddleware, secret_key=os.getenv("SESSION_SECRET_KEY", "dev-secret-key"))
+app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET_KEY)
 
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -50,6 +69,19 @@ oauth.register(
     },
     server_metadata_url=f'https://{AUTH0_DOMAIN}/.well-known/openid-configuration'
 )
+
+
+@app.exception_handler(HTTPException)
+async def auth_exception_handler(request: Request, exc: HTTPException):
+    """Handle authentication exceptions by serving login page"""
+    if exc.status_code in [401, 403]:
+        return templates.TemplateResponse(
+            "login.html",
+            {"request": request},
+            status_code=exc.status_code
+        )
+    raise exc
+
 
 def get_user(request: Request):
     """Get the current user from session, return None if not authenticated"""
@@ -111,31 +143,44 @@ async def logout(request: Request):
     return RedirectResponse(url=auth0_logout_url)
 
 
-@app.exception_handler(HTTPException)
-async def auth_exception_handler(request: Request, exc: HTTPException):
-    """Handle authentication exceptions by serving login page"""
-    if exc.status_code in [401, 403]:
-        return templates.TemplateResponse(
-            "login.html",
-            {"request": request},
-            status_code=exc.status_code
-        )
-    raise exc
+@app.get("/pinballs")
+async def products(request: Request, query: str = None, page: int = 1, user=Depends(get_authenticated_user)):
+    """Handle pinballs listing with pagination and search functionality"""
 
+    logger.info(f"Products endpoint called with query='{query}', page={page}")
 
-@app.post("/search")
-async def search(request: Request, user=Depends(get_authenticated_user)):
-    """Handle search submission (placeholder for now)"""
-    form = await request.form()
-    search_query = form.get("query", "")
+    # Clean and sanitize query to prevent injection
+    q = None
+    if query:
+        # Remove potentially dangerous characters and limit length
+        q = re.sub(r'[^\w\s\-\.]', '', str(query).strip())[:100]
+        # If query becomes empty after cleaning, set to None
+        if not q:
+            q = None
 
-    # For now, just return to homepage with a message
+    # Pagination settings
+    per_page = 10
+    offset = (page - 1) * per_page
+
+    # Initialize ProductMatcher and get products
+    matcher = ProductMatcher()
+    result = matcher.fetch(q=q, offset=offset, limit=per_page)
+
+    # Calculate pagination
+    total_pages = result['total'] // per_page
+
     return templates.TemplateResponse(
-        "home.html",
+        "products.html",
         {
             "request": request,
             "user": user,
-            "search_query": search_query,
-            "message": f"Search functionality coming soon! You searched for: '{search_query}'"
+            "products": result['products'],
+            "query": q,
+            "current_page": page,
+            "total_pages": total_pages,
+            "has_prev": page > 1,
+            "has_next": page < total_pages,
+            "prev_page": page - 1 if page > 1 else None,
+            "next_page": page + 1 if page < total_pages else None
         }
     )

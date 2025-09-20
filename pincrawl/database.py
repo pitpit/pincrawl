@@ -12,15 +12,16 @@ Usage:
 import os
 from datetime import datetime
 from typing import Optional
-from sqlalchemy import create_engine, Column, Integer, String, Text, Boolean, DateTime, JSON, Index, UniqueConstraint, Enum
+from sqlalchemy import text, create_engine, Column, Integer, String, Text, Boolean, DateTime, JSON, Index, UniqueConstraint, Enum, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.engine import Engine
+from sqlalchemy.dialects.postgresql import TSVECTOR
 from dotenv import load_dotenv
 import enum
 
 # Module exports
-__all__ = ['Database', 'Ad', 'Sub', 'Task']
+__all__ = ['Database', 'Ad', 'Sub', 'Task', 'Product']
 
 # Load environment variables
 load_dotenv()
@@ -182,3 +183,68 @@ class Task(Base):
         Index('ix_tasks_status', 'status'),
     )
 
+
+class Product(Base):
+    """SQLAlchemy model for products table."""
+
+    __tablename__ = "products"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    opdb_id = Column(String, unique=True, index=True, nullable=False)
+    ipdb_id = Column(String, nullable=True, index=True)
+    name = Column(String, nullable=False, index=True)
+    shortname = Column(String, nullable=True)
+    manufacturer = Column(String, nullable=True, index=True)
+    type = Column(String, nullable=True, index=True)
+    year = Column(String, nullable=True, index=True)
+    created_at = Column(DateTime, default=datetime.now, nullable=False)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now, nullable=False)
+
+    # Full-text search vector
+    search_vector = Column(TSVECTOR)
+
+    # Define indexes for common query patterns
+    __table_args__ = (
+        # Index for product search queries
+        Index('ix_products_name_manufacturer', 'name', 'manufacturer'),
+
+        # Index for filtering by type and year
+        Index('ix_products_type_year', 'type', 'year'),
+
+        # Index for name-based searches (case insensitive searching)
+        Index('ix_products_name_shortname', 'name', 'shortname'),
+
+        # GIN index for full-text search
+        Index('ix_products_search_vector', 'search_vector', postgresql_using='gin'),
+    )
+
+
+    @staticmethod
+    def update_search_vectors(session):
+        """Update search vectors for all products."""
+
+        try:
+            # Update search vectors using PostgreSQL's to_tsvector function
+            update_query = text("""
+                UPDATE products
+                SET search_vector = to_tsvector('english',
+                    COALESCE(name, '') || ' ' ||
+                    COALESCE(shortname, '') || ' ' ||
+                    COALESCE(manufacturer, '')
+                )
+                WHERE search_vector IS NULL OR search_vector = ''
+            """)
+            session.execute(update_query)
+            session.commit()
+
+            # Get count of updated rows
+            count_query = text("SELECT COUNT(*) FROM products WHERE search_vector IS NOT NULL")
+            result = session.execute(count_query).scalar()
+
+            return result
+
+        except Exception as e:
+            session.rollback()
+            raise e
+        finally:
+            session.close()

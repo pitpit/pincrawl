@@ -39,3 +39,25 @@ def products_index(limit):
 
     except Exception as e:
         raise click.ClickException(f"Failed to populate index: {str(e)}")
+
+
+@products.command("populate")
+@click.option("--force", "-f", is_flag=True, help="Force population of the products table")
+def products_populate(force):
+    """Populate the products table from data/opdb.json."""
+
+    try:
+        stats = matcher.populate(force=force)
+
+        click.echo(f"✓ Database population completed")
+        click.echo(f"✓ Added: {stats['processed']} products")
+        if stats['updated'] > 0:
+            click.echo(f"✓ Updated: {stats['updated']} products")
+        if stats['skipped'] > 0:
+            click.echo(f"⚠ Skipped: {stats['skipped']} products")
+        if stats['errors'] > 0:
+            click.echo(f"✗ Errors: {stats['errors']} products")
+        click.echo(f"Total processed: {stats['total']} products")
+
+    except Exception as e:
+        raise click.ClickException(f"Failed to populate database: {str(e)}")

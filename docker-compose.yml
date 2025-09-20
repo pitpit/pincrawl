@@ -37,13 +37,12 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./www:/app
+      - ./:/app
       - .pip-cache:/root/.cache/pip
-    working_dir: /app
-    command: ["sh", "-c", "pip install -r requirements.txt && uvicorn main:app --host 0.0.0.0 --port 8080 --reload"]
-    env_file:
-      - ./www/.env
+    working_dir: /app/www
+    command: ["sh", "-c", "pip install -r requirements.txt && uvicorn main:app --host 0.0.0.0 --port 8080 --reload --reload-dir /app/pincrawl --reload-dir /app/www"]
     environment:
+      - PYTHONPATH=/app
       - PYTHONUNBUFFERED=1
     restart: unless-stopped
     depends_on:
