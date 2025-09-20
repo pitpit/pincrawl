@@ -5,7 +5,6 @@ import json
 import sys
 # import sys
 import logging
-import re
 from urllib.parse import quote_plus, urlencode
 from urllib.request import urlopen
 
@@ -50,6 +49,8 @@ templates = Jinja2Templates(directory="templates")
 AUTH0_DOMAIN = os.getenv("AUTH0_DOMAIN")
 AUTH0_CLIENT_ID = os.getenv("AUTH0_CLIENT_ID")
 AUTH0_CLIENT_SECRET = os.getenv("AUTH0_CLIENT_SECRET")
+
+PRODUCTS_PER_PAGE = os.getenv("PRODUCTS_PER_PAGE", 20)
 
 # Validate Auth0 configuration
 if not AUTH0_DOMAIN:
@@ -144,30 +145,26 @@ async def logout(request: Request):
 
 
 @app.get("/pinballs")
-async def products(request: Request, query: str = None, page: int = 1, user=Depends(get_authenticated_user)):
+async def products(request: Request, query: str = None, manufacturer: str = None, year_min: int = None, year_max: int = None, page: int = 1, user=Depends(get_authenticated_user)):
     """Handle pinballs listing with pagination and search functionality"""
 
-    logger.info(f"Products endpoint called with query='{query}', page={page}")
-
-    # Clean and sanitize query to prevent injection
-    q = None
-    if query:
-        # Remove potentially dangerous characters and limit length
-        q = re.sub(r'[^\w\s\-\.]', '', str(query).strip())[:100]
-        # If query becomes empty after cleaning, set to None
-        if not q:
-            q = None
+    logger.info(f"Products endpoint called with query='{query}', manufacturer='{manufacturer}', year_min={year_min}, year_max={year_max}, page={page}")
 
     # Pagination settings
-    per_page = 10
-    offset = (page - 1) * per_page
+    offset = (page - 1) * PRODUCTS_PER_PAGE
 
     # Initialize ProductMatcher and get products
     matcher = ProductMatcher()
-    result = matcher.fetch(q=q, offset=offset, limit=per_page)
+    result = matcher.fetch(query=query, manufacturer=manufacturer, year_min=year_min, year_max=year_max, offset=offset, limit=PRODUCTS_PER_PAGE)
+
+    # Get list of all manufacturers for dropdown
+    manufacturers = matcher.get_manufacturers()
+
+    # Get year range for slider
+    year_range = matcher.get_year_range()
 
     # Calculate pagination
-    total_pages = result['total'] // per_page
+    total_pages = result['total'] // PRODUCTS_PER_PAGE
 
     return templates.TemplateResponse(
         "products.html",
@@ -175,7 +172,13 @@ async def products(request: Request, query: str = None, page: int = 1, user=Depe
             "request": request,
             "user": user,
             "products": result['products'],
-            "query": q,
+            "manufacturers": manufacturers,
+            "query": query,
+            "selected_manufacturer": manufacturer,
+            "year_min": year_min,
+            "year_max": year_max,
+            "min_year": year_range['min_year'],
+            "max_year": year_range['max_year'],
             "current_page": page,
             "total_pages": total_pages,
             "has_prev": page > 1,
