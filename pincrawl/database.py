@@ -11,7 +11,7 @@ Usage:
 
 import os
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional, Union
 from sqlalchemy import text, create_engine, Column, Integer, String, Text, Boolean, DateTime, JSON, Index, UniqueConstraint, Enum, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
@@ -148,6 +148,149 @@ class Ad(Base):
         Index('ix_ads_workflow_status', 'scraped_at', 'identified_at', 'ignored'),
     )
 
+
+    @staticmethod
+    def fetch(session,
+              scraped: Optional[bool] = None,
+              identified: Optional[bool] = None,
+              ignored: Optional[bool] = None,
+              content: Optional[bool] = None) -> List["Ad"]:
+        """
+        Fetch ads from database with optional filtering.
+
+        Args:
+            scraped: Filter by scraped status (None=no filter, True=scraped, False=not scraped)
+            identified: Filter by identified status (None=no filter, True=identified, False=not identified)
+            ignored: Filter by ignored status (None=no filter, True=ignored, False=not ignored)
+            content: Filter by content status (None=no filter, True=has content, False=no content)
+
+        Returns:
+            List of Ad objects matching the criteria
+        """
+
+        query = session.query(Ad)
+
+        # Apply filters based on parameters
+        if scraped is not None:
+            if scraped:
+                query = query.filter(Ad.scraped_at.isnot(None))
+            else:
+                query = query.filter(Ad.scraped_at.is_(None))
+
+        if identified is not None:
+            if identified:
+                query = query.filter(Ad.product.isnot(None))
+            else:
+                query = query.filter(Ad.product.is_(None))
+
+        if ignored is not None:
+            query = query.filter(Ad.ignored == ignored)
+
+        if content is not None:
+            if content:
+                query = query.filter(Ad.content.isnot(None))
+            else:
+                query = query.filter(Ad.content.is_(None))
+
+        return query.all()
+
+    @staticmethod
+    def count(session,
+              scraped: Optional[bool] = None,
+              identified: Optional[bool] = None,
+              ignored: Optional[bool] = None,
+              content: Optional[bool] = None) -> int:
+        """
+        Count ads in database with optional filtering.
+
+        Args:
+            scraped: Filter by scraped status (None=no filter, True=scraped, False=not scraped)
+            identified: Filter by identified status (None=no filter, True=identified, False=not identified)
+            ignored: Filter by ignored status (None=no filter, True=ignored, False=not ignored)
+            content: Filter by content status (None=no filter, True=has content, False=no content)
+
+        Returns:
+            Count of Ad objects matching the criteria
+        """
+
+        query = session.query(Ad)
+
+        # Apply filters based on parameters (same logic as fetch method)
+        if scraped is not None:
+            if scraped:
+                query = query.filter(Ad.scraped_at.isnot(None))
+            else:
+                query = query.filter(Ad.scraped_at.is_(None))
+
+        if identified is not None:
+            if identified:
+                query = query.filter(Ad.product.isnot(None))
+            else:
+                query = query.filter(Ad.product.is_(None))
+
+        if ignored is not None:
+            query = query.filter(Ad.ignored == ignored)
+
+        if content is not None:
+            if content:
+                query = query.filter(Ad.content.isnot(None))
+            else:
+                query = query.filter(Ad.content.is_(None))
+
+        return query.count()
+
+    @staticmethod
+    def exists(session, url: str) -> bool:
+        """
+        Check if an ad with the given URL already exists in the database.
+
+        Args:
+            url: The URL to check for existence
+
+        Returns:
+            True if the ad exists, False otherwise
+        """
+
+        # Use EXISTS query for optimal performance
+        exists_query = session.query(Ad).filter(Ad.url == url).exists()
+        return session.query(exists_query).scalar()
+
+    @staticmethod
+    def store(session, ad_record: "Ad") -> "Ad":
+        """
+        Insert or update an Ad record in the database.
+
+        Args:
+            ad: The Ad object to store
+
+        Returns:
+            True if the operation was successful, False otherwise
+        """
+
+        if ad_record.url:
+            # Check if ad already exists
+            existing = session.query(Ad).filter(Ad.url == ad_record.url).first()
+
+            if existing:
+                # Update existing record
+                for attr in ['content', 'title', 'description', 'amount', 'currency',
+                            'city', 'zipcode', 'product', 'manufacturer', 'year',
+                            'opdb_id', 'scraped_at', 'identified_at', 'scrape_id',
+                            'ignored']:
+                    if hasattr(ad_record, attr):
+                        setattr(existing, attr, getattr(ad_record, attr))
+            else:
+                # Insert new record
+                session.add(ad_record)
+        else:
+            # No URL, just insert
+            session.add(ad_record)
+
+        session.commit()
+
+        return ad_record
+
+
 class Sub(Base):
     """SQLAlchemy model for subscriptions table."""
 
@@ -157,6 +300,27 @@ class Sub(Base):
     email = Column(String, nullable=False, index=True)
     opdb_id = Column(String, nullable=False, index=True)
     created_at = Column(DateTime, default=datetime.now, nullable=False)
+
+    @staticmethod
+    def get_user_subscriptions(session, user_email):
+        """
+        Get a set of opdb_ids that the user has subscribed to.
+
+        Args:
+            user_email: User email to get subscriptions for
+
+        Returns:
+            set: Set of opdb_ids the user is subscribed to
+        """
+
+        # Query user subscriptions
+        subscriptions = session.query(Sub.opdb_id).filter(Sub.email == user_email).all()
+
+        # Convert to set of opdb_ids
+        opdb_ids = {sub[0] for sub in subscriptions if sub[0]}
+
+        return opdb_ids
+
 
     # Define unique constraint on email + opdb_id combination
     __table_args__ = (
@@ -182,7 +346,6 @@ class Task(Base):
         # Index for status filtering
         Index('ix_tasks_status', 'status'),
     )
-
 
 class Product(Base):
     """SQLAlchemy model for products table."""
@@ -223,28 +386,143 @@ class Product(Base):
     def update_search_vectors(session):
         """Update search vectors for all products."""
 
-        try:
-            # Update search vectors using PostgreSQL's to_tsvector function
-            update_query = text("""
-                UPDATE products
-                SET search_vector = to_tsvector('english',
-                    COALESCE(name, '') || ' ' ||
-                    COALESCE(shortname, '') || ' ' ||
-                    COALESCE(manufacturer, '')
-                )
-                WHERE search_vector IS NULL OR search_vector = ''
-            """)
-            session.execute(update_query)
-            session.commit()
+        # Update search vectors using PostgreSQL's to_tsvector function
+        update_query = text("""
+            UPDATE products
+            SET search_vector = to_tsvector('english',
+                COALESCE(name, '') || ' ' ||
+                COALESCE(shortname, '') || ' ' ||
+                COALESCE(manufacturer, '')
+            )
+            WHERE search_vector IS NULL OR search_vector = ''
+        """)
+        session.execute(update_query)
+        session.commit()
 
-            # Get count of updated rows
-            count_query = text("SELECT COUNT(*) FROM products WHERE search_vector IS NOT NULL")
-            result = session.execute(count_query).scalar()
+        # Get count of updated rows
+        count_query = text("SELECT COUNT(*) FROM products WHERE search_vector IS NOT NULL")
+        result = session.execute(count_query).scalar()
 
-            return result
+        return result
 
-        except Exception as e:
-            session.rollback()
-            raise e
-        finally:
-            session.close()
+    @staticmethod
+    def get_manufacturers(session):
+        """
+        Get a list of all unique manufacturers from the database.
+
+        Args:
+            session: Database session
+
+        Returns:
+            list: Sorted list of manufacturer names
+        """
+
+        # Query distinct manufacturers, excluding None/empty values
+        manufacturers = session.query(Product.manufacturer).filter(
+            Product.manufacturer.isnot(None),
+            Product.manufacturer != ''
+        ).distinct().order_by(Product.manufacturer).all()
+
+        # Extract manufacturer names from tuples and filter out None values
+        manufacturer_list = [mfg[0] for mfg in manufacturers if mfg[0]]
+
+        return manufacturer_list
+
+    @staticmethod
+    def get_year_range(session):
+        """
+        Get the minimum and maximum years from the database.
+
+        Args:
+            session: Database session
+
+        Returns:
+            dict: Contains 'min_year' and 'max_year'
+        """
+
+        # Query min and max years, filtering out None/empty values and casting to integer
+        result = session.query(
+            func.min(Product.year.cast(Integer)).label('min_year'),
+            func.max(Product.year.cast(Integer)).label('max_year')
+        ).filter(
+            Product.year.isnot(None),
+            Product.year != '',
+            Product.year.op('~')(r'^\d{4}$')  # Only 4-digit years
+        ).first()
+
+        min_year = result.min_year if result and result.min_year else 1930
+        max_year = result.max_year if result and result.max_year else 2024
+
+        return {'min_year': min_year, 'max_year': max_year}
+
+    @staticmethod
+    def fetch(session, query=None, manufacturer=None, year_min=None, year_max=None, subscribed_only_user_email=None, offset=0, limit=10):
+        """
+        List products from database or search using full-text index.
+
+        Args:
+            session: SQLAlchemy session
+            query: Optional search query to filter products (uses full-text if provided)
+            manufacturer: Optional manufacturer filter
+            year_min: Optional minimum year filter
+            year_max: Optional maximum year filter
+            subscribed_only_user_email: Optional user email for subscription filtering only
+            offset: Number of products to skip (for pagination)
+            limit: Maximum number of products to return
+
+        Returns:
+            dict: Contains 'products' list and 'total' count
+        """
+        db_query = session.query(Product)
+        db_query = Product._apply_filters(db_query, manufacturer, year_min, year_max, subscribed_only_user_email)
+
+        if query is not None and query.strip() != "":
+            ts_query = func.plainto_tsquery('english', query)
+            db_query = db_query.filter(Product.search_vector.op('@@')(ts_query))
+            rank_score = func.ts_rank(Product.search_vector, ts_query).label('rank_score')
+            db_query = session.query(Product, rank_score).filter(Product.search_vector.op('@@')(ts_query))
+            db_query = Product._apply_filters(db_query, manufacturer, year_min, year_max, subscribed_only_user_email)
+            db_query = db_query.order_by(rank_score.desc())
+            total = db_query.count()
+            results = db_query.offset(offset).limit(limit).all()
+            products = [result[0] for result in results]
+        else:
+            total = db_query.count()
+            db_query = db_query.order_by(Product.name)
+            products = db_query.offset(offset).limit(limit).all()
+
+        return products, total
+
+    @staticmethod
+    def _apply_filters(db_query, manufacturer=None, year_min=None, year_max=None, subscribed_only_user_email=None):
+        """
+        Apply manufacturer, year, and subscription filters to a database query.
+
+        Args:
+            db_query: SQLAlchemy query object
+            manufacturer: Optional manufacturer filter
+            year_min: Optional minimum year filter
+            year_max: Optional maximum year filter
+            subscribed_only_user_email: Optional string to show only subscribed products
+
+        Returns:
+            Modified query object with filters applied
+        """
+        if manufacturer is not None and manufacturer.strip() != "":
+            db_query = db_query.filter(Product.manufacturer == manufacturer)
+        if year_min is not None:
+            try:
+                year_min_int = int(year_min)
+                db_query = db_query.filter(Product.year.cast(Integer) >= year_min_int)
+            except (ValueError, TypeError):
+                pass
+        if year_max is not None:
+            try:
+                year_max_int = int(year_max)
+                db_query = db_query.filter(Product.year.cast(Integer) <= year_max_int)
+            except (ValueError, TypeError):
+                pass
+        if subscribed_only_user_email is not None:
+            db_query = db_query.join(Sub, Product.opdb_id == Sub.opdb_id).filter(Sub.email == subscribed_only_user_email)
+
+        return db_query

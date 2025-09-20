@@ -16,6 +16,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from authlib.integrations.starlette_client import OAuth
 from dotenv import load_dotenv
 from pincrawl.product_matcher import ProductMatcher
+from pincrawl.database import Database, Sub, Product
 
 # Load environment variables
 load_dotenv()
@@ -71,6 +72,8 @@ oauth.register(
     server_metadata_url=f'https://{AUTH0_DOMAIN}/.well-known/openid-configuration'
 )
 
+db = Database()
+db.init_db()
 
 @app.exception_handler(HTTPException)
 async def auth_exception_handler(request: Request, exc: HTTPException):
@@ -154,28 +157,46 @@ async def products(request: Request, query: str = None, manufacturer: str = None
     offset = (page - 1) * PRODUCTS_PER_PAGE
 
     # Get user email for subscription filtering
-    subscribed = user.get('email') if user and subscribed else None
+    user_email = user.get('email') if user else None
+
+    session = db.get_db()
 
     # Initialize ProductMatcher and get products
-    matcher = ProductMatcher()
-    result = matcher.fetch(
+    products, total = Product.fetch(
+        session,
         query=query,
         manufacturer=manufacturer,
         year_min=year_min,
         year_max=year_max,
-        subscribed_only=subscribed,
+        subscribed_only_user_email=user_email if subscribed else None,
         offset=offset,
         limit=PRODUCTS_PER_PAGE
     )
 
-    # Get list of all manufacturers for dropdown
-    manufacturers = matcher.get_manufacturers()
+    # Enrich products with subscription status
+    # Also get manufacturers and year range using the same database session
+    try:
+        if user_email:
+            user_subscriptions = Sub.get_user_subscriptions(session, user_email)
+            for product in products:
+                product.is_subscribed = product.opdb_id in user_subscriptions
+        else:
+            # Mark all as not subscribed if no user email
+            for product in products:
+                product.is_subscribed = False
 
-    # Get year range for slider
-    year_range = matcher.get_year_range()
+        # Get list of all manufacturers for dropdown
+        manufacturers = Product.get_manufacturers(session)
+
+        # Get year range for slider
+        year_range = Product.get_year_range(session)
+
+    finally:
+        session.close()
+        db.close_db()
 
     # Calculate pagination
-    total_pages = result['total'] // PRODUCTS_PER_PAGE
+    total_pages = total // PRODUCTS_PER_PAGE
     total_pages = 1 if total_pages == 0 else total_pages
 
     return templates.TemplateResponse(
@@ -183,7 +204,7 @@ async def products(request: Request, query: str = None, manufacturer: str = None
         {
             "request": request,
             "user": user,
-            "products": result['products'],
+            "products": products,
             "manufacturers": manufacturers,
             "query": query,
             "selected_manufacturer": manufacturer,

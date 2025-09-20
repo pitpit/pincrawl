@@ -2,7 +2,7 @@
 
 import click
 import logging
-from pincrawl.database import Database
+from pincrawl.database import Database, Ad
 from pincrawl.ad_scraper import AdScraper
 from pincrawl.product_matcher import ProductMatcher
 
@@ -30,8 +30,10 @@ def ads_list(scraped, ignored, identified):
     identified_filter = None if identified is None else (identified == '1')
     ignored_filter = None if ignored is None else (ignored == '1')
 
+    session = database.get_db()
+
     # Fetch ads using AdScraper
-    ads = scraper.fetch(scraped=scraped_filter, identified=identified_filter, ignored=ignored_filter)
+    ads = Ad.fetch(session, scraped=scraped_filter, identified=identified_filter, ignored=ignored_filter)
 
     # Display results
     if not ads:
@@ -69,6 +71,7 @@ def ads_list(scraped, ignored, identified):
 
         click.echo(f"{url} {scraped}{identified}{ignored} {product_text} {additional_text}")
 
+    session.close()
 
 @ads.command("crawl")
 def ads_crawl():
@@ -80,19 +83,26 @@ def ads_crawl():
         # Use AdScraper to crawl for new ads
         ad_records = scraper.crawl()
 
+        session = database.get_db()
+
         # Store each new ad record
         for ad_record in ad_records:
-            scraper.store(ad_record)
+            try:
+                Ad.store(session, ad_record)
+            except Exception as e:
+                logger.exception(f"✗ Exception when storing {ad_record.url}: {str(e)}")
+                continue
 
         click.echo(f"✓ Recorded {len(ad_records)} new ads in database")
 
         # Get total count using count method
-        total_ads = scraper.count()
+        total_ads = Ad.count(session)
         logger.debug(f"Total ads in database: {total_ads}")
+
+        session.close()
 
     except Exception as e:
         raise click.ClickException(f"Crawling failed: {str(e)}")
-
 
 
 @ads.command("scrape")
@@ -104,13 +114,16 @@ def ads_scrape(limit, force):
     logger.info("Starting ads scraping...")
 
     try:
+
+        session = database.get_db()
+
         # Find ads that need to be scraped using fetch method
         if force:
             # If force is enabled, scrape all non-ignored ads
-            ads_to_scrape = scraper.fetch(ignored=False)
+            ads_to_scrape = Ad.fetch(session, ignored=False)
         else:
             # Normal behavior: only scrape ads that haven't been scraped yet
-            ads_to_scrape = scraper.fetch(scraped=False, ignored=False)
+            ads_to_scrape = Ad.fetch(session, scraped=False, ignored=False)
 
             if not ads_to_scrape:
                 click.echo("✓ No ads found to scrape.")
@@ -150,12 +163,14 @@ def ads_scrape(limit, force):
                         logger.info(f"✓ Successfully confirmed product: {ad_record.url}")
                         confirmed_count += 1
 
-                scraper.store(ad_record)
+                Ad.store(session, ad_record)
 
             except Exception as e:
                 logger.exception(f"✗ Exception when scraping {ad_record.url}: {str(e)}")
 
                 continue
+
+        session.close()
 
         click.echo(f"✓ Scraped {scraped_count} ads")
         click.echo(f"✓ Identified product in {identified_count} ads")

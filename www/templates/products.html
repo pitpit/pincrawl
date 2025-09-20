@@ -111,7 +111,7 @@
                                     class="w-4 h-4 text-retro-cyan bg-medium-grey border-retro-cyan rounded focus:ring-retro-pink focus:ring-1"
                                 >
                                 <label for="subscribed" class="ml-2 text-retro-cyan font-bold">
-                                    Show only subscribed pinballs
+                                    Show only watched pinballs
                                 </label>
                             </div>
                             <div>
@@ -144,9 +144,9 @@
                     <div class="ml-6 flex-shrink-0">
                         <button
                             onclick="subscribe('{{ product.id }}', '{{ product.name }}')"
-                            class="px-6 py-2 text-retro-cyan font-bold transition-all duration-300 border border-retro-cyan hover:bg-retro-cyan hover:border-retro-cyan hover:text-black"
+                            class="px-6 py-2 {% if product.is_subscribed %}text-retro-pink border-retro-pink{% else %}text-retro-cyan border-retro-cyan hover:bg-retro-cyan hover:text-black{% endif %} font-bold transition-all duration-300 border hover:border-retro-cyan"
                         >
-                            SUBSCRIBE
+                            {% if product.is_subscribed %}WATCHING{% else %}WATCH{% endif %}
                         </button>
                     </div>
                 </div>
@@ -161,11 +161,7 @@
         <!-- No Results -->
         <div class="text-center py-12">
             <h3 class="text-2xl font-bold text-gray-400 mb-4">No pinball machines found</h3>
-            {% if query %}
             <p class="text-gray-500 mb-4">Try adjusting your search terms or browse all machines.</p>
-            {% else %}
-            <p class="text-gray-500">Check back later for new listings!</p>
-            {% endif %}
         </div>
         {% endif %}
 

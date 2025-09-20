@@ -571,7 +571,7 @@ Only return valid JSON - no additional text or formatting (do not add fenced cod
 
         return text_for_embedding.strip()
 
-    def _apply_filters(self, db_query, manufacturer=None, year_min=None, year_max=None, subscribed_only=None):
+    def _apply_filters(self, db_query, manufacturer=None, year_min=None, year_max=None, subscribed_only_user_email=None):
         """
         Apply manufacturer, year, and subscription filters to a database query.
 
@@ -580,7 +580,7 @@ Only return valid JSON - no additional text or formatting (do not add fenced cod
             manufacturer: Optional manufacturer filter
             year_min: Optional minimum year filter
             year_max: Optional maximum year filter
-            subscribed_only: Optional filter to show only subscribed products for an email
+            subscribed_only_user_email: Optional string to show only subscribed products
 
         Returns:
             Modified query object with filters applied
@@ -608,159 +608,11 @@ Only return valid JSON - no additional text or formatting (do not add fenced cod
                 logger.warning(f"Invalid year_max value: {year_max}")
 
         # Apply subscription filter if specified
-        if subscribed_only:
-            logger.info(f"Filtering by subscriptions for user: '{subscribed_only}'")
+        if subscribed_only_user_email is not None:
+            logger.info(f"Filtering by subscriptions for user: '{subscribed_only_user_email}'")
             # Join with subscriptions table to only show subscribed products
-            db_query = db_query.join(Sub, Product.opdb_id == Sub.opdb_id).filter(Sub.email == subscribed_only)
+            db_query = db_query.join(Sub, Product.opdb_id == Sub.opdb_id).filter(Sub.email == subscribed_only_user_email)
 
         return db_query
 
-    def fetch(self, query = None, manufacturer = None, year_min = None, year_max = None, subscribed_only = False, offset = 0, limit = 10):
-        """
-        List products from database or search using Pinecone index.
-
-        Args:
-            query: Optional search query to filter products (uses Pinecone if provided)
-            manufacturer: Optional manufacturer filter
-            year_min: Optional minimum year filter
-            year_max: Optional maximum year filter
-            subscribed_only: Optional filter to show only subscribed products
-            offset: Number of products to skip (for pagination)
-            limit: Maximum number of products to return
-
-        Returns:
-            dict: Contains 'products' list and 'total' count
-        """
-
-        logger.info(f"Fetching products from database with offset={offset}, limit={limit}, manufacturer={manufacturer}, year_min={year_min}, year_max={year_max}, subscribed_only={subscribed_only}")
-
-        try:
-            # Initialize database
-            db = Database()
-            db.init_db()
-            session = db.get_db()
-
-            # Start with base query
-            db_query = session.query(Product)
-
-            # Apply filters
-            db_query = self._apply_filters(db_query, manufacturer, year_min, year_max, subscribed_only)
-
-
-            if query is not None and query.strip() != "":
-                logger.info(f"Searching with full-text search for: '{query}'")
-
-                # Create plainto_tsquery for the search
-                ts_query = func.plainto_tsquery('english', query)
-
-                # Filter products that match the search query
-                db_query = db_query.filter(Product.search_vector.op('@@')(ts_query))
-
-                # Add ranking for better results ordering
-                rank_score = func.ts_rank(Product.search_vector, ts_query).label('rank_score')
-
-                # Modify query to include rank score and order by it
-                db_query = session.query(Product, rank_score).filter(
-                    Product.search_vector.op('@@')(ts_query)
-                )
-
-                # Re-apply filters to ranked query (since we changed the query structure)
-                db_query = self._apply_filters(db_query, manufacturer, year_min, year_max, subscribed_only)
-
-                db_query = db_query.order_by(rank_score.desc())
-
-                # Get total count
-                total = db_query.count()
-
-                # Apply pagination
-                results = db_query.offset(offset).limit(limit).all()
-
-                # Get just the first item (Product) from each tuple for logging
-                products = [result[0] for result in results]
-            else:
-                # No search query - standard alphabetical listing
-                total = db_query.count()
-                db_query = db_query.order_by(Product.name)
-                products = db_query.offset(offset).limit(limit).all()
-
-            logger.info(f"Loaded {len(products)} products from database (page {offset//limit + 1})")
-
-        finally:
-            session.close()
-            db.close_db()
-
-        return {
-            'products': products,
-            'total': total
-        }
-
-    def get_manufacturers(self):
-        """
-        Get a list of all unique manufacturers from the database.
-
-        Returns:
-            list: Sorted list of manufacturer names
-        """
-        logger.info("Fetching manufacturers from database")
-
-        try:
-            # Initialize database
-            db = Database()
-            db.init_db()
-            session = db.get_db()
-
-            # Query distinct manufacturers, excluding None/empty values
-            manufacturers = session.query(Product.manufacturer).filter(
-                Product.manufacturer.isnot(None),
-                Product.manufacturer != ''
-            ).distinct().order_by(Product.manufacturer).all()
-
-            # Extract manufacturer names from tuples and filter out None values
-            manufacturer_list = [mfg[0] for mfg in manufacturers if mfg[0]]
-
-            logger.info(f"Found {len(manufacturer_list)} unique manufacturers")
-            return manufacturer_list
-
-        finally:
-            session.close()
-            db.close_db()
-
-    def get_year_range(self):
-        """
-        Get the minimum and maximum years from the database.
-
-        Returns:
-            dict: Contains 'min_year' and 'max_year'
-        """
-        logger.info("Fetching year range from database")
-
-        try:
-            # Initialize database
-            db = Database()
-            db.init_db()
-            session = db.get_db()
-
-            # Query min and max years, filtering out None/empty values and casting to integer
-            result = session.query(
-                func.min(Product.year.cast(Integer)).label('min_year'),
-                func.max(Product.year.cast(Integer)).label('max_year')
-            ).filter(
-                Product.year.isnot(None),
-                Product.year != '',
-                Product.year.op('~')(r'^\d{4}$')  # Only 4-digit years
-            ).first()
-
-            min_year = result.min_year if result and result.min_year else 1930
-            max_year = result.max_year if result and result.max_year else 2024
-
-            logger.info(f"Year range: {min_year} - {max_year}")
-            return {'min_year': min_year, 'max_year': max_year}
-
-        except Exception as e:
-            logger.warning(f"Error getting year range: {e}")
-            # Return reasonable defaults
-            return {'min_year': 1930, 'max_year': 2024}
-
-        finally:
-            session.close()
-            db.close_db()
+    # ...existing code...
