@@ -187,7 +187,7 @@ def subs_send():
                         body += f"We found {len(ads)} new pinball machine{'s' if len(ads) != 1 else ''} matching your subscriptions:\n\n"
 
                         for ad in ads:
-                            body += f"• {ad.title or 'Untitled'}\n"
+                            body += f"• {ad.product}, {ad.manufacturer}, {ad.year}\n"
                             body += f"  URL: {ad.url}\n"
                             if ad.amount and ad.currency:
                                 body += f"  Price: {ad.amount} {ad.currency}\n"
