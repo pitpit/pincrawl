@@ -311,8 +311,7 @@ class ProductMatcher:
             if not force:
                 existing_count = session.query(Product).count()
                 if existing_count > 0:
-                    logger.info(f"Database already contains {existing_count} products. Use force=True to repopulate.")
-                    return
+                    raise Exception(f"Database already contains {existing_count} products. Use force=True to repopulate.")
 
             # Clear existing data if force is True
             if force:
@@ -395,7 +394,6 @@ class ProductMatcher:
             }
 
         except Exception as e:
-            logger.error(f"Error during population: {e}")
             session.rollback()
             raise
         finally:
