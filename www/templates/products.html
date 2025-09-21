@@ -137,7 +137,8 @@
                         <h3 class="text-xl font-bold text-retro-white mb-2 retro-glow">{{ product.name }}</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-300 mb-2">
                             <div>
-                                {{ product.manufacturer or "Unknown" }}, {{ product.year or "Unknown" }} <a class="text-retro-cyan hover:text-retro-pink" target="_blank" href="{{ "https://www.ipdb.org/machine.cgi?id=" + product.ipdb_id|string }}">[IPDB]</a>
+                                {{ product.manufacturer or "Unknown" }}, {{ product.year or "Unknown" }}
+                                {% if product.ipdb_id %}<a class="text-retro-cyan hover:text-retro-pink" target="_blank" href="{{ "https://www.ipdb.org/machine.cgi?id=" + product.ipdb_id|string }}">[IPDB]</a>{% endif %}
                             </div>
                         </div>
                     </div>
