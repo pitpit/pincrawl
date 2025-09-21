@@ -143,8 +143,8 @@
                     </div>
                     <div class="ml-6 flex-shrink-0">
                         <button
-                            onclick="subscribe('{{ product.id }}', '{{ product.name }}')"
-                            class="px-6 py-2 {% if product.is_subscribed %}text-retro-pink border-retro-pink{% else %}text-retro-cyan border-retro-cyan hover:bg-retro-cyan hover:text-black{% endif %} font-bold transition-all duration-300 border hover:border-retro-cyan"
+                            class="px-6 py-2 {% if product.is_subscribed %}text-retro-pink border-retro-pink hover:text-black hover:bg-retro-pink hover:border-retro-pink{% else %}text-retro-cyan border-retro-cyan hover:bg-retro-cyan hover:text-black hover:border-retro-cyan{% endif %} font-bold transition-all duration-300 border "
+                            onclick="subscribe(this, '{{ product.id }}')"
                         >
                             {% if product.is_subscribed %}WATCHING{% else %}WATCH{% endif %}
                         </button>
@@ -171,16 +171,25 @@
 </div>
 
 <script>
-function subscribe(pinballId, pinballName) {
-    // TODO: Implement subscription functionality
-    alert(`Subscribing to alerts for: ${pinballName} (ID: ${pinballId})`);
+function subscribe(element, id) {
+    const button = element;
 
-    // Here you would make an API call to your subscription endpoint
-    // fetch('/api/subscribe', {
-    //     method: 'POST',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     body: JSON.stringify({ pinball_id: pinballId })
-    // });
+    fetch('/subs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: id })
+    })
+    .then(response => {
+        if (response.status === 201) {
+            button.textContent = 'WATCHING';
+            button.classList.remove('text-retro-cyan', 'border-retro-cyan', 'hover:bg-retro-cyan', 'hover:text-black');
+            button.classList.add('text-retro-pink', 'border-retro-pink', 'hover:text-black', 'hover:bg-retro-pink', 'hover:border-retro-pink');
+        } else if (response.status === 202) {
+            button.textContent = 'WATCH';
+            button.classList.remove('text-retro-pink', 'border-retro-pink', 'hover:text-black', 'hover:bg-retro-pink', 'hover:border-retro-pink');
+            button.classList.add('text-retro-cyan', 'border-retro-cyan', 'hover:bg-retro-cyan', 'hover:text-black');
+        }
+    })
 }
 
 // Year range slider functionality

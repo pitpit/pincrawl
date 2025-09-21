@@ -157,7 +157,7 @@ async def products(request: Request, query: str = None, manufacturer: str = None
     offset = (page - 1) * PRODUCTS_PER_PAGE
 
     # Get user email for subscription filtering
-    user_email = user.get('email') if user else None
+    user_email = user.get('email')
 
     session = db.get_db()
 
@@ -221,3 +221,42 @@ async def products(request: Request, query: str = None, manufacturer: str = None
             "next_page": page + 1 if page < total_pages else None
         }
     )
+
+
+@app.post("/subs")
+async def products(request: Request, user=Depends(get_authenticated_user)):
+
+    # Get user email for subscription filtering
+    user_email = user.get('email')
+    session = db.get_db()
+
+    data = await request.json()
+    id = data.get("id")
+    if not id:
+        raise HTTPException(status_code=400, detail="Missing 'id' in request body")
+
+    product = session.query(Product).filter_by(id=id).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Pinball not found")
+
+    # Check if subscription already exists
+    existing = session.query(Sub).filter_by(
+        email=user_email,
+        opdb_id=product.opdb_id
+    ).first()
+
+    if existing:
+        session.delete(existing)
+        logger.info(f"✗ Removed subscription: {user_email} -> {product.opdb_id}")
+        status = 202  # Accepted (deleted)
+    else:
+        # Create new subscription
+        subscription = Sub(email=user_email, opdb_id=product.opdb_id)
+        session.add(subscription)
+        logger.info(f"✓ Added subscription: {user_email} -> {product.opdb_id}")
+        status = 201  # Created
+
+    session.commit()
+    session.close()
+
+    return HTMLResponse(status_code=status, content="")
