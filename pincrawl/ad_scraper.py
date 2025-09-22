@@ -67,7 +67,7 @@ class AdScraper:
         for attempt in range(CRAWL_MAX_RETRIES):
             try:
                 data = self.firecrawl.scrape(
-                    "https://www.leboncoin.fr/recherche?text=flipper+-pincab&shippable=1&price=200-max&owner_type=all&sort=time&order=desc",
+                    "https://www.leboncoin.fr/recherche?text=flipper+-pincab&shippable=1&price=1000-12000&owner_type=all&sort=time&order=desc",
                     proxy=self.proxy,
                     formats=["links"],
                     parsers=[],
