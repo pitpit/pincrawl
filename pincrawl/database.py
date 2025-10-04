@@ -2,7 +2,6 @@
 
 Usage:
     db = Database()
-    db.init_db()
     session = db.get_db()
     # ... use session
     session.close()
@@ -51,7 +50,7 @@ class Database:
         self.engine: Optional[Engine] = None
         self.session_local: Optional[sessionmaker] = None
 
-    def init_db(self) -> Engine:
+    def _init_db(self) -> Engine:
         """Initialize database connection and create tables."""
         self.engine = create_engine(self.database_url)
         self.session_local = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
@@ -64,7 +63,7 @@ class Database:
     def get_db(self) -> Session:
         """Get database session."""
         if self.session_local is None:
-            self.init_db()
+            self._init_db()
 
         db = self.session_local()
         try:
@@ -83,7 +82,7 @@ class Database:
     def destroy_db(self):
         """Drop all tables and destroy the database schema."""
         if self.engine is None:
-            self.init_db()
+            self._init_db()
 
         # Drop all tables
         Base.metadata.drop_all(bind=self.engine)

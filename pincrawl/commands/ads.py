@@ -79,30 +79,26 @@ def ads_crawl():
 
     logger.info("Starting ads crawl...")
 
-    try:
-        # Use AdScraper to crawl for new ads
-        ad_records = scraper.crawl()
+    # Use AdScraper to crawl for new ads
+    ad_records = scraper.crawl()
 
-        session = database.get_db()
+    session = database.get_db()
 
-        # Store each new ad record
-        for ad_record in ad_records:
-            try:
-                Ad.store(session, ad_record)
-            except Exception as e:
-                logger.exception(f"✗ Exception when storing {ad_record.url}: {str(e)}")
-                continue
+    # Store each new ad record
+    for ad_record in ad_records:
+        try:
+            Ad.store(session, ad_record)
+        except Exception as e:
+            logger.exception(f"✗ Exception when storing {ad_record.url}: {str(e)}")
+            continue
 
-        click.echo(f"✓ Recorded {len(ad_records)} new ads in database")
+    click.echo(f"✓ Recorded {len(ad_records)} new ads in database")
 
-        # Get total count using count method
-        total_ads = Ad.count(session)
-        logger.debug(f"Total ads in database: {total_ads}")
+    # Get total count using count method
+    total_ads = Ad.count(session)
+    logger.debug(f"Total ads in database: {total_ads}")
 
-        session.close()
-
-    except Exception as e:
-        raise click.ClickException(f"Crawling failed: {str(e)}")
+    session.close()
 
 
 @ads.command("scrape")
@@ -113,71 +109,68 @@ def ads_scrape(limit, force):
 
     logger.info("Starting ads scraping...")
 
-    try:
 
-        session = database.get_db()
+    session = database.get_db()
 
-        # Find ads that need to be scraped using fetch method
-        if force:
-            # If force is enabled, scrape all non-ignored ads
-            ads_to_scrape = Ad.fetch(session, ignored=False)
-        else:
-            # Normal behavior: only scrape ads that haven't been scraped yet
-            ads_to_scrape = Ad.fetch(session, scraped=False, ignored=False)
+    # Find ads that need to be scraped using fetch method
+    if force:
+        # If force is enabled, scrape all non-ignored ads
+        ads_to_scrape = Ad.fetch(session, ignored=False)
+    else:
+        # Normal behavior: only scrape ads that haven't been scraped yet
+        ads_to_scrape = Ad.fetch(session, scraped=False, ignored=False)
 
-            if not ads_to_scrape:
-                click.echo("✓ No ads found to scrape.")
-                return
+        if not ads_to_scrape:
+            click.echo("✓ No ads found to scrape.")
+            return
 
-        # Apply limit if specified
-        if limit:
-            ads_to_scrape = ads_to_scrape[:limit]
+    # Apply limit if specified
+    if limit:
+        ads_to_scrape = ads_to_scrape[:limit]
 
-        logger.info(f"Found {len(ads_to_scrape)} ads to scrape")
+    logger.info(f"Found {len(ads_to_scrape)} ads to scrape")
 
-        # Scrape each ad using AdScraper
-        scraped_count = 0
-        identified_count = 0
-        confirmed_count = 0
+    # Scrape each ad using AdScraper
+    scraped_count = 0
+    identified_count = 0
+    confirmed_count = 0
 
-        for i, ad_record in enumerate(ads_to_scrape, 1):
-            try:
-                logger.info(f"Processing ad {i}/{len(ads_to_scrape)}: {ad_record.url}")
+    for i, ad_record in enumerate(ads_to_scrape, 1):
+        try:
+            logger.info(f"Processing ad {i}/{len(ads_to_scrape)}: {ad_record.url}")
 
-                # Use AdScraper to scrape the individual ad
-                ad_record = scraper.scrape(ad_record, force=force)
+            # Use AdScraper to scrape the individual ad
+            ad_record = scraper.scrape(ad_record, force=force)
 
-                if ad_record.scraped_at:
-                    logger.info(f"✓ Successfully scraped: {ad_record.url}")
-                    scraped_count += 1
+            if ad_record.scraped_at:
+                logger.info(f"✓ Successfully scraped: {ad_record.url}")
+                scraped_count += 1
 
-                # Identify product if enabled and content is available
-                if ad_record.content:
-                    logger.info(f"Identifying product for: {ad_record.url}")
-                    ad_record = scraper.identify(ad_record, force=force)
-                    if ad_record.identified_at:
-                        logger.info(f"✓ Successfully identified product: {ad_record.url}")
-                        identified_count += 1
+            # Identify product if enabled and content is available
+            if ad_record.content:
+                logger.info(f"Identifying product for: {ad_record.url}")
+                ad_record = scraper.identify(ad_record, force=force)
+                if ad_record.identified_at:
+                    logger.info(f"✓ Successfully identified product: {ad_record.url}")
+                    identified_count += 1
 
-                    if ad_record.opdb_id:
-                        logger.info(f"✓ Successfully confirmed product: {ad_record.url}")
-                        confirmed_count += 1
+                if ad_record.opdb_id:
+                    logger.info(f"✓ Successfully confirmed product: {ad_record.url}")
+                    confirmed_count += 1
 
-                Ad.store(session, ad_record)
+            Ad.store(session, ad_record)
 
-            except Exception as e:
-                logger.exception(f"✗ Exception when scraping {ad_record.url}: {str(e)}")
+        except Exception as e:
+            logger.exception(f"✗ Exception when scraping {ad_record.url}: {str(e)}")
 
-                continue
+            continue
 
-        session.close()
+    session.close()
 
-        click.echo(f"✓ Scraped {scraped_count} ads")
-        click.echo(f"✓ Identified product in {identified_count} ads")
-        click.echo(f"✓ Confirmed product {confirmed_count} ads")
+    click.echo(f"✓ Scraped {scraped_count} ads")
+    click.echo(f"✓ Identified product in {identified_count} ads")
+    click.echo(f"✓ Confirmed product {confirmed_count} ads")
 
-    except Exception as e:
-        raise click.ClickException(f"Scraping failed: {str(e)}")
 
 
 

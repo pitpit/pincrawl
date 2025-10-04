@@ -65,16 +65,16 @@ class ProductMatcher:
             bool: True if index exists, False otherwise
 
         Raises:
-            click.ClickException: If existence doesn't match expectation
+            LookupError: If existence doesn't match expectation
         """
         existing_indexes = self.pc.list_indexes()
         index_names = [index.name for index in existing_indexes]
         index_exists = self.pinecone_index_name in index_names
 
         if should_exist and not index_exists:
-            raise click.ClickException(f"Pinecone index '{self.pinecone_index_name}' not found. Run 'pincrawl products init' first.")
+            raise LookupError(f"Pinecone index '{self.pinecone_index_name}' not found. Run 'pincrawl products init' first.")
         elif not should_exist and index_exists:
-            raise click.ClickException(f"Pinecone index '{self.pinecone_index_name}' already exists. Use --force to recreate it.")
+            raise LookupError(f"Pinecone index '{self.pinecone_index_name}' already exists. Use --force to recreate it.")
 
         return index_exists
 
@@ -88,7 +88,7 @@ class ProductMatcher:
         # Check if index already exists
         try:
             self._check_pinecone_index_exists(should_exist=False)
-        except click.ClickException:
+        except LookupError:
             if not force:
                 raise
 
@@ -101,7 +101,7 @@ class ProductMatcher:
                 try:
                     self._check_pinecone_index_exists(should_exist=False)
                     break  # Index doesn't exist anymore, deletion complete
-                except click.ClickException:
+                except LookupError:
                     time.sleep(1)  # Index still exists, keep waiting
 
         logger.info(f"Creating Pinecone index: {self.pinecone_index_name}")
@@ -303,7 +303,6 @@ class ProductMatcher:
         """
         # Initialize database
         db = Database()
-        db.init_db()
         session = db.get_db()
 
         try:

@@ -22,15 +22,14 @@ def mailer_test(to):
         email: Email address to send the test email to
     """
 
-    try:
-        if not SMTP_URL:
-            raise click.ClickException("SMTP_URL environment variable not set")
+    if not SMTP_URL:
+        raise Exception("SMTP_URL environment variable not set")
 
-        smtp_client = Smtp(SMTP_URL)
+    smtp_client = Smtp(SMTP_URL)
 
-        # Create test email content
-        subject = "PinCrawl Email Test"
-        body = f"""Hello,
+    # Create test email content
+    subject = "PinCrawl Email Test"
+    body = f"""Hello,
 
 This is a test email from PinCrawl to verify that email functionality is working correctly.
 
@@ -44,9 +43,7 @@ Test details:
 Best regards,
 PinCrawl Team"""
 
-        # Send test email
-        smtp_client.send(FROM_EMAIL, to, subject, body)
-        click.echo(f"✓ Test email sent successfully to {to}")
+    # Send test email
+    smtp_client.send(FROM_EMAIL, to, subject, body)
+    click.echo(f"✓ Test email sent successfully to {to}")
 
-    except Exception as e:
-        raise click.ClickException(f"Failed to send test email: {str(e)}")

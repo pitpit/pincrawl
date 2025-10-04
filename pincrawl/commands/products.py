@@ -14,31 +14,24 @@ def products():
 def products_init(force):
     """Initialize a Pinecone index for product matching."""
 
-    try:
-        matcher.init(force=force)
-        click.echo(f"✓ Pinecone index '{matcher.pinecone_index_name}' initialized successfully")
-
-    except Exception as e:
-        raise click.ClickException(f"Failed to initialize index: {str(e)}")
+    matcher.init(force=force)
+    click.echo(f"✓ Pinecone index '{matcher.pinecone_index_name}' initialized successfully")
 
 @products.command("index")
 @click.option("--limit", "-l", type=int, help="Limit number of products to process")
 def products_index(limit):
     """Populate the Pinecone index from data/opdb.json with product embeddings."""
 
-    try:
-        stats = matcher.index(limit=limit)
+    stats = matcher.index(limit=limit)
 
-        click.echo(f"✓ Processed {stats['processed']} products")
-        if stats['already_indexed'] > 0:
-            click.echo(f"✓ Already indexed: {stats['already_indexed']} products")
-        if stats['skipped'] > 0:
-            click.echo(f"⚠ Skipped: {stats['skipped']} products")
-        if stats['errors'] > 0:
-            click.echo(f"✗ Errors: {stats['errors']} products")
+    click.echo(f"✓ Processed {stats['processed']} products")
+    if stats['already_indexed'] > 0:
+        click.echo(f"✓ Already indexed: {stats['already_indexed']} products")
+    if stats['skipped'] > 0:
+        click.echo(f"⚠ Skipped: {stats['skipped']} products")
+    if stats['errors'] > 0:
+        click.echo(f"✗ Errors: {stats['errors']} products")
 
-    except Exception as e:
-        raise click.ClickException(f"Failed to populate index: {str(e)}")
 
 
 @products.command("populate")
@@ -46,18 +39,14 @@ def products_index(limit):
 def products_populate(force):
     """Populate the products table from data/opdb.json."""
 
-    try:
-        stats = matcher.populate(force=force)
+    stats = matcher.populate(force=force)
 
-        click.echo(f"✓ Database population completed")
-        click.echo(f"✓ Added: {stats['processed']} products")
-        if stats['updated'] > 0:
-            click.echo(f"✓ Updated: {stats['updated']} products")
-        if stats['skipped'] > 0:
-            click.echo(f"⚠ Skipped: {stats['skipped']} products")
-        if stats['errors'] > 0:
-            click.echo(f"✗ Errors: {stats['errors']} products")
-        click.echo(f"Total processed: {stats['total']} products")
-
-    except Exception as e:
-        raise click.ClickException(f"Failed to populate database: {str(e)}")
+    click.echo(f"✓ Database population completed")
+    click.echo(f"✓ Added: {stats['processed']} products")
+    if stats['updated'] > 0:
+        click.echo(f"✓ Updated: {stats['updated']} products")
+    if stats['skipped'] > 0:
+        click.echo(f"⚠ Skipped: {stats['skipped']} products")
+    if stats['errors'] > 0:
+        click.echo(f"✗ Errors: {stats['errors']} products")
+    click.echo(f"Total processed: {stats['total']} products")
