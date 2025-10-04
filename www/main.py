@@ -73,7 +73,6 @@ oauth.register(
 )
 
 db = Database()
-db.init_db()
 
 @app.exception_handler(HTTPException)
 async def auth_exception_handler(request: Request, exc: HTTPException):
