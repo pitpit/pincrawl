@@ -1,0 +1,214 @@
+#!/usr/bin/env python3
+
+import os
+from abc import ABC, abstractmethod
+from typing import List, Dict, Any, Optional
+from dataclasses import dataclass
+
+# FireCrawl imports
+from firecrawl import Firecrawl
+from firecrawl.v2.types import Document
+from firecrawl.v2.utils.error_handler import RequestTimeoutError, InternalServerError, RateLimitError, PaymentRequiredError, BadRequestError, UnauthorizedError, WebsiteNotSupportedError, FirecrawlError
+
+class ScrapingError(Exception):
+    """Exception for errors during scraping"""
+
+    def __init__(self, message: Optional[str] = None, status_code: Optional[int] = None):
+        super().__init__(message)
+        self.status_code = status_code
+
+class RetryNowScrapingError(ScrapingError):
+    """Exception for recoverable errors during scraping. Will retry immediately."""
+    pass
+
+class RetryLaterScrapingError(ScrapingError):
+    """Exception for recoverable errors during scraping. Will retry later."""
+    pass
+
+class UnrecoverableScrapingError(ScrapingError):
+    """Exception for unrecoverable errors during scraping"""
+    pass
+
+
+@dataclass
+class ScrapeResult:
+    """Result of a scrape operation"""
+    markdown: str
+    status_code: int
+    credits_used: int = 0
+    scrape_id: Optional[str] = None
+
+@dataclass
+class LinksResult:
+    """Result of a links extraction operation"""
+    links: List[str]
+    status_code: int
+    credits_used: int = 0
+
+
+class ScraperWrapper(ABC):
+    """
+    Abstract base class for web scraping implementations.
+    Provides a common interface for different scraping backends.
+    """
+
+    def __init__(self, timeout: int = 30):
+        self._timeout = timeout
+
+    @abstractmethod
+    def get_links(self, url: str) -> LinksResult:
+        """
+        Extract all links from a webpage.
+
+        Args:
+            url: The URL to extract links from
+
+        Returns:
+            LinksResult with list of links and metadata
+        """
+        pass
+
+    @abstractmethod
+    def scrape(self, url: str) -> ScrapeResult:
+        """
+        Scrape a single URL and return its content in markdown format.
+
+        Args:
+            url: The URL to scrape
+            timeout: Request timeout in seconds
+
+        Returns:
+            ScrapeResult with markdown content and metadata
+        """
+        pass
+
+    def _get_links_from_html(self, html: str) -> List[str]:
+        """
+        Extract links from raw HTML content.
+
+        Args:
+            html: The HTML content to extract links from
+
+        Returns:
+            List of extracted links
+        """
+        soup = BeautifulSoup(html, 'html.parser')
+
+        links = []
+        for link in soup.find_all('a', href=True):
+            href = link['href']
+            links.append(href)
+
+        # Remove duplicates while preserving order
+        unique_links = list(dict.fromkeys(links))
+
+        return unique_links
+
+
+
+class FirecrawlScraper(ScraperWrapper):
+    """
+    Firecrawl implementation of the ScraperWrapper.
+    Wraps the Firecrawl API for web scraping.
+    """
+
+
+    def __init__(self, proxy: str = "basic", timeout: int = 30):
+        super().__init__(timeout)
+        self._proxy = proxy
+
+        # Load configuration from environment
+        self._firecrawl_api_key = os.getenv("FIRECRAWL_API_KEY")
+
+        if not self._firecrawl_api_key:
+            raise ValueError("FIRECRAWL_API_KEY environment variable is required")
+
+        # Initialize Firecrawl client
+        self._firecrawl = Firecrawl(api_key=self._firecrawl_api_key)
+
+    def _scrape(self, url: str, **kwargs) -> Document:
+        """
+        Internal method to scrape a URL using Firecrawl.
+
+        Args:
+            url: The URL to scrape
+            **kwargs: Additional options to pass to Firecrawl
+
+        Returns:
+            Document
+        """
+
+        try:
+            response = self._firecrawl.scrape(url, **kwargs)
+
+            if response.metadata.status_code in [401, 403, 500]:
+                raise RetryLaterScrapingError(response.metadata.error, response.metadata.status_code)
+            elif response.metadata.status_code >= 400:
+                raise UnrecoverableScrapingError(response.metadata.error, response.metadata.status_code)
+
+        except (BadRequestError, WebsiteNotSupportedError) as e:
+            raise UnrecoverableScrapingError() from e
+        except (PaymentRequiredError, UnauthorizedError, RateLimitError, FirecrawlError) as e:
+            raise RetryLaterScrapingError() from e
+        except (InternalServerError, RequestTimeoutError) as e:
+            raise RetryNowScrapingError() from e
+
+        return response
+
+    def get_links(self, url: str) -> LinksResult:
+        """
+        Extract links from a URL using Firecrawl.
+
+        Args:
+            url: The URL to extract links from
+
+        Returns:
+            LinksResult with list of links
+        """
+        # Default options for link extraction
+        options = {
+            'proxy': self._proxy,
+            'formats': ['links'],
+            'parsers': [],
+            'only_main_content': True,
+            'max_age': 0
+        }
+
+        response = self._scrape(url, **options)
+
+        return LinksResult(
+            links=response.links or [],
+            status_code=response.metadata.status_code,
+            credits_used=response.metadata.credits_used
+        )
+
+    def scrape(self, url: str) -> ScrapeResult:
+        """
+        Scrape a URL using Firecrawl and return markdown content.
+
+        Args:
+            url: The URL to scrape
+
+        Returns:
+            ScrapeResult with markdown content
+        """
+        options = {
+            'only_main_content': False,
+            'proxy': self._proxy,
+            'parsers': [],
+            'formats': ['markdown'],
+            'location': {
+                'country': 'FR',
+                'languages': ['fr']
+            },
+            'timeout': self._timeout * 1000
+        }
+
+        response = self._scrape(url, **options)
+
+        return ScrapeResult(
+            markdown=response.markdown,
+            status_code=response.metadata.status_code,
+            credits_used=response.metadata.credits_used,
+            scrape_id=response.metadata.scrape_id
+        )

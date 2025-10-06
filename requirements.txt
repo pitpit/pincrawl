@@ -7,5 +7,4 @@ psycopg2-binary
 python-dotenv
 openai
 pinecone
-# Example:
-# requests==2.32.3
+pytest==8.4.2

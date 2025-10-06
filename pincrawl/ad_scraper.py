@@ -7,10 +7,10 @@ from datetime import datetime
 from typing import List, Optional, Union
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
-from firecrawl import Firecrawl
 from dotenv import load_dotenv
 from pincrawl.database import Ad, Database
 from pincrawl.product_matcher import ProductMatcher
+from pincrawl.scraper_wrapper import ScraperWrapper, RetryNowScrapingError, RetryLaterScrapingError, UnrecoverableScrapingError
 import time
 
 # Load environment variables
@@ -22,36 +22,27 @@ RETRY_DELAY = int(os.getenv("RETRY_DELAY", 3))
 
 logger = logging.getLogger(__name__)
 
-
 class AdScraper:
     """
     A class to handle ad crawling, scraping, and product identification.
     """
 
-    def __init__(self, database: Database, matcher: ProductMatcher):
+    def __init__(self, database: Database, matcher: ProductMatcher, scraper: ScraperWrapper):
         """
         Initialize the AdScraper.
 
         Args:
             database: Database instance for storing and retrieving ads
+            matcher: ProductMatcher instance for product identification
+            scraper: ScraperWrapper instance
         """
         self.database = database
 
-        # Load configuration from environment
-        self.firecrawl_api_key = os.getenv("FIRECRAWL_API_KEY")
-        self.pinecone_timeout = int(os.getenv("PINECONE_TIMEOUT", 5000000))
-
-        if not self.firecrawl_api_key:
-            raise ValueError("FIRECRAWL_API_KEY environment variable is required")
-
-        # Initialize Firecrawl client
-        self.firecrawl = Firecrawl(api_key=self.firecrawl_api_key)
+        # Initialize scraper (default to Firecrawl if not provided)
+        self.scraper = scraper
 
         # Initialize ProductMatcher for identification
         self.product_matcher = matcher
-
-        # Initialize proxy setting
-        self.proxy = "basic"
 
     def crawl(self) -> [Ad]:
         """
@@ -66,41 +57,32 @@ class AdScraper:
         # Scrape the search results page for ad links with retry logic
         for attempt in range(CRAWL_MAX_RETRIES):
             try:
-                data = self.firecrawl.scrape(
-                    "https://www.leboncoin.fr/recherche?text=flipper+-pincab+-scooter&shippable=1&price=1000-12000&owner_type=all&sort=time&order=desc",
-                    proxy=self.proxy,
-                    formats=["links"],
-                    parsers=[],
-                    only_main_content=True,
-                    max_age=0,
+                result = self.scraper.get_links(
+                    "https://www.leboncoin.fr/recherche?text=flipper+-pincab+-scooter&shippable=1&price=1000-12000&owner_type=all&sort=time&order=desc"
                 )
 
-                credits_used += data.metadata.credits_used
-
-                if data.metadata.status_code >= 300:
-                    raise Exception(f"Server error {data.metadata.status_code}")
+                credits_used += result.credits_used
 
                 break  # Exit loop on success
 
-            except Exception as e:
+            except RetryNowScrapingError as e:
                 if attempt < CRAWL_MAX_RETRIES - 1:
                     logger.warning(f"Crawling failed on attempt {attempt + 1}/{CRAWL_MAX_RETRIES}: {str(e)}")
 
                     time.sleep(RETRY_DELAY)
                 else:
-                    raise Exception(f"Failed to crawl ads after {CRAWL_MAX_RETRIES} attempts: {str(e)}")
+                    raise RetryLaterScrapingError(f"Failed to crawl ads after {CRAWL_MAX_RETRIES} attempts: {str(e)}") from e
 
         logger.info(f"Credit used: {credits_used}")
 
         ad_records = []
         # Filter links matching the pattern https://www.leboncoin.fr/ad/*/<integer>
         filtered_links = [
-            link for link in data.links
+            link for link in result.links
             if re.match(r"https://www\.leboncoin\.fr/ad/.+/\d+$", link)
         ]
 
         logger.info(f"Found {len(filtered_links)} ad links")
-
 
         session = self.database.get_db()
 
@@ -139,54 +121,40 @@ class AdScraper:
         # Perform the scraping with retry logic
         for attempt in range(SCRAPE_MAX_RETRIES):
             try:
-                data = self.firecrawl.scrape(
-                    ad_record.url,
-                    only_main_content=False,
-                    proxy=self.proxy,
-                    parsers=[],
-                    formats=["markdown"],
-                    location={
-                        'country': 'FR',
-                        'languages': ['fr']
-                    },
-                    timeout=self.pinecone_timeout
+                result = self.scraper.scrape(
+                    ad_record.url
                 )
 
-                credits_used += data.metadata.credits_used
+                ad_record.scraped_at = datetime.now()
+                ad_record.content = result.markdown
+                ad_record.scrape_id = result.scrape_id
 
-                if data.metadata.status_code >= 500:
-                    raise Exception(f"Server error {data.metadata.status_code}")
+                credits_used += result.credits_used
 
                 break  # Exit loop on success
 
-            except Exception as e:
-                # As soon as we've got a retry we want to set proxy to "stealth" to not fail further
-                # if attempt == 0:  # Only log this once on first failure
-                #     logger.warning("Switching to stealth proxy due to error")
-                #     self.proxy = "stealth"
-
+            except RetryNowScrapingError as e:
                 if attempt < SCRAPE_MAX_RETRIES - 1:
                     logger.warning(f"✗ Failed to scrape {ad_record.url} (attempt {attempt + 1}/{SCRAPE_MAX_RETRIES}): {str(e)}")
 
                     time.sleep(RETRY_DELAY)
                 else:
-                    raise Exception(f"Failed to scrape {ad_record.url} after {SCRAPE_MAX_RETRIES} attempts: {str(e)}")
+                    logger.warning(f"Failed to scrape {ad_record.url} after {SCRAPE_MAX_RETRIES} attempts: {str(e)}")
 
+                    break
+
+            except RetryLaterScrapingError as e:
+                logger.warning(f"✗ Exception when scraping {ad_record.url} (retry later): {str(e)}")
+
+                break
+
+            except UnrecoverableScrapingError as e:
+                ad_record.ignored = True
+                logger.error(f"✗ Exception when scraping {ad_record.url} (unrecoverable): {str(e)}")
+
+                break
 
         logger.info(f"Credit used: {credits_used}")
-
-        # Process the scraped data
-        if data.metadata.status_code == 200:
-            if not data.markdown:
-                raise Exception("No markdown content extracted")
-
-            ad_record.content = data.markdown
-            ad_record.scraped_at = datetime.now()
-            ad_record.scrape_id = data.metadata.scrape_id
-        else:
-            logger.warning(f"✗ Unexpected response for {ad_record.url}: status {data.metadata.status_code}")
-            ad_record.ignored = True
-
 
         return ad_record
 
@@ -200,11 +168,11 @@ class AdScraper:
         """
 
         if not ad_record.content:
-            raise Exception(f"Ad has no content to identify: {ad_record.url}")
+            raise ValueError(f"Ad has no content to identify: {ad_record.url}")
 
         # Check if already identified and force is not enabled
         if not force and ad_record.identified_at is not None:
-            raise Exception(f"Ad already identified: {ad_record.url}")
+            raise ValueError(f"Ad already identified: {ad_record.url}")
 
         # Use the content for identification
         search_text = ad_record.content.strip()
@@ -226,15 +194,14 @@ class AdScraper:
         if product:
             logger.info(f"✓ Product identified in {ad_record.url}: {str(product)}")
 
-            opdb_id = product.get('opdb_id', None)
-
             ad_record.identified_at = datetime.now()
             ad_record.product = product.get('name', None)
             ad_record.manufacturer = product.get('manufacturer', None)
             ad_record.year = product.get('year', None)
-            ad_record.opdb_id = opdb_id
 
+            opdb_id = product.get('opdb_id', None)
             if opdb_id:
+                ad_record.opdb_id = opdb_id
                 logger.info(f"✓ OPDB product confirmed for {ad_record.url}: {opdb_id}")
             else:
                 logger.warning(f"✓ OPDB Product not confirmed for {ad_record.url}")

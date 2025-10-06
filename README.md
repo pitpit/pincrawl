@@ -23,11 +23,6 @@ docker-compose run --rm console bash
 pip install -e .
 ```
 
-Initialize the database:
-```bash
-pincrawl init
-```
-
 Show help:
 ```bash
 pincrawl --help
@@ -35,12 +30,12 @@ pincrawl --help
 
 Run a crawling task to discover ads:
 ```bash
-pincrawl -vvv crawl
+pincrawl -vvv ads crawl
 ```
 
 Scrape detailed information from discovered ads:
 ```bash
-pincrawl -vvv scrape
+pincrawl -vvv ads scrape
 ```
 
 ## Quick Start

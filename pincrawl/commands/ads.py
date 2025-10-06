@@ -4,6 +4,7 @@ import click
 import logging
 from pincrawl.database import Database, Ad
 from pincrawl.ad_scraper import AdScraper
+from pincrawl.scraper_wrapper import FirecrawlScraper
 from pincrawl.product_matcher import ProductMatcher
 
 logger = logging.getLogger(__name__)
@@ -11,7 +12,7 @@ logger = logging.getLogger(__name__)
 # service instances
 database = Database()
 matcher = ProductMatcher()
-scraper = AdScraper(database, matcher)
+scraper = AdScraper(database, matcher, FirecrawlScraper())
 
 @click.group()
 def ads():
