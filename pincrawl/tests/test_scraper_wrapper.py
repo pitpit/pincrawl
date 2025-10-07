@@ -19,7 +19,8 @@ from pincrawl.scraper_wrapper import (
     ScrapeResult,
     LinksResult,
     UnrecoverableScrapingError,
-    RetryLaterScrapingError
+    RetryLaterScrapingError,
+    RetryNowScrapingError,
 )
 
 load_dotenv()
@@ -134,7 +135,7 @@ def test_invalid_domain_handling_scrape(available_scrapers):
     """Test error handling with completely invalid domain for scrape() method"""
     for name, scraper in available_scrapers.items():
         # scrape() method should raise exceptions for invalid domains
-        with pytest.raises(RetryLaterScrapingError):
+        with pytest.raises(RetryNowScrapingError):
             scraper.scrape("https://invalid-domain-12345.com")
 
 
@@ -142,7 +143,7 @@ def test_invalid_domain_handling_get_links(available_scrapers):
     """Test error handling with completely invalid domain for get_links() method"""
     for name, scraper in available_scrapers.items():
         # get_links() method should raise exceptions for invalid domains
-        with pytest.raises(RetryLaterScrapingError):
+        with pytest.raises(RetryNowScrapingError):
             scraper.get_links("https://invalid-domain-12345.com")
 
 

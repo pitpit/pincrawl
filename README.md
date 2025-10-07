@@ -55,19 +55,19 @@ pip install .
 First cronjob runs every 5minutes between 8o am and midnight (utc+2):
 
 ```
-*/5 6-21 * * * pincrawl crawl >> /var/log/pincrawl.log 2>&1
+*/5 6-23 * * * pincrawl crawl >> /var/log/pincrawl.log 2>&1
 ```
 
 Second cronjob runs every 5minutes between 8o am and midnight (utc+2), but 2min after:
 
 ```
-2-59/5 6-21 * * * pincrawl scrape --limit=5 >> /var/log/pincrawl.log 2>&1
+2-59/5 6-23 * * * pincrawl scrape >> /var/log/pincrawl.log 2>&1
 ```
 
 Third cronjob runs every 5minutes between 8o am and midnight (utc+2), but 2min after:
 
 ```
-4-59/5 6-21 * * * pincrawl subs send >> /var/log/pincrawl.log 2>&1
+4-59/5 6-23 * * * pincrawl subs send >> /var/log/pincrawl.log 2>&1
 ```
 
 ## TODO

@@ -142,16 +142,18 @@ class FirecrawlScraper(ScraperWrapper):
             response = self._firecrawl.scrape(url, **kwargs)
 
             if response.metadata.status_code in [401, 403, 500]:
-                raise RetryLaterScrapingError(response.metadata.error, response.metadata.status_code)
+                raise RetryNowScrapingError(response.metadata.error, response.metadata.status_code)
             elif response.metadata.status_code >= 400:
                 raise UnrecoverableScrapingError(response.metadata.error, response.metadata.status_code)
 
         except (BadRequestError, WebsiteNotSupportedError) as e:
-            raise UnrecoverableScrapingError() from e
-        except (PaymentRequiredError, UnauthorizedError, RateLimitError, FirecrawlError) as e:
-            raise RetryLaterScrapingError() from e
+            raise UnrecoverableScrapingError(str(e)) from e
+        except (PaymentRequiredError, UnauthorizedError, RateLimitError) as e:
+            raise RetryLaterScrapingError(str(e)) from e
         except (InternalServerError, RequestTimeoutError) as e:
-            raise RetryNowScrapingError() from e
+            raise RetryNowScrapingError(str(e)) from e
+        except FirecrawlError as e:
+            raise UnrecoverableScrapingError(str(e)) from e
 
         return response
 

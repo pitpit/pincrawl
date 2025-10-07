@@ -142,15 +142,13 @@ class AdScraper:
                     logger.warning(f"Failed to scrape {ad_record.url} after {SCRAPE_MAX_RETRIES} attempts: {str(e)}")
 
                     break
-
             except RetryLaterScrapingError as e:
-                logger.warning(f"✗ Exception when scraping {ad_record.url} (retry later): {str(e)}")
+                logger.warning(f"✗ RetryLaterScrapingError when scraping {ad_record.url}: {str(e)}")
 
                 break
-
             except UnrecoverableScrapingError as e:
                 ad_record.ignored = True
-                logger.error(f"✗ Exception when scraping {ad_record.url} (unrecoverable): {str(e)}")
+                logger.error(f"✗ UnrecoverableScrapingError when scraping {ad_record.url}: {str(e)}")
 
                 break
 

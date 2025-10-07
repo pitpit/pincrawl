@@ -14,9 +14,6 @@ from pincrawl.smtp import Smtp
 SMTP_URL = os.getenv("SMTP_URL")
 FROM_EMAIL = os.getenv("FROM_EMAIL", "noreply@localhost")
 
-
-logger = logging.getLogger(__name__)
-
 # Database and task manager instances
 database = Database()
 task_manager = TaskManager()
@@ -169,6 +166,7 @@ def subs_send():
 
             smtp_client = Smtp(SMTP_URL)
 
+            email_count = 0
             for email, ads in email_to_ads.items():
                 try:
                     # Create email content
@@ -190,20 +188,19 @@ def subs_send():
 
                     # Send email
                     smtp_client.send(FROM_EMAIL, email, subject, body)
+                    email_count += 1
                     click.echo(f"✓ Sent email to {email} with {len(ads)} ads")
 
                 except Exception as e:
-                    logger.error(f"Failed to send email to {email}: {str(e)}")
                     click.echo(f"❌ Failed to send email to {email}: {str(e)}")
 
             # Mark task as successful
             task_manager.update_task_status(session, current_task, TaskStatus.SUCCESS)
-            click.echo(f"✓ Task completed successfully. Sent emails to {len(email_to_ads)} recipient(s)")
+            click.echo(f"✓ Task completed. Sent emails to {email_count} recipient(s)")
 
         except Exception as e:
             # Mark task as failed
             task_manager.update_task_status(session, current_task, TaskStatus.FAIL)
-            logger.error(f"Task failed: {str(e)}")
             raise
 
     finally:
