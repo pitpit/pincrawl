@@ -4,6 +4,7 @@ import os
 from abc import ABC, abstractmethod
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass
+from bs4 import BeautifulSoup
 
 class ScrapingError(Exception):
     """Exception for errors during scraping"""

@@ -3,8 +3,8 @@
 import click
 import logging
 from pincrawl.database import Database, Ad
-from pincrawl.ad_scraper import AdScraper
-from pincrawl.scraper_wrapper import FirecrawlScraper
+from pincrawl.leboncoin_crawler import LeboncoinCrawler
+from pincrawl.firecrawl_wrapped_scraper import FirecrawlWrappedScraper
 from pincrawl.product_matcher import ProductMatcher
 
 logger = logging.getLogger(__name__)
@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 # service instances
 database = Database()
 matcher = ProductMatcher()
-scraper = AdScraper(database, matcher, FirecrawlScraper())
+scraper = LeboncoinCrawler(database, matcher, FirecrawlWrappedScraper())
 
 @click.group()
 def ads():
@@ -33,7 +33,7 @@ def ads_list(scraped, ignored, identified):
 
     session = database.get_db()
 
-    # Fetch ads using AdScraper
+    # Fetch ads using LeboncoinCrawler
     ads = Ad.fetch(session, scraped=scraped_filter, identified=identified_filter, ignored=ignored_filter)
 
     # Display results
@@ -80,7 +80,7 @@ def ads_crawl():
 
     logger.info("Starting ads crawl...")
 
-    # Use AdScraper to crawl for new ads
+    # Use LeboncoinCrawler to crawl for new ads
     ad_records = scraper.crawl()
 
     session = database.get_db()
@@ -131,7 +131,7 @@ def ads_scrape(limit, force):
 
     logger.info(f"Found {len(ads_to_scrape)} ads to scrape")
 
-    # Scrape each ad using AdScraper
+    # Scrape each ad using LeboncoinCrawler
     scraped_count = 0
     identified_count = 0
     confirmed_count = 0
@@ -140,7 +140,7 @@ def ads_scrape(limit, force):
         try:
             logger.info(f"Processing ad {i}/{len(ads_to_scrape)}: {ad_record.url}")
 
-            # Use AdScraper to scrape the individual ad
+            # Use LeboncoinCrawler to scrape the individual ad
             ad_record = scraper.scrape(ad_record, force=force)
 
             if ad_record.scraped_at:
