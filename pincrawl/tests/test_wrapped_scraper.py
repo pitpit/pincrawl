@@ -22,6 +22,7 @@ from pincrawl.wrapped_scraper import (
     RetryNowScrapingError,
 )
 from pincrawl.firecrawl_wrapped_scraper import FirecrawlWrappedScraper
+from pincrawl.scrapingbee_wrapped_scraper import ScrapingbeeWrappedScraper
 
 load_dotenv()
 
@@ -40,6 +41,14 @@ def available_scrapers():
             scrapers['FirecrawlWrappedScraper'] = FirecrawlWrappedScraper(timeout=TIMEOUT)
         except Exception as e:
             print("FirecrawlWrappedScraper will not be tested: ", e)
+            pass
+
+    # ScrapingBee (if API key available)
+    if os.getenv("SCRAPINGBEE_API_KEY"):
+        try:
+            scrapers['ScrapingbeeWrappedScraper'] = ScrapingbeeWrappedScraper(timeout=TIMEOUT)
+        except Exception as e:
+            print("ScrapingbeeWrappedScraper will not be tested: ", e)
             pass
 
     return scrapers
@@ -91,7 +100,7 @@ def test_get_links(available_scrapers):
     assert len(results) > 0, "At least one scraper should be available"
 
     for name, result in results.items():
-        assert result.links[0] == "https://www.iana.org/domains/example", f"{name} link should not be the URL: {link}"
+        assert result.links[0] == "https://iana.org/domains/example", f"{name} link should not be the URL: {result.links[0]}"
 
 # ============================================================================
 # Scraping Tests
@@ -122,7 +131,8 @@ def test_scrape(available_scrapers):
 
     assert len(results) > 0, "At least one scraper should be available"
 
-    normalized_markdown = "# Example Domain\n\nThis domain is for use in illustrative examples in documents. You may use this\ndomain in literature without prior coordination or asking for permission.\n\n[More information...](https://www.iana.org/domains/example)"
+    # normalized_markdown = "# Example Domain\n\nThis domain is for use in illustrative examples in documents. You may use this\ndomain in literature without prior coordination or asking for permission.\n\n[More information...](https://www.iana.org/domains/example)"
+    normalized_markdown = "# Example Domain\n\nThis domain is for use in documentation examples without needing permission. Avoid use in operations.\n\n[Learn more](https://iana.org/domains/example)"
 
     for name, result in results.items():
         assert result.markdown == normalized_markdown, f"{name} should return normalized markdown content"

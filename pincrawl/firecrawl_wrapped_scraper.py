@@ -18,18 +18,18 @@ class FirecrawlWrappedScraper(WrappedScraper):
     Wraps the Firecrawl API for web scraping.
     """
 
-    def __init__(self, proxy: str = "basic", timeout: int = 30):
+    def __init__(self, timeout: int = 30):
         super().__init__(timeout)
-        self._proxy = proxy
+        self._proxy = "basic"
 
         # Load configuration from environment
-        self._firecrawl_api_key = os.getenv("FIRECRAWL_API_KEY")
+        self._api_key = os.getenv("FIRECRAWL_API_KEY")
 
-        if not self._firecrawl_api_key:
+        if not self._api_key:
             raise ValueError("FIRECRAWL_API_KEY environment variable is required")
 
         # Initialize Firecrawl client
-        self._firecrawl = Firecrawl(api_key=self._firecrawl_api_key)
+        self._firecrawl = Firecrawl(api_key=self._api_key)
 
     def _scrape(self, url: str, **kwargs) -> Document:
         """

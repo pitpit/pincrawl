@@ -5,6 +5,8 @@ from abc import ABC, abstractmethod
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass
 from bs4 import BeautifulSoup
+from markdownify import markdownify as md
+from urllib.parse import urljoin, urlparse
 
 class ScrapingError(Exception):
     """Exception for errors during scraping"""
@@ -78,7 +80,20 @@ class WrappedScraper(ABC):
         """
         pass
 
-    def _get_links_from_html(self, html: str) -> List[str]:
+    def _get_base_url(self, url: str) -> str:
+        """
+        Extract the base URL from a full URL.
+
+        Args:
+            url: The full URL
+
+        Returns:
+            The base URL
+        """
+        parsed_url = urlparse(url)
+        return f"{parsed_url.scheme}://{parsed_url.netloc}"
+
+    def _get_links_from_html(self, html: str, base_url: Optional[str] = None) -> List[str]:
         """
         Extract links from raw HTML content.
 
@@ -93,9 +108,65 @@ class WrappedScraper(ABC):
         links = []
         for link in soup.find_all('a', href=True):
             href = link['href']
+            if base_url:
+                href = urljoin(base_url, href)
             links.append(href)
 
         # Remove duplicates while preserving order
         unique_links = list(dict.fromkeys(links))
 
         return unique_links
+
+    def _clean_html(self, html: str, base_url: Optional[str] = None) -> str:
+        """
+        Clean HTML content by removing unwanted elements.
+
+        Args:
+            html: The HTML content to clean
+
+        Returns:
+            Cleaned HTML content
+        """
+        soup = BeautifulSoup(html, 'html.parser')
+
+        # Convert relative URLs to absolute if base_url is available
+        if base_url:
+            # Find all the 'a' tags on the webpage
+            for a_tag in soup.find_all('a', href=True):
+                # Get the href attribute from the 'a' tag
+                href = a_tag['href']
+                # Use urljoin to convert the relative URL to an absolute URL
+                absolute_url = urljoin(base_url, href)
+                # Actually set the converted URL back to the tag
+                a_tag['href'] = absolute_url
+
+            # Also handle other elements with src attributes
+            for tag in soup.find_all(['img', 'iframe', 'embed', 'object'], src=True):
+                tag['src'] = urljoin(base_url, tag['src'])
+
+
+        # Remove unwanted elements
+        # for tag in soup(['script', 'style', 'header', 'footer', 'nav', 'aside', 'form', 'iframe']):
+        for tag in soup(['script', 'style', 'title']):
+            tag.decompose()
+
+        return str(soup)
+
+    def _html_to_markdown(self, html: str) -> str:
+        """
+        Convert HTML content to markdown format.
+
+        Args:
+            html: The HTML content to convert
+
+        Returns:
+            Markdown representation of the HTML content
+        """
+        from markdownify import markdownify as md
+
+        markdown = md(
+            html,
+            heading_style="ATX",  # Use # style headings
+        )
+
+        return markdown

@@ -4,7 +4,8 @@ import click
 import logging
 from pincrawl.database import Database, Ad
 from pincrawl.leboncoin_crawler import LeboncoinCrawler
-from pincrawl.firecrawl_wrapped_scraper import FirecrawlWrappedScraper
+# from pincrawl.firecrawl_wrapped_scraper import FirecrawlWrappedScraper
+from pincrawl.scrapingbee_wrapped_scraper import ScrapingbeeWrappedScraper
 from pincrawl.product_matcher import ProductMatcher
 
 logger = logging.getLogger(__name__)
@@ -12,7 +13,8 @@ logger = logging.getLogger(__name__)
 # service instances
 database = Database()
 matcher = ProductMatcher()
-scraper = LeboncoinCrawler(database, matcher, FirecrawlWrappedScraper())
+scraper = LeboncoinCrawler(database, matcher, ScrapingbeeWrappedScraper())
+# scraper = LeboncoinCrawler(database, matcher, FirecrawlWrappedScraper())
 
 @click.group()
 def ads():
