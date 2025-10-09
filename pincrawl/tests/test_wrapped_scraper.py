@@ -14,14 +14,15 @@ import os
 from typing import Dict, Any, List
 from unittest.mock import patch, MagicMock
 from dotenv import load_dotenv
-from pincrawl.scraper_wrapper import (
-    FirecrawlScraper,
+from pincrawl.wrapped_scraper import (
     ScrapeResult,
     LinksResult,
     UnrecoverableScrapingError,
     RetryLaterScrapingError,
     RetryNowScrapingError,
 )
+from pincrawl.firecrawl_wrapped_scraper import FirecrawlWrappedScraper
+from pincrawl.scrapingbee_wrapped_scraper import ScrapingbeeWrappedScraper
 
 load_dotenv()
 
@@ -37,9 +38,17 @@ def available_scrapers():
     # FireCrawl (if API key available)
     if os.getenv("FIRECRAWL_API_KEY"):
         try:
-            scrapers['FirecrawlScraper'] = FirecrawlScraper(timeout=TIMEOUT)
+            scrapers['FirecrawlWrappedScraper'] = FirecrawlWrappedScraper(timeout=TIMEOUT)
         except Exception as e:
-            print("FirecrawlScraper will not be tested: ", e)
+            print("FirecrawlWrappedScraper will not be tested: ", e)
+            pass
+
+    # ScrapingBee (if API key available)
+    if os.getenv("SCRAPINGBEE_API_KEY"):
+        try:
+            scrapers['ScrapingbeeWrappedScraper'] = ScrapingbeeWrappedScraper(timeout=TIMEOUT)
+        except Exception as e:
+            print("ScrapingbeeWrappedScraper will not be tested: ", e)
             pass
 
     return scrapers

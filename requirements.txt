@@ -7,4 +7,7 @@ psycopg2-binary
 python-dotenv
 openai
 pinecone
+beautifulsoup4
+markdownify
 pytest==8.4.2
+scrapingbee

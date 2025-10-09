@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from dotenv import load_dotenv
 from pincrawl.database import Ad, Database
 from pincrawl.product_matcher import ProductMatcher
-from pincrawl.scraper_wrapper import ScraperWrapper, RetryNowScrapingError, RetryLaterScrapingError, UnrecoverableScrapingError
+from pincrawl.wrapped_scraper import WrappedScraper, RetryNowScrapingError, RetryLaterScrapingError, UnrecoverableScrapingError
 import time
 
 # Load environment variables
@@ -22,19 +22,19 @@ RETRY_DELAY = int(os.getenv("RETRY_DELAY", 3))
 
 logger = logging.getLogger(__name__)
 
-class AdScraper:
+class LeboncoinCrawler:
     """
     A class to handle ad crawling, scraping, and product identification.
     """
 
-    def __init__(self, database: Database, matcher: ProductMatcher, scraper: ScraperWrapper):
+    def __init__(self, database: Database, matcher: ProductMatcher, scraper: WrappedScraper):
         """
-        Initialize the AdScraper.
+        Initialize the LeboncoinCrawler.
 
         Args:
             database: Database instance for storing and retrieving ads
             matcher: ProductMatcher instance for product identification
-            scraper: ScraperWrapper instance
+            scraper: WrappedScraper instance
         """
         self.database = database
 
@@ -54,26 +54,32 @@ class AdScraper:
 
         credits_used = 0
 
+        result = self.scraper.get_links(
+            "https://www.leboncoin.fr/recherche?text=flipper+-pincab+-scooter&shippable=1&price=1000-12000&owner_type=all&sort=time&order=desc"
+        )
+
+        logger.info(f"Credit used: {result.credits_used}")
+
         # Scrape the search results page for ad links with retry logic
-        for attempt in range(CRAWL_MAX_RETRIES):
-            try:
-                result = self.scraper.get_links(
-                    "https://www.leboncoin.fr/recherche?text=flipper+-pincab+-scooter&shippable=1&price=1000-12000&owner_type=all&sort=time&order=desc"
-                )
+        # for attempt in range(CRAWL_MAX_RETRIES):
+        #     try:
+        #         result = self.scraper.get_links(
+        #             "https://www.leboncoin.fr/recherche?text=flipper+-pincab+-scooter&shippable=1&price=1000-12000&owner_type=all&sort=time&order=desc"
+        #         )
 
-                credits_used += result.credits_used
+        #         credits_used += result.credits_used
 
-                break  # Exit loop on success
+        #         break  # Exit loop on success
 
-            except RetryNowScrapingError as e:
-                if attempt < CRAWL_MAX_RETRIES - 1:
-                    logger.warning(f"Crawling failed on attempt {attempt + 1}/{CRAWL_MAX_RETRIES}: {str(e)}")
+        #     except RetryNowScrapingError as e:
+        #         if attempt < CRAWL_MAX_RETRIES - 1:
+        #             logger.warning(f"Crawling failed on attempt {attempt + 1}/{CRAWL_MAX_RETRIES}: {str(e)}")
 
-                    time.sleep(RETRY_DELAY)
-                else:
-                    raise RetryLaterScrapingError(f"Failed to crawl ads after {CRAWL_MAX_RETRIES} attempts: {str(e)}") from e
+        #             time.sleep(RETRY_DELAY)
+        #         else:
+        #             raise RetryLaterScrapingError(f"Failed to crawl ads after {CRAWL_MAX_RETRIES} attempts: {str(e)}") from e
 
-        logger.info(f"Credit used: {credits_used}")
+        # logger.info(f"Credit used: {credits_used}")
 
         ad_records = []
         # Filter links matching the pattern https://www.leboncoin.fr/ad/*/<integer>
