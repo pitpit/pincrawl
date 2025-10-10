@@ -69,6 +69,12 @@ Third cronjob runs every 5minutes between 8o am and midnight (utc+2), but 2min a
 4-59/5 6-23 * * * pincrawl subs send >> /var/log/pincrawl.log 2>&1
 ```
 
+Fourth cronjob runs every night:
+
+```
+0 2 * * * pincrawl ads stats --save >> /var/log/pincrawl.log 2>&1
+```
+
 ## TODO
 
 - check opdb_id when creating a subscription
