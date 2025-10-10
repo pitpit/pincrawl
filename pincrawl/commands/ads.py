@@ -2,7 +2,7 @@
 
 import click
 import logging
-from pincrawl.database import Database, Ad
+from pincrawl.database import Database, Ad, Product
 from pincrawl.leboncoin_crawler import LeboncoinCrawler
 # from pincrawl.firecrawl_wrapped_scraper import FirecrawlWrappedScraper
 from pincrawl.scrapingbee_wrapped_scraper import ScrapingbeeWrappedScraper
@@ -173,6 +173,60 @@ def ads_scrape(limit, force):
     click.echo(f"✓ Scraped {scraped_count} ads")
     click.echo(f"✓ Identified product in {identified_count} ads")
     click.echo(f"✓ Confirmed product {confirmed_count} ads")
+
+
+@ads.command("stats")
+@click.option("--save", is_flag=True, help="Save the computed averages and ad counts to the Product table")
+def ads_stats(save):
+    """Compute monthly and yearly price averages for each pinball from ads."""
+
+    session = database.get_db()
+
+    try:
+        click.echo("Computing price statistics for pinball machines...")
+
+        # Use the new business logic method from Product class
+        result = Product.compute_price_statistics(session, save_to_db=save)
+
+        statistics = result['statistics']
+        total_machines = result['total_machines']
+        updated_count = result['updated_count']
+
+        if not statistics:
+            click.echo("✗ No price data found for any pinball machines.")
+            return
+
+        # Display results
+        click.echo("\n" + "="*80)
+        click.echo(f"{'PINBALL MACHINE':<35} {'MONTHLY AVG':<15} {'YEARLY AVG':<15} {'COUNT (M/Y)':<12}")
+        click.echo("="*80)
+
+        for opdb_id in sorted(statistics.keys()):
+            stats = statistics[opdb_id]
+
+            # Format display name
+            display_name = f"{stats['machine_name']} ({stats['manufacturer']})"[:35]
+
+            # Format display values
+            monthly_display = f"€{stats['monthly_avg']}" if stats['monthly_avg'] else "N/A"
+            yearly_display = f"€{stats['yearly_avg']}" if stats['yearly_avg'] else "N/A"
+            count_display = f"{stats['monthly_count']}/{stats['yearly_count']}"
+
+            click.echo(f"{display_name:<35} {monthly_display:<15} {yearly_display:<15} {count_display:<12}")
+
+        if save:
+            click.echo(f"\n✓ Updated {updated_count} products with price averages and ad counts")
+        else:
+            click.echo(f"\n💡 Use --save flag to persist these averages and ad counts to the Product table")
+
+        click.echo(f"✓ Found price data for {total_machines} pinball machines")
+
+    except Exception as e:
+        session.rollback()
+        click.echo(f"✗ Error computing price statistics: {str(e)}")
+        raise
+    finally:
+        session.close()
 
 
 

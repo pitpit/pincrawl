@@ -359,6 +359,10 @@ class Product(Base):
     manufacturer = Column(String, nullable=True, index=True)
     type = Column(String, nullable=True, index=True)
     year = Column(String, nullable=True, index=True)
+    monthly_price_average = Column(Integer, nullable=True)  # Average monthly price in cents
+    yearly_price_average = Column(Integer, nullable=True)   # Average yearly price in cents
+    monthly_ads_count = Column(Integer, nullable=True)      # Number of ads in last 30 days
+    yearly_ads_count = Column(Integer, nullable=True)       # Number of ads in last 365 days
     created_at = Column(DateTime, default=datetime.now, nullable=False)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now, nullable=False)
 
@@ -525,3 +529,146 @@ class Product(Base):
             db_query = db_query.join(Sub, Product.opdb_id == Sub.opdb_id).filter(Sub.email == subscribed_only_user_email)
 
         return db_query
+
+    @staticmethod
+    def compute_price_statistics(session, save_to_db: bool = False) -> dict:
+        """
+        Compute monthly and yearly price statistics for all pinball machines.
+
+        Args:
+            session: Database session
+            save_to_db: If True, save the computed statistics to the database
+
+        Returns:
+            dict: Statistics data with the following structure:
+                {
+                    'opdb_id': {
+                        'machine_name': str,
+                        'manufacturer': str,
+                        'monthly_avg': int or None,
+                        'yearly_avg': int or None,
+                        'monthly_count': int,
+                        'yearly_count': int
+                    }
+                }
+        """
+        from datetime import datetime, timedelta
+
+        current_date = datetime.now()
+        one_month_ago = current_date - timedelta(days=30)
+        one_year_ago = current_date - timedelta(days=365)
+
+        # Get the Ad class - it's defined in the same module
+        import sys
+        current_module = sys.modules[__name__]
+        AdClass = getattr(current_module, 'Ad')
+
+        # Query for monthly averages (last 30 days)
+        monthly_query = session.query(
+            AdClass.opdb_id,
+            AdClass.product,
+            AdClass.manufacturer,
+            func.avg(AdClass.amount).label('avg_price'),
+            func.count(AdClass.amount).label('count')
+        ).filter(
+            AdClass.opdb_id.isnot(None),
+            AdClass.amount.isnot(None),
+            AdClass.currency == 'EUR',  # Only EUR for consistency
+            AdClass.ignored == False,
+            AdClass.created_at >= one_month_ago
+        ).group_by(AdClass.opdb_id, AdClass.product, AdClass.manufacturer)
+
+        # Query for yearly averages (last 365 days)
+        yearly_query = session.query(
+            AdClass.opdb_id,
+            AdClass.product,
+            AdClass.manufacturer,
+            func.avg(AdClass.amount).label('avg_price'),
+            func.count(AdClass.amount).label('count')
+        ).filter(
+            AdClass.opdb_id.isnot(None),
+            AdClass.amount.isnot(None),
+            AdClass.currency == 'EUR',  # Only EUR for consistency
+            AdClass.ignored == False,
+            AdClass.created_at >= one_year_ago
+        ).group_by(AdClass.opdb_id, AdClass.product, AdClass.manufacturer)
+
+        monthly_results = monthly_query.all()
+        yearly_results = yearly_query.all()
+
+        # Create dictionaries for lookups
+        monthly_stats = {result.opdb_id: result for result in monthly_results}
+        yearly_stats = {result.opdb_id: result for result in yearly_results}
+
+        # Get all unique pinball machines from both queries
+        all_opdb_ids = set(monthly_stats.keys()) | set(yearly_stats.keys())
+
+        # Build statistics dictionary
+        statistics = {}
+        updated_count = 0
+
+        for opdb_id in all_opdb_ids:
+            monthly_data = monthly_stats.get(opdb_id)
+            yearly_data = yearly_stats.get(opdb_id)
+
+            # Get machine name from either monthly or yearly data
+            machine_name = (monthly_data.product if monthly_data else yearly_data.product) or "Unknown"
+            manufacturer = (monthly_data.manufacturer if monthly_data else yearly_data.manufacturer) or "Unknown"
+
+            # Calculate averages
+            monthly_avg = int(monthly_data.avg_price) if monthly_data else None
+            yearly_avg = int(yearly_data.avg_price) if yearly_data else None
+
+            monthly_count = monthly_data.count if monthly_data else 0
+            yearly_count = yearly_data.count if yearly_data else 0
+
+            statistics[opdb_id] = {
+                'machine_name': machine_name,
+                'manufacturer': manufacturer,
+                'monthly_avg': monthly_avg,
+                'yearly_avg': yearly_avg,
+                'monthly_count': monthly_count,
+                'yearly_count': yearly_count
+            }
+
+            # Save to database if requested
+            if save_to_db:
+                if Product.update_price_averages(session, opdb_id, monthly_avg, yearly_avg, monthly_count, yearly_count):
+                    updated_count += 1
+
+        if save_to_db:
+            session.commit()
+
+        # Add metadata to the result
+        return {
+            'statistics': statistics,
+            'total_machines': len(all_opdb_ids),
+            'updated_count': updated_count if save_to_db else 0,
+            'saved_to_db': save_to_db
+        }
+
+    @staticmethod
+    def update_price_averages(session, opdb_id: str, monthly_avg: Optional[int], yearly_avg: Optional[int],
+                            monthly_count: Optional[int] = None, yearly_count: Optional[int] = None) -> bool:
+        """
+        Update price averages and ad counts for a specific product.
+
+        Args:
+            session: Database session
+            opdb_id: Product OPDB ID
+            monthly_avg: Monthly average price in cents (or None)
+            yearly_avg: Yearly average price in cents (or None)
+            monthly_count: Number of ads in last 30 days (or None)
+            yearly_count: Number of ads in last 365 days (or None)
+
+        Returns:
+            bool: True if product was found and updated, False otherwise
+        """
+        product = session.query(Product).filter(Product.opdb_id == opdb_id).first()
+        if product:
+            product.monthly_price_average = monthly_avg
+            product.yearly_price_average = yearly_avg
+            product.monthly_ads_count = monthly_count
+            product.yearly_ads_count = yearly_count
+            return True
+        return False

@@ -38,17 +38,16 @@ Scrape detailed information from discovered ads:
 pincrawl -vvv ads scrape
 ```
 
-## Quick Start
-
-Dev installation:
+Display price statistics (read-only):
 ```bash
-pip install -e .
+pincrawl ads stats
 ```
 
-Prod installation:
+Display and save statistics:
 ```bash
-pip install .
+pincrawl ads stats --save
 ```
+
 
 ## Cronjobs
 
