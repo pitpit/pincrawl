@@ -5,7 +5,7 @@ from collections import defaultdict
 from datetime import datetime
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import and_
-from pincrawl.database import Database, Sub, Ad, Task, TaskStatus
+from pincrawl.database import Database, Sub, Ad, Task, TaskStatus, Product
 from pincrawl.task_manager import TaskManager
 from pincrawl.smtp import Smtp
 
@@ -169,6 +169,15 @@ def subs_send():
             email_count = 0
             for email, ads in email_to_ads.items():
                 try:
+                    # Get all unique opdb_ids for this email's ads
+                    opdb_ids = [ad.opdb_id for ad in ads if ad.opdb_id]
+
+                    # Fetch all products at once to avoid N+1 queries
+                    products_dict = {}
+                    if opdb_ids:
+                        products = session.query(Product).filter(Product.opdb_id.in_(opdb_ids)).all()
+                        products_dict = {product.opdb_id: product for product in products}
+
                     # Create email content
                     subject = f"New pinball machines found - {len(ads)} match{'es' if len(ads) == 1 else ''}"
 
@@ -180,6 +189,14 @@ def subs_send():
                         body += f"  URL: {ad.url}\n"
                         if ad.amount and ad.currency:
                             body += f"  Price: {ad.amount} {ad.currency}\n"
+
+                        # Add price averages if available
+                        if ad.opdb_id and ad.opdb_id in products_dict:
+                            product = products_dict[ad.opdb_id]
+                            if product.monthly_price_average or product.yearly_price_average:
+                                body += f"  Price avg: {product.monthly_price_average or '--'}€|{product.yearly_price_average or '--'}€ ({ product.monthly_ads_count or 0 }|{ product.yearly_ads_count or 0 } ads)\n"
+                            else:
+                                body += "  No price statistics available\n"
                         if ad.city:
                             body += f"  Location: {ad.city},  {ad.zipcode}\n"
                         body += "\n"

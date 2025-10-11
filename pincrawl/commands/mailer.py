@@ -35,6 +35,13 @@ This is a test email from PinCrawl to verify that email functionality is working
 
 If you received this email, the SMTP configuration is working properly.
 
+Sample notification format:
+• Medieval Madness, Williams, 1997
+  URL: https://example.com/ad/123
+  Price: 8500 EUR
+  Price avg (m|y): 9200€|8800€ (1|1 ads)
+  Location: Paris, 75001
+
 Test details:
 - Sent at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 - From: {FROM_EMAIL}
