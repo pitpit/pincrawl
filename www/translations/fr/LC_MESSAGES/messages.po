@@ -25,7 +25,7 @@ msgid "Pincrawl - Find your dream pinball machine"
 msgstr "Pincrawl - Trouvez votre flipper de rêve"
 
 msgid "Your next pinball is just an alert away"
-msgstr "Votre prochain flipper n'est qu'une alerte"
+msgstr "Votre prochain flipper avant tout le monde"
 
 msgid "Be the first to know when a machine goes up for sale!"
 msgstr "Soyez le premier à savoir quand une machine est mise en vente !"

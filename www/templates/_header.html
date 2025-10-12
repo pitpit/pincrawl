@@ -9,8 +9,8 @@
                     </a>
                 </div>
 
-                <!-- Navigation Menu -->
-                <div class="flex items-center space-x-6">
+                <!-- Desktop Navigation Menu -->
+                <div class="hidden md:flex items-center space-x-6">
                     <a href="/{{ locale }}/" class="text-retro-cyan px-3 py-2 text-sm font-medium transition-colors duration-200 border border-retro-cyan hover:bg-retro-cyan hover:border-retro-cyan hover:text-black">
                         {{ i18n._('Home') }}
                     </a>
@@ -20,7 +20,72 @@
                     <a href="/logout" class="text-retro-cyan px-3 py-2 text-sm font-medium transition-colors duration-200 border border-retro-cyan hover:bg-retro-cyan hover:text-black">
                         {{ i18n._('Logout') }}
                     </a>
+
+                    <!-- Language switcher for desktop -->
+                    <div class="flex items-center space-x-1 ml-4 pl-4 border-l border-retro-cyan">
+                        {% for lang in supported_locales %}
+                            {% if lang == locale %}
+                                <span class="text-retro-cyan font-bold px-2 py-1 border border-retro-cyan text-black">{{ lang.upper() }}</span>
+                            {% else %}
+                                <a href="{{ request.url_for('homepage', locale=lang) }}" class="text-retro-cyan hover:bg-retro-cyan hover:text-black px-2 py-1 border border-transparent  transition-colors duration-200">{{ lang.upper() }}</a>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Mobile menu button -->
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="text-retro-cyan hover:text-retro-pink focus:outline-none focus:text-retro-pink transition-colors duration-200">
+                        <!-- Hamburger icon -->
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile menu -->
+            <div id="mobile-menu" class="md:hidden hidden">
+                <div class="px-2 pt-2 pb-3 space-y-1 bg-darker-grey ">
+                    <a href="/{{ locale }}/pinballs" class="block text-retro-cyan px-3 py-2 text-sm font-medium transition-colors duration-200 border border-retro-cyan hover:bg-retro-cyan hover:border-retro-cyan hover:text-black">
+                        {{ i18n._('Pinballs') }}
+                    </a>
+                    <a href="/logout" class="block text-retro-cyan px-3 py-2 text-sm font-medium transition-colors duration-200 border border-retro-cyan hover:bg-retro-cyan hover:text-black">
+                        {{ i18n._('Logout') }}
+                    </a>
+
+                    <!-- Language switcher for mobile -->
+                    <div class="pt-2 mt-2">
+                        <div class="flex space-x-1">
+                            {% for lang in supported_locales %}
+                                {% if lang == locale %}
+                                    <span class="text-retro-cyan font-bold px-2 py-1 text-sm border border-retro-cyan text-black">{{ lang.upper() }}</span>
+                                {% else %}
+                                    <a href="{{ request.url_for('homepage', locale=lang) }}" class="text-retro-cyan px-2 py-1 text-sm border border-transparent hover:bg-retro-cyan hover:border-retro-cyan hover:text-black transition-colors duration-200">{{ lang.upper() }}</a>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </nav>
+
+    <!-- JavaScript for mobile menu toggle -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            mobileMenuButton.addEventListener('click', function() {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            // Close mobile menu when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!mobileMenuButton.contains(event.target) && !mobileMenu.contains(event.target)) {
+                    mobileMenu.classList.add('hidden');
+                }
+            });
+        });
+    </script>
