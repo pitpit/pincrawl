@@ -134,7 +134,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
                 {
                     "request": request,
                     "error_code": 404,
-                    "error_message": "Not found"
+                    "error_message": "Not Found"
                 }
             )
 
