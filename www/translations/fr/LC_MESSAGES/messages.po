@@ -46,11 +46,11 @@ msgstr "Pincrawl - Trouvez votre flipper de rêve"
 
 #: templates/home.html:21
 msgid "Your next pinball is just an alert away"
-msgstr "Votre prochain flipper avant tout le monde"
+msgstr "Le flipper de vos rêves"
 
 #: templates/home.html:23
 msgid "Be the first to know when a machine goes up for sale!"
-msgstr "Soyez le premier à savoir quand une machine est mise en vente !"
+msgstr "Soyez le premier à savoir quand un flipper est mis en vente !"
 
 #: templates/home.html:32 templates/pinballs.html:26
 msgid "Search for a pinball machine..."
