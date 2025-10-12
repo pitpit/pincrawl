@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Login - Pincrawl{% endblock %}
+{% block title %}{{ i18n._('Login') }} - Pincrawl{% endblock %}
 
 {% block content %}
 <div class="min-h-screen flex items-center justify-center bg-dark-grey">
@@ -11,9 +11,6 @@
                 <h1 class="text-4xl font-bold text-retro-cyan retro-glow mb-4 hover:text-retro-pink transition-colors duration-300">
                     PINCRAWL
                 </h1>
-                <div class="flex justify-center">
-                    <img width="128" src="/static/img/logo.png" alt="Logo Pincrawl"/>
-                </div>
             </a>
         </div>
 
@@ -21,14 +18,14 @@
         <div class="bg-darker-grey p-8 retro-border">
             <div class="text-center mb-6">
                 <h2 class="text-xl font-bold text-retro-cyan retro-glow">
-                    Authentication Required
+                    {{ i18n._('Authentication Required') }}
                 </h2>
             </div>
 
             <!-- Login Button -->
             <div class="text-center">
                 <a href="/login" class="inline-block w-full px-6 py-3 bg-medium-grey text-retro-cyan font-bold border border-retro-cyan hover:bg-retro-cyan hover:text-black transition-all duration-300 retro-glow">
-                    LOGIN
+                    {{ i18n._('LOGIN') }}
                 </a>
             </div>
         </div>

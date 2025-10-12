@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ locale }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -37,6 +37,16 @@
     <link rel="icon" type="image/png" href="/static/favicon.ico">
 </head>
 <body class="font-retro text-white bg-dark-grey">
+<!-- Language switcher -->
+<div class="absolute top-4 right-4 z-50">
+    {% for lang in supported_locales %}
+        {% if lang == locale %}
+            <span class="text-retro-cyan font-bold px-2">{{ lang.upper() }}</span>
+        {% else %}
+            <a href="{{ request.url_for('homepage', locale=lang) }}" class="text-white hover:text-retro-cyan px-2">{{ lang.upper() }}</a>
+        {% endif %}
+    {% endfor %}
+</div>
 {% block content %}{% endblock %}
 </body>
 </html>

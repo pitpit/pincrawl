@@ -75,6 +75,27 @@ Fourth cronjob runs every night:
 0 2 * * * pincrawl ads stats --save >> /var/log/pincrawl.log 2>&1
 ```
 
+## Compile translations
+
+
+Extract translation strings:
+```bash
+cd www/
+pybabel extract -F babel.cfg -k _l -o messages.pot .
+```
+
+Update existing translation files:
+```bash
+cd www/
+pybabel update -i messages.pot -d translations
+```
+
+Compile translation files:
+```bash
+cd www/
+pybabel compile -d translations
+```
+
 ## TODO
 
 - check opdb_id when creating a subscription

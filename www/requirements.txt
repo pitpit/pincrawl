@@ -7,3 +7,4 @@ python-dotenv==1.0.0
 requests==2.31.0
 itsdangerous==2.2.0
 httpx==0.28.1
+Babel==2.14.0

@@ -1,0 +1,91 @@
+# English translations for Pincrawl.
+# Copyright (C) 2025 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2025-10-11 12:00+0000\n"
+"PO-Revision-Date: 2025-10-11 12:00+0000\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.14.0\n"
+
+msgid "Pincrawl"
+msgstr "Pincrawl"
+
+msgid "Pincrawl - Find your dream pinball machine"
+msgstr "Pincrawl - Find your dream pinball machine"
+
+msgid "Your next pinball is just an alert away"
+msgstr "Your next pinball is just an alert away"
+
+msgid "Be the first to know when a machine goes up for sale!"
+msgstr "Be the first to know when a machine goes up for sale!"
+
+msgid "Search for a pinball machine..."
+msgstr "Search for a pinball machine..."
+
+msgid "SEARCH"
+msgstr "SEARCH"
+
+msgid "How does it work?"
+msgstr "How does it work?"
+
+msgid "Subscribe to pinballs"
+msgstr "Subscribe to pinballs"
+
+msgid "Tell us which pinball machines you're hunting for."
+msgstr "Tell us which pinball machines you're hunting for."
+
+msgid "Get instant alerts"
+msgstr "Get instant alerts"
+
+msgid "We'll email you within minutes when a matching machine goes up for sale."
+msgstr "We'll email you within minutes when a matching machine goes up for sale."
+
+msgid "Be first in line"
+msgstr "Be first in line"
+
+msgid "Jump on the deal before anyone else."
+msgstr "Jump on the deal before anyone else."
+
+msgid "Login"
+msgstr "Login"
+
+msgid "Authentication Required"
+msgstr "Authentication Required"
+
+msgid "LOGIN"
+msgstr "LOGIN"
+
+msgid "Home"
+msgstr "Home"
+
+msgid "Pinballs"
+msgstr "Pinballs"
+
+msgid "Logout"
+msgstr "Logout"
+
+msgid "Browse Pinball Machines"
+msgstr "Browse Pinball Machines"
+
+msgid "All manufacturers"
+msgstr "All manufacturers"
+
+msgid "Previous"
+msgstr "Previous"
+
+msgid "Next"
+msgstr "Next"
+
+msgid "Page %s of %s"
+msgstr "Page %s of %s"

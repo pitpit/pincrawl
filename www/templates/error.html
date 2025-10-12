@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Error {{ error_code }} - Pincrawl{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-dark-grey">
+    <div class="max-w-md w-full space-y-8 p-8">
+        <!-- Logo and Title -->
+        <div class="text-center">
+            <a href="/" class="inline-block">
+                <h1 class="text-4xl font-bold text-retro-cyan retro-glow mb-4 hover:text-retro-pink transition-colors duration-300">
+                    PINCRAWL
+                </h1>
+            </a>
+            <div class="text-center mb-6">
+                {{ error_message }}
+            </div>
+        </div>
+
+
+    </div>
+</div>
+{% endblock %}
