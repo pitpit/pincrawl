@@ -11,14 +11,11 @@
 
                 <!-- Desktop Navigation Menu -->
                 <div class="hidden md:flex items-center space-x-6">
-                    <a href="/{{ locale }}/" class="text-retro-cyan px-3 py-2 text-sm font-medium transition-colors duration-200 border border-retro-cyan hover:bg-retro-cyan hover:border-retro-cyan hover:text-black">
-                        {{ i18n._('Home') }}
-                    </a>
                     <a href="/{{ locale }}/pinballs" class="text-retro-cyan px-3 py-2 text-sm font-medium transition-colors duration-200 border border-retro-cyan hover:bg-retro-cyan hover:border-retro-cyan hover:text-black">
-                        {{ i18n._('Pinballs') }}
+                        {{ _('Pinballs') }}
                     </a>
                     <a href="/logout" class="text-retro-cyan px-3 py-2 text-sm font-medium transition-colors duration-200 border border-retro-cyan hover:bg-retro-cyan hover:text-black">
-                        {{ i18n._('Logout') }}
+                        {{ _('Logout') }}
                     </a>
 
                     <!-- Language switcher for desktop -->
@@ -48,10 +45,10 @@
             <div id="mobile-menu" class="md:hidden hidden">
                 <div class="px-2 pt-2 pb-3 space-y-1 bg-darker-grey ">
                     <a href="/{{ locale }}/pinballs" class="block text-retro-cyan px-3 py-2 text-sm font-medium transition-colors duration-200 border border-retro-cyan hover:bg-retro-cyan hover:border-retro-cyan hover:text-black">
-                        {{ i18n._('Pinballs') }}
+                        {{ _('Pinballs') }}
                     </a>
                     <a href="/logout" class="block text-retro-cyan px-3 py-2 text-sm font-medium transition-colors duration-200 border border-retro-cyan hover:bg-retro-cyan hover:text-black">
-                        {{ i18n._('Logout') }}
+                        {{ _('Logout') }}
                     </a>
 
                     <!-- Language switcher for mobile -->

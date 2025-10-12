@@ -53,10 +53,11 @@ templates = Jinja2Templates(directory="templates")
 # Add i18n context processor
 def create_template_context(request: Request, locale: str, **kwargs):
     """Create template context with i18n support"""
+    i18n_context = I18nContext(locale)
     context = {
         "request": request,
         "locale": locale,
-        "i18n": I18nContext(locale),
+        "_": i18n_context._,  # Add simple _ function for Babel extraction
         "supported_locales": SUPPORTED_LOCALES,
         **kwargs
     }

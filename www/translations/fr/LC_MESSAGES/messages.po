@@ -5,10 +5,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PROJECT VERSION\n"
+"Project-Id-Version: Pincrawl 1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-10-11 12:00+0000\n"
-"PO-Revision-Date: 2025-10-11 12:00+0000\n"
+"POT-Creation-Date: 2025-10-12 15:53+0200\n"
+"PO-Revision-Date: 2025-10-12 15:55+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
 "Language-Team: fr <LL@li.org>\n"
@@ -16,76 +16,134 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.14.0\n"
+"Generated-By: Babel 2.10.3\n"
 
-msgid "Pincrawl"
-msgstr "Pincrawl"
-
-msgid "Pincrawl - Find your dream pinball machine"
-msgstr "Pincrawl - Trouvez votre flipper de rêve"
-
-msgid "Your next pinball is just an alert away"
-msgstr "Votre prochain flipper avant tout le monde"
-
-msgid "Be the first to know when a machine goes up for sale!"
-msgstr "Soyez le premier à savoir quand une machine est mise en vente !"
-
-msgid "Search for a pinball machine..."
-msgstr "Rechercher un flipper..."
-
-msgid "SEARCH"
-msgstr "RECHERCHER"
-
-msgid "How does it work?"
-msgstr "Comment ça marche ?"
-
-msgid "Subscribe to pinballs"
-msgstr "S'abonner aux flippers"
-
-msgid "Tell us which pinball machines you're hunting for."
-msgstr "Dites-nous quels flippers vous recherchez."
-
-msgid "Get instant alerts"
-msgstr "Recevez des alertes instantanées"
-
-msgid "We'll email you within minutes when a matching machine goes up for sale."
-msgstr "Nous vous enverrons un e-mail en quelques minutes lorsqu'une machine correspondante sera mise en vente."
-
-msgid "Be first in line"
-msgstr "Soyez le premier"
-
-msgid "Jump on the deal before anyone else."
-msgstr "Sautez sur l'offre avant tout le monde."
-
-msgid "Login"
-msgstr "Connexion"
-
-msgid "Authentication Required"
-msgstr "Authentification requise"
-
-msgid "LOGIN"
-msgstr "CONNEXION"
-
-msgid "Home"
-msgstr "Accueil"
-
+#: templates/_header.html:15 templates/_header.html:48
+#: templates/pinballs.html:3
 msgid "Pinballs"
 msgstr "Flippers"
 
+#: templates/_header.html:18 templates/_header.html:51
 msgid "Logout"
 msgstr "Déconnexion"
 
-msgid "Browse Pinball Machines"
-msgstr "Parcourir les flippers"
-
-msgid "All manufacturers"
-msgstr "Tous les fabricants"
-
+#: templates/_pagination.html:7
 msgid "Previous"
 msgstr "Précédent"
 
+#: templates/_pagination.html:11
+#, python-format
+msgid "Page %s of %s"
+msgstr "Page %s sur %s"
+
+#: templates/_pagination.html:17
 msgid "Next"
 msgstr "Suivant"
 
-msgid "Page %s of %s"
-msgstr "Page %s sur %s"
+#: templates/home.html:3
+msgid "Pincrawl - Find your dream pinball machine"
+msgstr "Pincrawl - Trouvez votre flipper de rêve"
+
+#: templates/home.html:21
+msgid "Your next pinball is just an alert away"
+msgstr "Votre prochain flipper avant tout le monde"
+
+#: templates/home.html:23
+msgid "Be the first to know when a machine goes up for sale!"
+msgstr "Soyez le premier à savoir quand une machine est mise en vente !"
+
+#: templates/home.html:32 templates/pinballs.html:26
+msgid "Search for a pinball machine..."
+msgstr "Rechercher un flipper..."
+
+#: templates/home.html:40 templates/pinballs.html:34
+msgid "SEARCH"
+msgstr "RECHERCHER"
+
+#: templates/home.html:52
+msgid "How does it work?"
+msgstr "Comment ça marche ?"
+
+#: templates/home.html:57
+msgid "Subscribe to pinballs"
+msgstr "S'abonner aux flippers"
+
+#: templates/home.html:58
+msgid "Tell us which pinball machines you're hunting for."
+msgstr "Dites-nous quels flippers vous recherchez."
+
+#: templates/home.html:62
+msgid "Get instant alerts"
+msgstr "Recevez des alertes instantanées"
+
+#: templates/home.html:63
+msgid "We'll email you within minutes when a matching machine goes up for sale."
+msgstr "Nous vous enverrons un e-mail en quelques minutes lorsqu'une machine correspondante sera mise en vente."
+
+#: templates/home.html:67
+msgid "Be first in line"
+msgstr "Soyez le premier"
+
+#: templates/home.html:68
+msgid "Jump on the deal before anyone else."
+msgstr "Sautez sur l'offre avant tout le monde."
+
+#: templates/login.html:3
+msgid "Login"
+msgstr "Connexion"
+
+#: templates/login.html:21
+msgid "Authentication Required"
+msgstr "Authentification requise"
+
+#: templates/login.html:28
+msgid "LOGIN"
+msgstr "CONNEXION"
+
+#: templates/pinballs.html:15
+msgid "Browse Pinball Machines"
+msgstr "Parcourir les flippers"
+
+#: templates/pinballs.html:45
+msgid "All manufacturers"
+msgstr "Tous les fabricants"
+
+#: templates/pinballs.html:56
+msgid "From:"
+msgstr "De :"
+
+#: templates/pinballs.html:78
+msgid "To:"
+msgstr "À :"
+
+#: templates/pinballs.html:114
+msgid "Show only watched pinballs"
+msgstr "Afficher seulement les flippers surveillés"
+
+#: templates/pinballs.html:119
+msgid "Clear filters"
+msgstr "Effacer les filtres"
+
+#: templates/pinballs.html:150
+msgid "📊 Price avg (m|y):"
+msgstr "📊 Prix moy. (m|a) :"
+
+#: templates/pinballs.html:159
+msgid "📊 No price statistics available"
+msgstr "📊 Aucune statistique de prix disponible"
+
+#: templates/pinballs.html:170
+msgid "WATCHING"
+msgstr "SURVEILLÉ"
+
+#: templates/pinballs.html:170
+msgid "WATCH"
+msgstr "SURVEILLER"
+
+#: templates/pinballs.html:184
+msgid "No pinball machines found"
+msgstr "Aucun flipper trouvé"
+
+#: templates/pinballs.html:185
+msgid "Try adjusting your search terms or browse all machines."
+msgstr "Essayez d'ajuster vos termes de recherche ou parcourez toutes les machines."

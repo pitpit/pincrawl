@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ i18n._('Pinballs') }} - Pincrawl{% endblock %}
+{% block title %}{{ _('Pinballs') }} - Pincrawl{% endblock %}
 
 {% block content %}
 <div class="min-h-screen bg-dark-grey flex flex-col">
@@ -12,7 +12,7 @@
 
         <!-- Search Section -->
         <div class="text-center mt-12 mb-8 ">
-            <h2 class="text-3xl font-bold text-retro-cyan mb-8 retro-glow">{{ i18n._('Browse Pinball Machines') }}</h2>
+            <h2 class="text-3xl font-bold text-retro-cyan mb-8 retro-glow">{{ _('Browse Pinball Machines') }}</h2>
 
             <!-- Search Bar -->
             <div class="max-w-2xl mx-auto mb-8">
@@ -23,7 +23,7 @@
                             <input
                                 type="text"
                                 name="query"
-                                placeholder="{{ i18n._('Search for a pinball machine...') }}"
+                                placeholder="{{ _('Search for a pinball machine...') }}"
                                 value="{{ query or '' }}"
                                 class="w-full px-6 py-4 text-lg text-white bg-medium-grey border border-retro-cyan focus:outline-none focus:border-retro-pink focus:ring-1 focus:ring-retro-pink transition-all duration-300 placeholder-gray-500 h-14"
                             >
@@ -31,7 +31,7 @@
                                 type="submit"
                                 class="px-8 py-4 bg-retro-cyan text-black font-bold hover:bg-retro-pink transition-all duration-300 border border-retro-cyan hover:border-retro-pink h-14"
                             >
-                                {{ i18n._('SEARCH') }}
+                                {{ _('SEARCH') }}
                             </button>
                         </div>
 
@@ -42,7 +42,7 @@
                                 id="manufacturer"
                                 class="flex-grow px-4 py-3 text-white bg-medium-grey border border-retro-cyan focus:outline-none focus:border-retro-pink focus:ring-1 focus:ring-retro-pink transition-all duration-300"
                             >
-                                <option value="">{{ i18n._('All manufacturers') }}</option>
+                                <option value="">{{ _('All manufacturers') }}</option>
                                 {% for manufacturer in manufacturers %}
                                 <option value="{{ manufacturer }}" {% if selected_manufacturer == manufacturer %}selected{% endif %}>{{ manufacturer }}</option>
                                 {% endfor %}
@@ -53,7 +53,7 @@
                         <div class="space-y-3">
                             <div class="flex items-center space-x-4">
                                 <div class="flex items-center space-x-2">
-                                    <label for="year_min" class="text-gray-300 text-sm">From:</label>
+                                    <label for="year_min" class="text-gray-300 text-sm">{{ _('From:') }}</label>
                                     <input
                                         type="number"
                                         name="year_min"
@@ -75,7 +75,7 @@
                                     >
                                 </div>
                                 <div class="flex items-center space-x-2">
-                                    <label for="year_max" class="text-gray-300 text-sm">To:</label>
+                                    <label for="year_max" class="text-gray-300 text-sm">{{ _('To:') }}</label>
                                     <input
                                         type="number"
                                         name="year_max"
@@ -111,12 +111,12 @@
                                     class="w-4 h-4 text-retro-cyan bg-medium-grey border-retro-cyan rounded focus:ring-retro-pink focus:ring-1"
                                 >
                                 <label for="subscribed" class="ml-2 text-retro-cyan font-bold">
-                                    Show only watched pinballs
+                                    {{ _('Show only watched pinballs') }}
                                 </label>
                             </div>
                             <div>
                                 <a href="/{{ locale }}/pinballs" class="text-retro-cyan hover:text-retro-pink text-sm transition-colors duration-200">
-                                    Clear filters
+                                    {{ _('Clear filters') }}
                                 </a>
                             </div>
                         </div>
@@ -147,7 +147,7 @@
                             <div class="flex flex-wrap gap-4 text-sm">
                                 {% if product.monthly_price_average or product.yearly_price_average or product.monthly_ads_count or product.yearly_ads_count %}
                                         <div class="text-retro-cyan">
-                                            📊 Price avg (m|y):
+                                            {{ _('📊 Price avg (m|y):') }}
 
                                             <span class="font-bold">
                                                 {{ product.monthly_price_average or "--" }}€|{{ product.yearly_price_average or "--" }}€
@@ -156,7 +156,7 @@
                                         </div>
                                 {% else %}
                                     <div class="text-gray-500 text-sm">
-                                        📊 No price statistics available
+                                        {{ _('📊 No price statistics available') }}
                                     </div>
                                 {% endif %}
                             </div>
@@ -167,7 +167,7 @@
                             class="px-6 py-2 {% if product.is_subscribed %}text-retro-pink border-retro-pink hover:text-black hover:bg-retro-pink hover:border-retro-pink{% else %}text-retro-cyan border-retro-cyan hover:bg-retro-cyan hover:text-black hover:border-retro-cyan{% endif %} font-bold transition-all duration-300 border "
                             onclick="subscribe(this, '{{ product.id }}')"
                         >
-                            {% if product.is_subscribed %}WATCHING{% else %}WATCH{% endif %}
+                            {% if product.is_subscribed %}{{ _('WATCHING') }}{% else %}{{ _('WATCH') }}{% endif %}
                         </button>
                     </div>
                 </div>
@@ -181,8 +181,8 @@
         {% else %}
         <!-- No Results -->
         <div class="text-center py-12">
-            <h3 class="text-2xl font-bold text-gray-400 mb-4">No pinball machines found</h3>
-            <p class="text-gray-500 mb-4">Try adjusting your search terms or browse all machines.</p>
+            <h3 class="text-2xl font-bold text-gray-400 mb-4">{{ _('No pinball machines found') }}</h3>
+            <p class="text-gray-500 mb-4">{{ _('Try adjusting your search terms or browse all machines.') }}</p>
         </div>
         {% endif %}
 
@@ -202,11 +202,11 @@ function subscribe(element, id) {
     })
     .then(response => {
         if (response.status === 201) {
-            button.textContent = 'WATCHING';
+            button.textContent = '{{ _("WATCHING") }}';
             button.classList.remove('text-retro-cyan', 'border-retro-cyan', 'hover:bg-retro-cyan', 'hover:text-black');
             button.classList.add('text-retro-pink', 'border-retro-pink', 'hover:text-black', 'hover:bg-retro-pink', 'hover:border-retro-pink');
         } else if (response.status === 202) {
-            button.textContent = 'WATCH';
+            button.textContent = '{{ _("WATCH") }}';
             button.classList.remove('text-retro-pink', 'border-retro-pink', 'hover:text-black', 'hover:bg-retro-pink', 'hover:border-retro-pink');
             button.classList.add('text-retro-cyan', 'border-retro-cyan', 'hover:bg-retro-cyan', 'hover:text-black');
         }

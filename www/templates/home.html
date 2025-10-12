@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ i18n._('Pincrawl - Find your dream pinball machine') }}{% endblock %}
+{% block title %}{{ _('Pincrawl - Find your dream pinball machine') }}{% endblock %}
 
 {% block content %}
 <div class="min-h-screen bg-dark-grey flex flex-col">
@@ -18,9 +18,9 @@
 
         <!-- Hero Section with Search -->
         <div class="text-center mt-12 mb-12 ">
-            <h2 class="text-3xl font-bold text-retro-cyan mb-4 retro-glow">{{ i18n._('Your next pinball is just an alert away') }}</h2>
+            <h2 class="text-3xl font-bold text-retro-cyan mb-4 retro-glow">{{ _('Your next pinball is just an alert away') }}</h2>
             <p class="text-xl text-gray-300 mb-8">
-                {{ i18n._('Be the first to know when a machine goes up for sale!') }}
+                {{ _('Be the first to know when a machine goes up for sale!') }}
             </p>
             <!-- Search Bar -->
             <div class="max-w-2xl mx-auto">
@@ -29,7 +29,7 @@
                         <input
                             type="text"
                             name="query"
-                            placeholder="{{ i18n._('Search for a pinball machine...') }}"
+                            placeholder="{{ _('Search for a pinball machine...') }}"
                             value="{{ search_query or '' }}"
                             class="w-full px-6 py-4 text-lg text-white bg-medium-grey border border-retro-cyan focus:outline-none focus:border-retro-pink focus:ring-1 focus:ring-retro-pink transition-all duration-300 placeholder-gray-500 h-14"
                         >
@@ -37,7 +37,7 @@
                             type="submit"
                             class="px-8 py-4 bg-retro-cyan text-black font-bold hover:bg-retro-pink transition-all duration-300 border border-retro-cyan hover:border-retro-pink h-14"
                         >
-                            {{ i18n._('SEARCH') }}
+                            {{ _('SEARCH') }}
                         </button>
                     </div>
                 </form>
@@ -49,23 +49,23 @@
     <section class="bg-dark-grey py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold text-retro-white mb-8 retro-glow">{{ i18n._('How does it work?') }}</h2>
+                <h2 class="text-3xl font-bold text-retro-white mb-8 retro-glow">{{ _('How does it work?') }}</h2>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div class="bg-darker-grey p-6 border border-retro-white text-center">
                     <div class="text-6xl mb-4">1</div>
-                    <h3 class="text-xl font-bold text-retro-white mb-4">{{ i18n._('Subscribe to pinballs') }}</h3>
-                    <p class="text-gray-300">{{ i18n._('Tell us which pinball machines you\'re hunting for.') }}</p>
+                    <h3 class="text-xl font-bold text-retro-white mb-4">{{ _('Subscribe to pinballs') }}</h3>
+                    <p class="text-gray-300">{{ _('Tell us which pinball machines you\'re hunting for.') }}</p>
                 </div>
                 <div class="bg-darker-grey p-6 border border-retro-white text-center">
                     <div class="text-6xl mb-4">2</div>
-                    <h3 class="text-xl font-bold text-retro-white mb-4">{{ i18n._('Get instant alerts') }}</h3>
-                    <p class="text-gray-300">{{ i18n._('We\'ll email you within minutes when a matching machine goes up for sale.') }}</p>
+                    <h3 class="text-xl font-bold text-retro-white mb-4">{{ _('Get instant alerts') }}</h3>
+                    <p class="text-gray-300">{{ _('We\'ll email you within minutes when a matching machine goes up for sale.') }}</p>
                 </div>
                 <div class="bg-darker-grey p-6 border border-retro-white text-center">
                     <div class="text-6xl mb-4">3</div>
-                    <h3 class="text-xl font-bold text-retro-white mb-4">{{ i18n._('Be first in line') }}</h3>
-                    <p class="text-gray-300">{{ i18n._('Jump on the deal before anyone else.') }}</p>
+                    <h3 class="text-xl font-bold text-retro-white mb-4">{{ _('Be first in line') }}</h3>
+                    <p class="text-gray-300">{{ _('Jump on the deal before anyone else.') }}</p>
                 </div>
             </div>
         </div>

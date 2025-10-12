@@ -4,16 +4,16 @@
     <a {% if has_prev %}href="/{{locale}}/pinballs?page={{ prev_page }}{% if query %}&query={{ query }}{% endif %}{% if selected_manufacturer %}&manufacturer={{ selected_manufacturer }}{% endif %}{% if year_min %}&year_min={{ year_min }}{% endif %}{% if year_max %}&year_max={{ year_max }}{% endif %}{% if subscribed %}&subscribed={{ subscribed }}{% endif %}"{% endif %}
         {% if not has_prev %}disabled="disabled"{% endif %}
         class="px-2 py-1 text-sm bg-medium-grey border {% if has_prev %}text-retro-cyan border-retro-cyan hover:bg-retro-cyan hover:text-black transition-all duration-300{% else %}text-gray-500 border-gray-500{% endif %}">
-        {{ i18n._('Previous') }}
+        {{ _('Previous') }}
     </a>
 
     <span class="text-gray-300 text-sm px-2">
-        {{ i18n._('Page %s of %s') % (current_page, total_pages) }}
+        {{ _('Page %s of %s') % (current_page, total_pages) }}
     </span>
 
     <a {% if has_next %}href="/{{locale}}/pinballs?page={{ next_page }}{% if query %}&query={{ query }}{% endif %}{% if selected_manufacturer %}&manufacturer={{ selected_manufacturer }}{% endif %}{% if year_min %}&year_min={{ year_min }}{% endif %}{% if year_max %}&year_max={{ year_max }}{% endif %}{% if subscribed %}&subscribed={{ subscribed }}{% endif %}"{% endif %}
         {% if not has_next %}disabled="disabled"{% endif %}
         class="px-2 py-1 text-sm bg-medium-grey border {% if has_next %}text-retro-cyan border-retro-cyan hover:bg-retro-cyan hover:text-black transition-all duration-300{% else %}text-gray-500 border-gray-500{% endif %}">
-        {{ i18n._('Next') }}
+        {{ _('Next') }}
     </a>
 </div>
