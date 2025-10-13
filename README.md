@@ -92,7 +92,15 @@ pybabel compile -d translations
 
 ## TODO
 
-- check opdb_id when creating a subscription
+- [ ] limit number of subscriptions to 3 / user
+- [ ] check opdb_id when creating a subscription
+- [ ] mentions legales
+- [ ] CGU
+- [ ] logo
+- [ ] plug stripe in
+- [ ] plug mailersend in
+- [ ] custom domain pincrawl.pitp.it
+- [ ] use internal id of product as a foreign key in subscription instead of opdb_id
 
 ## 3rd party tools
 

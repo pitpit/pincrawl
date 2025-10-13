@@ -122,7 +122,7 @@ msgstr "Afficher seulement les flippers surveillés"
 
 #: templates/pinballs.html:119
 msgid "Clear filters"
-msgstr "Effacer les filtres"
+msgstr "[Effacer les filtres]"
 
 #: templates/pinballs.html:150
 msgid "📊 Price avg (m|y):"

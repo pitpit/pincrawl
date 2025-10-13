@@ -122,7 +122,7 @@ msgstr "Show only watched pinballs"
 
 #: templates/pinballs.html:119
 msgid "Clear filters"
-msgstr "Clear filters"
+msgstr "[Clear filters]"
 
 #: templates/pinballs.html:150
 msgid "📊 Price avg (m|y):"
