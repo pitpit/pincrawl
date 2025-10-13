@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Pricing') }} - Pincrawl{% endblock %}
+
+{% block content %}
+    {% include '_header.html' %}
+
+    <div class="min-h-screen bg-dark-grey">
+        <!-- Hero Section -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div class="text-center mb-16">
+
+                <h2 class="text-3xl md:text-3xl font-bold text-retro-white retro-glow mb-4">
+                    {{ _('Fair pricing that grows with your passion') }}
+                </h2>
+                <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+                    {{ _('Choose the perfect plan to never miss your next machine.') }}
+                </p>
+            </div>
+
+            <!-- Pricing Table -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+
+                <!-- Free Plan -->
+                <div class="bg-darker-grey border border-retro-cyan p-8 relative flex flex-col h-full">
+                    <div class="text-center flex-grow flex flex-col">
+                        <h3 class="text-2xl font-bold text-retro-cyan mb-2">{{ _('Free') }}</h3>
+
+                        <div class="mb-8">
+                            <span class="text-4xl font-bold text-white">0€</span>
+                            <span class="text-gray-300 ml-2">/ {{ _('month') }}</span>
+                        </div>
+
+                        <div class="space-y-4 text-left flex-grow">
+                            <div class="flex items-start space-x-3">
+                                <svg class="w-5 h-5 text-retro-green mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                                <span class="text-gray-300">{{ _('Watch up to 3 pinballs') }}</span>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <svg class="w-5 h-5 text-retro-green mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                                <span class="text-gray-300">{{ _('Email alerts') }}</span>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <svg class="w-5 h-5 text-retro-green mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                                <span class="text-gray-300">{{ _('Basic support') }}</span>
+                            </div>
+                        </div>
+
+                        <button class="w-full mt-8 bg-retro-cyan text-black font-bold py-3 px-6 hover:bg-white transition-colors duration-200">
+                            {{ _('Get Started') }}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Collector Plan -->
+                <div class="bg-darker-grey border-2 border-retro-pink p-8 relative flex flex-col h-full">
+                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                        <span class="bg-retro-pink text-white px-4 py-1 text-sm font-bold">
+                            {{ _('Most Popular') }}
+                        </span>
+                    </div>
+
+                    <div class="text-center flex-grow flex flex-col">
+                        <h3 class="text-2xl font-bold text-retro-pink mb-2">{{ _('Collector') }}</h3>
+
+                        <div class="mb-8">
+                            <span class="text-4xl font-bold text-white">xxx€</span>
+                            <span class="text-gray-300 ml-2">/ {{ _('month') }}</span>
+                        </div>
+
+                        <div class="space-y-4 text-left flex-grow">
+                            <div class="flex items-start space-x-3">
+                                <svg class="w-5 h-5 text-retro-green mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                                <span class="text-gray-300">{{ _('Watch up to xxx pinballs') }}</span>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <svg class="w-5 h-5 text-retro-green mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                                <span class="text-gray-300">{{ _('Email alerts') }}</span>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <svg class="w-5 h-5 text-retro-green mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                                <span class="text-gray-300">{{ _('SMS alerts') }}</span>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <svg class="w-5 h-5 text-retro-green mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                                <span class="text-gray-300">{{ _('Priority support') }}</span>
+                            </div>
+                        </div>
+
+                        <button class="w-full mt-8 bg-retro-pink text-white font-bold py-3 px-6 hover:bg-white transition-colors duration-200">
+                            {{ _('Select plan') }}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Professional Plan -->
+                <div class="bg-darker-grey border border-retro-green p-8 relative flex flex-col h-full">
+                    <div class="text-center flex-grow flex flex-col">
+                        <h3 class="text-2xl font-bold text-retro-green mb-2">{{ _('Professional') }}</h3>
+
+                        <div class="mb-8">
+                            <span class="text-4xl font-bold text-white">xxx€</span>
+                            <span class="text-gray-300 ml-2">/ {{ _('month') }}</span>
+                        </div>
+
+                        <div class="space-y-4 text-left flex-grow">
+                            <div class="flex items-start space-x-3">
+                                <svg class="w-5 h-5 text-retro-green mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                                <span class="text-gray-300">{{ _('Watch unlimited pinballs') }}</span>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <svg class="w-5 h-5 text-retro-green mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                                <span class="text-gray-300">{{ _('Email alerts') }}</span>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <svg class="w-5 h-5 text-retro-green mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                                <span class="text-gray-300">{{ _('SMS alerts') }}</span>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <svg class="w-5 h-5 text-retro-green mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                                <span class="text-gray-300">{{ _('WhatsApp alerts') }}</span>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <svg class="w-5 h-5 text-retro-green mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                                <span class="text-gray-300">{{ _('Priority support') }}</span>
+                            </div>
+                        </div>
+
+                        <button class="w-full mt-8 bg-retro-green text-black font-bold py-3 px-6 hover:bg-white transition-colors duration-200">
+                            {{ _('Select plan') }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ Section -->
+            <div class="mt-24 px-8  mx-auto">
+                <h2 class="text-3xl font-bold text-retro-white text-center mb-12 retro-glow">
+                    {{ _('Frequently Asked Questions') }}
+                </h2>
+
+                <div class="space-y-8">
+                    <div class="bg-darker-grey p-6 border border-retro-white">
+                        <h3 class="text-xl font-bold text-retro-white mb-3">
+                            {{ _('How does billing work?') }}
+                        </h3>
+                        <p class="text-gray-300">
+                            {{ _('We charge monthly based on your selected plan. You can upgrade or downgrade at any time, and changes take effect immediately.') }}
+                        </p>
+                    </div>
+
+                    <div class="bg-darker-grey p-6 border border-retro-white">
+                        <h3 class="text-xl font-bold text-retro-white mb-3">
+                            {{ _('Can I change my plan anytime?') }}
+                        </h3>
+                        <p class="text-gray-300">
+                            {{ _('Yes! You can upgrade or downgrade your plan at any time from your account settings. Changes are prorated and take effect immediately.') }}
+                        </p>
+                    </div>
+
+                    <div class="bg-darker-grey p-6 border border-retro-white">
+                        <h3 class="text-xl font-bold text-retro-white mb-3">
+                            {{ _('What types of alerts do you support?') }}
+                        </h3>
+                        <p class="text-gray-300">
+                            {{ _('We support email alerts on all plans. Professional plans also include SMS and WhatsApp notifications for instant updates on your favorite pinball machines.') }}
+                        </p>
+                    </div>
+
+                    <div class="bg-darker-grey p-6 border border-retro-white">
+                        <h3 class="text-xl font-bold text-retro-white mb-3">
+                            {{ _('Is there a free trial?') }}
+                        </h3>
+                        <p class="text-gray-300">
+                            {{ _('Yes! Our Free plan allows you to watch up to 3 pinball machines with email alerts. You can start using Pincrawl immediately without any payment information.') }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include '_footer.html' %}
+{% endblock %}

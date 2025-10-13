@@ -5,7 +5,7 @@
                 <!-- Logo/Brand -->
                 <div class="flex items-center">
                     <a href="/{{ locale }}/" class="text-2xl font-bold text-retro-cyan retro-glow hover:text-retro-pink transition-colors duration-200">
-                    PINCRAWL
+                    PINCRAWL<span class="text-gray-500 text-sm"> alpha</span>
                     </a>
                 </div>
 
@@ -13,6 +13,9 @@
                 <div class="hidden md:flex items-center space-x-6">
                     <a href="/{{ locale }}/pinballs" class="text-retro-cyan px-3 py-2 text-sm font-medium transition-colors duration-200 border border-retro-cyan hover:bg-retro-cyan hover:border-retro-cyan hover:text-black">
                         {{ _('Pinballs') }}
+                    </a>
+                    <a href="/{{ locale }}/pricing" class="text-retro-cyan px-3 py-2 text-sm font-medium transition-colors duration-200 border border-retro-cyan hover:bg-retro-cyan hover:border-retro-cyan hover:text-black">
+                        {{ _('Pricing') }}
                     </a>
                     <a href="/logout" class="text-retro-cyan px-3 py-2 text-sm font-medium transition-colors duration-200 border border-retro-cyan hover:bg-retro-cyan hover:text-black">
                         {{ _('Logout') }}
@@ -46,6 +49,9 @@
                 <div class="px-2 pt-2 pb-3 space-y-1 bg-darker-grey ">
                     <a href="/{{ locale }}/pinballs" class="block text-retro-cyan px-3 py-2 text-sm font-medium transition-colors duration-200 border border-retro-cyan hover:bg-retro-cyan hover:border-retro-cyan hover:text-black">
                         {{ _('Pinballs') }}
+                    </a>
+                    <a href="/{{ locale }}/pricing" class="block text-retro-cyan px-3 py-2 text-sm font-medium transition-colors duration-200 border border-retro-cyan hover:bg-retro-cyan hover:border-retro-cyan hover:text-black">
+                        {{ _('Pricing') }}
                     </a>
                     <a href="/logout" class="block text-retro-cyan px-3 py-2 text-sm font-medium transition-colors duration-200 border border-retro-cyan hover:bg-retro-cyan hover:text-black">
                         {{ _('Logout') }}

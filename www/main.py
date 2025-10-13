@@ -379,6 +379,25 @@ async def pinballs(
     )
 
 
+@app.get("/{locale}/pricing")
+async def pricing(
+    request: Request,
+    locale: str = Path(..., pattern=f"^({'|'.join(SUPPORTED_LOCALES)})$"),
+    user=Depends(get_authenticated_user)
+):
+    """Handle pricing page"""
+    locale = validate_locale(locale)
+
+    return templates.TemplateResponse(
+        "pricing.html",
+        create_template_context(
+            request,
+            locale,
+            user=user
+        )
+    )
+
+
 @app.post("/subs")
 async def subs(
     request: Request,
