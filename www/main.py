@@ -18,7 +18,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from authlib.integrations.starlette_client import OAuth
 from dotenv import load_dotenv
 from pincrawl.product_matcher import ProductMatcher
-from pincrawl.database import Database, Sub, Product, Account
+from pincrawl.database import Database, Watching, Product, Account
 from i18n import get_locale_from_request, validate_locale, I18nContext, SUPPORTED_LOCALES, DEFAULT_LOCALE
 from fastapi.exceptions import RequestValidationError
 
@@ -352,13 +352,13 @@ async def pinballs(
     # Also get manufacturers and year range using the same database session
     try:
         if user_email:
-            user_subscriptions = Sub.get_user_subscriptions(session, user_email)
+            user_watching = Watching.get_user_watching(session, user_email)
             for product in products:
-                product.is_subscribed = product.opdb_id in user_subscriptions
+                product.is_watching = product.opdb_id in user_watching
         else:
-            # Mark all as not subscribed if no user email
+            # Mark all as not watching if no user email
             for product in products:
-                product.is_subscribed = False
+                product.is_watching = False
 
         # Get list of all manufacturers for dropdown
         manufacturers = Product.get_manufacturers(session)
@@ -475,13 +475,13 @@ async def my_account(
     )
 
 
-@app.post("/subs")
-async def subs(
+@app.post("/watch")
+async def watch(
     request: Request,
     user=Depends(get_authenticated_user)
 ):
 
-    # Get user email for subscription filtering
+    # Get user email
     user_email = user.get('email')
     session = db.get_db()
 
@@ -495,7 +495,7 @@ async def subs(
         raise HTTPException(status_code=404, detail="Pinball not found")
 
     # Check if subscription already exists
-    existing = session.query(Sub).filter_by(
+    existing = session.query(Watching).filter_by(
         email=user_email,
         opdb_id=product.opdb_id
     ).first()
@@ -506,7 +506,7 @@ async def subs(
         status = 202  # Accepted (deleted)
     else:
         # Create new subscription
-        subscription = Sub(email=user_email, opdb_id=product.opdb_id)
+        subscription = Watching(email=user_email, opdb_id=product.opdb_id)
         session.add(subscription)
         logger.info(f"✓ Added subscription: {user_email} -> {product.opdb_id}")
         status = 201  # Created

@@ -7,7 +7,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 from pincrawl.commands.ads import ads
 from pincrawl.commands.products import products
-from pincrawl.commands.subs import subs
+from pincrawl.commands.watching import watching
 from pincrawl.commands.mailer import mailer
 
 # Load environment variables
@@ -41,7 +41,7 @@ def pincrawl(verbose):
 pincrawl.add_command(mailer)
 pincrawl.add_command(ads)
 pincrawl.add_command(products)
-pincrawl.add_command(subs)
+pincrawl.add_command(watching)
 
 
 def main():

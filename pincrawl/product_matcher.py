@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 import openai
 from pinecone import Pinecone
 import click
-from .database import Database, Product, Sub
+from .database import Database, Product, Watching
 from sqlalchemy import case, func, text, Integer
 
 # Module exports
@@ -608,7 +608,7 @@ Only return valid JSON - no additional text or formatting (do not add fenced cod
         if subscribed_only_user_email is not None:
             logger.info(f"Filtering by subscriptions for user: '{subscribed_only_user_email}'")
             # Join with subscriptions table to only show subscribed products
-            db_query = db_query.join(Sub, Product.opdb_id == Sub.opdb_id).filter(Sub.email == subscribed_only_user_email)
+            db_query = db_query.join(Watching, Product.opdb_id == Watching.opdb_id).filter(Watching.email == subscribed_only_user_email)
 
         return db_query
 

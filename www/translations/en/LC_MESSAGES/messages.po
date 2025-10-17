@@ -74,8 +74,8 @@ msgid "How does it work?"
 msgstr "How does it work?"
 
 #: templates/home.html:57
-msgid "Subscribe to pinballs"
-msgstr "Subscribe to pinballs"
+msgid "Watch pinballs"
+msgstr "Watch pinballs"
 
 #: templates/home.html:58
 msgid "Tell us which pinball machines you're hunting for."

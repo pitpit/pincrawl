@@ -5,7 +5,7 @@ from collections import defaultdict
 from datetime import datetime
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import and_
-from pincrawl.database import Database, Sub, Ad, Task, TaskStatus, Product
+from pincrawl.database import Database, Watching, Ad, Task, TaskStatus, Product
 from pincrawl.task_manager import TaskManager
 from pincrawl.smtp import Smtp
 
@@ -19,15 +19,15 @@ database = Database()
 task_manager = TaskManager()
 
 @click.group()
-def subs():
-    """Manage user subscriptions to pinball machines."""
+def watching():
+    """Manage user watching list for pinball machines."""
     pass
 
-@subs.command("add")
+@watching.command("add")
 @click.argument("email")
 @click.argument("opdb_id")
-def subs_add(email, opdb_id):
-    """Add a new subscription for a user to a specific pinball machine.
+def watching_add(email, opdb_id):
+    """Add a new watching entry for a user to a specific pinball machine.
 
     Args:
         email: User's email address
@@ -37,8 +37,8 @@ def subs_add(email, opdb_id):
     session = database.get_db()
 
     try:
-        # Check if subscription already exists
-        existing = session.query(Sub).filter_by(
+        # Check if watching entry already exists
+        existing = session.query(Watching).filter_by(
             email=email,
             opdb_id=opdb_id
         ).first()
@@ -47,12 +47,12 @@ def subs_add(email, opdb_id):
             click.echo(f"✓ User {email} is already subscribed to {opdb_id}")
             return
 
-        # Create new subscription
-        subscription = Sub(email=email, opdb_id=opdb_id)
+        # Create new watching entry
+        subscription = Watching(email=email, opdb_id=opdb_id)
         session.add(subscription)
         session.commit()
 
-        click.echo(f"✓ Added subscription: {email} -> {opdb_id}")
+        click.echo(f"✓ Added watching entry: {email} -> {opdb_id}")
 
     except IntegrityError:
         session.rollback()
@@ -63,22 +63,22 @@ def subs_add(email, opdb_id):
     finally:
         session.close()
 
-@subs.command("list")
-def subscriptions_list():
-    """List all current subscriptions."""
+@watching.command("list")
+def watching_list():
+    """List all current watching entries."""
 
     # Initialize database connection
     session = database.get_db()
 
     try:
         # Query all subscriptions ordered by email
-        subscriptions = session.query(Sub).order_by(
-            Sub.email,
-            Sub.opdb_id
+        subscriptions = session.query(Watching).order_by(
+            Watching.email,
+            Watching.opdb_id
         ).all()
 
         if not subscriptions:
-            click.echo("No subscriptions found.")
+            click.echo("No watching entries found.")
             return
 
         # Display subscriptions in the requested format
@@ -91,15 +91,15 @@ def subscriptions_list():
         session.close()
 
 
-@subs.command("send")
-def subs_send():
-    """Send email notifications to subscribers about new ads matching their subscriptions."""
+@watching.command("send")
+def watching_send():
+    """Send email notifications to watchers about new ads matching their watching list."""
 
     # Initialize database connection
     session = database.get_db()
 
     try:
-        TASK_NAME = "subs-send"
+        TASK_NAME = "watching-send"
         # Check the last task
         last_task = task_manager.get_latest_task_by_name(session, TASK_NAME)
 
@@ -138,7 +138,7 @@ def subs_send():
             # Get unique opdb_ids from new ads
             new_opdb_ids = {ad.opdb_id for ad in new_ads if ad.opdb_id}
             # Only get subscriptions that match the opdb_ids from new ads
-            relevant_subscriptions = session.query(Sub).filter(Sub.opdb_id.in_(new_opdb_ids)).all()
+            relevant_subscriptions = session.query(Watching).filter(Watching.opdb_id.in_(new_opdb_ids)).all()
 
             for subscription in relevant_subscriptions:
                 subscriptions_by_email[subscription.email].add(subscription.opdb_id)

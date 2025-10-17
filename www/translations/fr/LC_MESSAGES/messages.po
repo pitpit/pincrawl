@@ -74,7 +74,7 @@ msgid "How does it work?"
 msgstr "Comment ça marche ?"
 
 #: templates/home.html:57
-msgid "Subscribe to pinballs"
+msgid "Watch pinballs"
 msgstr "Surveillez des flippers"
 
 #: templates/home.html:58

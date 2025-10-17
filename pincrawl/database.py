@@ -296,10 +296,10 @@ class Ad(Base):
         return ad_record
 
 
-class Sub(Base):
-    """SQLAlchemy model for subscriptions table."""
+class Watching(Base):
+    """SQLAlchemy model for watching table."""
 
-    __tablename__ = "subs"
+    __tablename__ = "watching"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     email = Column(String, nullable=False, index=True)
@@ -307,29 +307,29 @@ class Sub(Base):
     created_at = Column(DateTime, default=datetime.now, nullable=False)
 
     @staticmethod
-    def get_user_subscriptions(session, user_email):
+    def get_user_watching(session, user_email):
         """
-        Get a set of opdb_ids that the user has subscribed to.
+        Get a set of opdb_ids that the user is watching.
 
         Args:
-            user_email: User email to get subscriptions for
+            user_email: User email watching
 
         Returns:
-            set: Set of opdb_ids the user is subscribed to
+            set: Set of opdb_ids the user is watching
         """
 
         # Query user subscriptions
-        subscriptions = session.query(Sub.opdb_id).filter(Sub.email == user_email).all()
+        items = session.query(Watching.opdb_id).filter(Watching.email == user_email).all()
 
         # Convert to set of opdb_ids
-        opdb_ids = {sub[0] for sub in subscriptions if sub[0]}
+        opdb_ids = {item[0] for item in items if item[0]}
 
         return opdb_ids
 
 
     # Define unique constraint on email + opdb_id combination
     __table_args__ = (
-        UniqueConstraint('email', 'opdb_id', name='unique_email_opdb_id'),
+        UniqueConstraint('email', 'opdb_id', name='unique_watching_email_opdb_id'),
     )
 
 
@@ -532,7 +532,7 @@ class Product(Base):
             except (ValueError, TypeError):
                 pass
         if subscribed_only_user_email is not None:
-            db_query = db_query.join(Sub, Product.opdb_id == Sub.opdb_id).filter(Sub.email == subscribed_only_user_email)
+            db_query = db_query.join(Watching, Product.opdb_id == Watching.opdb_id).filter(Watching.email == subscribed_only_user_email)
 
         return db_query
 

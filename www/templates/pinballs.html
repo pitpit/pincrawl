@@ -8,10 +8,10 @@
     {% include "_header.html" %}
 
     <!-- Main Content -->
-    <main class="flex-grow max-w-7xl mx-auto pt-12 pb-0 px-4 sm:px-6 lg:px-8 w-full">
+    <main class="flex-grow max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 w-full">
 
         <!-- Search Section -->
-        <div class="text-center mt-12 mb-8 ">
+        <div class="text-center ">
             <h2 class="text-3xl font-bold text-retro-white mb-8 retro-glow">{{ _('Browse Pinball Machines') }}</h2>
 
             <!-- Search Bar -->
@@ -164,10 +164,10 @@
                     </div>
                     <div class="ml-6 flex-shrink-0">
                         <button
-                            class="px-6 py-2 {% if product.is_subscribed %}text-retro-pink border-retro-pink hover:text-black hover:bg-retro-pink hover:border-retro-pink{% else %}text-retro-cyan border-retro-cyan hover:bg-retro-cyan hover:text-black hover:border-retro-cyan{% endif %} font-bold transition-all duration-300 border "
-                            onclick="subscribe(this, '{{ product.id }}')"
+                            class="px-6 py-2 {% if product.is_watching %}text-retro-pink border-retro-pink hover:text-black hover:bg-retro-pink hover:border-retro-pink{% else %}text-retro-cyan border-retro-cyan hover:bg-retro-cyan hover:text-black hover:border-retro-cyan{% endif %} font-bold transition-all duration-300 border "
+                            onclick="toggleWatch(this, '{{ product.id }}')"
                         >
-                            {% if product.is_subscribed %}{{ _('WATCHING') }}{% else %}{{ _('WATCH') }}{% endif %}
+                            {% if product.is_watching %}{{ _('WATCHING') }}{% else %}{{ _('WATCH') }}{% endif %}
                         </button>
                     </div>
                 </div>
@@ -192,10 +192,10 @@
 </div>
 
 <script>
-function subscribe(element, id) {
+function toggleWatch(element, id) {
     const button = element;
 
-    fetch('/subs', {
+    fetch('/watch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: id })
