@@ -191,6 +191,50 @@
     {% include "_footer.html" %}
 </div>
 
+<!-- Upgrade Plan Modal -->
+<el-dialog  >
+  <dialog id="upgrade-dialog" aria-labelledby="upgrade-dialog-title" class="fixed inset-0 size-auto max-h-none max-w-none overflow-y-auto bg-transparent backdrop:bg-transparent">
+    <el-dialog-backdrop class="fixed inset-0 bg-black/75 transition-opacity data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in"></el-dialog-backdrop>
+
+    <div tabindex="0" class="flex min-h-full items-end justify-center p-4 text-center focus:outline-none sm:items-center sm:p-0">
+      <el-dialog-panel class="relative transform overflow-hidden  bg-retro-dark border-2 border-retro-pink text-left shadow-xl transition-all data-closed:translate-y-4 data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in sm:my-8 sm:w-full sm:max-w-lg data-closed:sm:translate-y-0 data-closed:sm:scale-95">
+        <div class="bg-retro-dark px-6 pt-6 pb-4">
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0">
+              <!-- Warning icon -->
+              <div class="w-12 h-12 bg-retro-pink/20 rounded-full flex items-center justify-center">
+                <svg class="w-6 h-6 text-retro-pink" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+            </div>
+            <div class="flex-1">
+              <h3 id="upgrade-dialog-title" class="text-xl font-bold text-retro-pink mb-3">
+                {{ _('Watching Limit Reached') }}
+              </h3>
+              <div class="mt-2">
+                <p class="text-retro-white leading-relaxed">
+                  {{ _('You have reached the maximum number of pinballs you can watch with your current plan. Upgrade to continue watching more pinballs and unlock additional features.') }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bg-retro-dark/50 px-6 py-4 flex flex-col-reverse sm:flex-row gap-3 sm:justify-end">
+          <button type="button" command="close" commandfor="upgrade-dialog"
+                  class="px-4 py-2 border-2 border-retro-cyan text-retro-cyan hover:bg-retro-cyan hover:text-black transition-all duration-300 font-medium sm:w-auto">
+            {{ _('Cancel') }}
+          </button>
+          <a href="/{{locale}}/pricing"
+             class="px-6 py-2 bg-retro-cyan text-black hover:bg-retro-pink transition-all duration-300 font-bold text-center shadow-lg sm:w-auto">
+            {{ _('Upgrade Plan') }}
+          </a>
+        </div>
+      </el-dialog-panel>
+    </div>
+  </dialog>
+</el-dialog>
+
 <script>
 function toggleWatch(element, id) {
     const button = element;
@@ -209,8 +253,20 @@ function toggleWatch(element, id) {
             button.textContent = '{{ _("WATCH") }}';
             button.classList.remove('text-retro-pink', 'border-retro-pink', 'hover:text-black', 'hover:bg-retro-pink', 'hover:border-retro-pink');
             button.classList.add('text-retro-cyan', 'border-retro-cyan', 'hover:bg-retro-cyan', 'hover:text-black');
+        } else if (response.status === 402) {
+            // Plan limit reached - show upgrade modal
+            showUpgradeModal();
         }
     })
+    .catch(error => {
+        console.error('Error:', error);
+    })
+}
+
+function showUpgradeModal() {
+    const dialog = document.getElementById('upgrade-dialog');
+    const elDialog = dialog.closest('el-dialog');
+    elDialog.setAttribute('open', '');
 }
 
 // Year range slider functionality

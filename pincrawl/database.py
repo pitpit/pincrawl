@@ -43,6 +43,13 @@ class PlanType(enum.Enum):
     COLLECTOR = "collector_v1"
     PRO = "pro_v1"
 
+# Plan limits for watching pinballs
+PLAN_WATCHING_LIMITS = {
+    PlanType.FREE: 3,
+    PlanType.COLLECTOR: 10,
+    PlanType.PRO: float('inf')  # Unlimited
+}
+
 class Database:
     """Database manager class that handles SQLAlchemy connections and sessions."""
 

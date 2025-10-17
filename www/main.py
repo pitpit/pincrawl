@@ -18,7 +18,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from authlib.integrations.starlette_client import OAuth
 from dotenv import load_dotenv
 from pincrawl.product_matcher import ProductMatcher
-from pincrawl.database import Database, Watching, Product, Account
+from pincrawl.database import Database, Watching, Product, Account, PLAN_WATCHING_LIMITS
 from i18n import get_locale_from_request, validate_locale, I18nContext, SUPPORTED_LOCALES, DEFAULT_LOCALE
 from fastapi.exceptions import RequestValidationError
 
@@ -505,11 +505,43 @@ async def watch(
         logger.info(f"✗ Removed subscription: {user_email} -> {product.opdb_id}")
         status = 202  # Accepted (deleted)
     else:
-        # Create new subscription
-        subscription = Watching(email=user_email, opdb_id=product.opdb_id)
-        session.add(subscription)
-        logger.info(f"✓ Added subscription: {user_email} -> {product.opdb_id}")
-        status = 201  # Created
+        # Check plan limits before adding new subscription
+        try:
+            # Get user's account and current plan
+            account = Account.get_by_email(session, user_email)
+            if not account:
+                raise HTTPException(status_code=404, detail="User account not found")
+            
+            current_plan = account.get_current_plan(session)
+            if not current_plan:
+                raise HTTPException(status_code=500, detail="No active plan found")
+            
+            # Get current number of watching subscriptions
+            current_watching_count = session.query(Watching).filter_by(email=user_email).count()
+            
+            # Check plan limit
+            plan_limit = PLAN_WATCHING_LIMITS.get(current_plan.plan, 0)
+            
+            if current_watching_count >= plan_limit:
+                session.close()
+                raise HTTPException(
+                    status_code=402,  # Payment Required
+                    detail=f"Watching limit reached for {current_plan.plan.value} plan ({plan_limit} pinballs max)"
+                )
+            
+            # Create new subscription
+            subscription = Watching(email=user_email, opdb_id=product.opdb_id)
+            session.add(subscription)
+            logger.info(f"✓ Added subscription: {user_email} -> {product.opdb_id}")
+            status = 201  # Created
+            
+        except HTTPException:
+            session.close()
+            raise
+        except Exception as e:
+            session.close()
+            logger.error(f"❌ Error checking plan limits for user {user_email}: {str(e)}")
+            raise HTTPException(status_code=500, detail="Internal server error")
 
     session.commit()
     session.close()
