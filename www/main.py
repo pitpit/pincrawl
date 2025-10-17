@@ -18,7 +18,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from authlib.integrations.starlette_client import OAuth
 from dotenv import load_dotenv
 from pincrawl.product_matcher import ProductMatcher
-from pincrawl.database import Database, Sub, Product
+from pincrawl.database import Database, Sub, Product, Account
 from i18n import get_locale_from_request, validate_locale, I18nContext, SUPPORTED_LOCALES, DEFAULT_LOCALE
 from fastapi.exceptions import RequestValidationError
 
@@ -253,6 +253,26 @@ async def callback(
         if user_info:
             request.session['user'] = dict(user_info)
 
+            # Check if user account exists in database, create if not
+            user_email = user_info.get('email')
+            if user_email:
+                session = db.get_db()
+                try:
+                    # Get or create account (automatically creates free plan if new)
+                    account = Account.get_by_email(session, user_email)
+                    if account is None:
+                        account = Account.create_account(session, user_email)
+                        logger.info(f"✓ Created new account for user: {user_email}")
+                    else:
+                        logger.info(f"✓ Found existing account for user: {user_email}")
+
+                except Exception as e:
+                    logger.error(f"❌ Error handling account for user {user_email}: {str(e)}")
+                    session.close()
+                    raise HTTPException(status_code=500, detail=f"Account creation failed: {str(e)}")
+                finally:
+                    session.close()
+
         # Validate and sanitize redirect_after_login for security
         redirect_target = request.url_for('root_redirect')  # Default fallback
 
@@ -388,12 +408,69 @@ async def pricing(
     """Handle pricing page"""
     locale = validate_locale(locale)
 
+    # Get user's current plan to show appropriate buttons
+    user_email = user.get('email')
+    current_plan = None
+
+    if user_email:
+        session = db.get_db()
+        try:
+            # Get account information and current plan
+            account = Account.get_by_email(session, user_email)
+            if account:
+                current_plan = account.get_current_plan(session)
+        except Exception as e:
+            logger.error(f"❌ Error fetching plan information for user {user_email}: {str(e)}")
+            # Continue without plan info rather than failing
+        finally:
+            session.close()
+
     return templates.TemplateResponse(
         "pricing.html",
         create_template_context(
             request,
             locale,
-            user=user
+            user=user,
+            current_plan=current_plan
+        )
+    )
+
+
+@app.get("/{locale}/my-account")
+async def my_account(
+    request: Request,
+    locale: str = Path(..., pattern=f"^({'|'.join(SUPPORTED_LOCALES)})$"),
+    user=Depends(get_authenticated_user)
+):
+    """Handle my account page"""
+    locale = validate_locale(locale)
+
+    # Get user email and account information
+    user_email = user.get('email')
+    account = None
+    current_plan = None
+
+    if user_email:
+        session = db.get_db()
+        try:
+            # Get account information
+            account = Account.get_by_email(session, user_email)
+            if account:
+                current_plan = account.get_current_plan(session)
+        except Exception as e:
+            logger.error(f"❌ Error fetching account information for user {user_email}: {str(e)}")
+            # Continue without account info rather than failing
+        finally:
+            session.close()
+
+    return templates.TemplateResponse(
+        "my-account.html",
+        create_template_context(
+            request,
+            locale,
+            user=user,
+            account=account,
+            current_plan=current_plan
         )
     )
 

@@ -208,7 +208,7 @@ msgstr "Support prioritaire"
 
 #: templates/pricing.html:105 templates/pricing.html:154
 msgid "Select plan"
-msgstr "Sélectionner ce plan"
+msgstr "Choisir ce plan"
 
 #: templates/pricing.html:113
 msgid "Professional"

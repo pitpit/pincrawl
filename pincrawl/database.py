@@ -11,16 +11,16 @@ Usage:
 import os
 from datetime import datetime
 from typing import List, Optional, Union
-from sqlalchemy import text, create_engine, Column, Integer, String, Text, Boolean, DateTime, JSON, Index, UniqueConstraint, Enum, func
+from sqlalchemy import text, create_engine, Column, Integer, String, Text, Boolean, DateTime, JSON, Index, UniqueConstraint, Enum, func, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import sessionmaker, Session, relationship
 from sqlalchemy.engine import Engine
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from dotenv import load_dotenv
 import enum
 
 # Module exports
-__all__ = ['Database', 'Ad', 'Sub', 'Task', 'Product']
+__all__ = ['Database', 'Ad', 'Sub', 'Task', 'Product', 'Account', 'AccountHistory']
 
 # Load environment variables
 load_dotenv()
@@ -36,6 +36,12 @@ class TaskStatus(enum.Enum):
     IN_PROGRESS = "IN_PROGRESS"
     SUCCESS = "SUCCESS"
     FAIL = "FAIL"
+
+class PlanType(enum.Enum):
+    """Enum for subscription plan types."""
+    FREE = "free_v1"
+    COLLECTOR = "collector_v1"
+    PRO = "pro_v1"
 
 class Database:
     """Database manager class that handles SQLAlchemy connections and sessions."""
@@ -672,3 +678,142 @@ class Product(Base):
             product.yearly_ads_count = yearly_count
             return True
         return False
+
+
+class Account(Base):
+    """SQLAlchemy model for accounts table."""
+
+    __tablename__ = "accounts"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    email = Column(String, unique=True, index=True, nullable=False)
+    created_at = Column(DateTime, default=datetime.now, nullable=False)
+
+    # Relationship to account history
+    history = relationship("AccountHistory", back_populates="account", cascade="all, delete-orphan")
+
+    # Define indexes for common query patterns
+    __table_args__ = (
+        # Index for email lookups (already created by unique=True and index=True)
+        # Index for created_at sorting
+        Index('ix_accounts_created_at', 'created_at'),
+    )
+
+    @staticmethod
+    def create_account(session, email: str) -> "Account":
+        """
+        Create a new account with automatic free plan history entry.
+
+        Args:
+            session: Database session
+            email: Account email address
+
+        Returns:
+            Account: The created account object
+        """
+        # Create the account
+        account = Account(email=email)
+        session.add(account)
+        session.flush()  # Flush to get the account ID
+
+        # Create the initial free plan history entry
+        history_entry = AccountHistory(
+            account_id=account.id,
+            plan=PlanType.FREE,
+            start_date=datetime.now()
+        )
+        session.add(history_entry)
+        session.commit()
+
+        return account
+
+    @staticmethod
+    def get_by_email(session, email: str) -> Optional["Account"]:
+        """
+        Get account by email address.
+
+        Args:
+            session: Database session
+            email: Account email address
+
+        Returns:
+            Account or None if not found
+        """
+        return session.query(Account).filter(Account.email == email).first()
+
+    def get_current_plan(self, session) -> Optional["AccountHistory"]:
+        """
+        Get the current active plan for this account.
+
+        Args:
+            session: Database session
+
+        Returns:
+            AccountHistory: Current plan or None if no active plan
+        """
+        return session.query(AccountHistory).filter(
+            AccountHistory.account_id == self.id,
+            AccountHistory.end_date.is_(None)
+        ).first()
+
+
+class AccountHistory(Base):
+    """SQLAlchemy model for account_history table."""
+
+    __tablename__ = "account_history"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    account_id = Column(Integer, ForeignKey('accounts.id'), nullable=False, index=True)
+    plan = Column(Enum(PlanType), nullable=False)
+    start_date = Column(DateTime, nullable=False)
+    end_date = Column(DateTime, nullable=True)  # NULL means current active plan
+
+    # Relationship to account
+    account = relationship("Account", back_populates="history")
+
+    # Define indexes for common query patterns
+    __table_args__ = (
+        # Index for finding active plans (end_date IS NULL)
+        Index('ix_account_history_account_active', 'account_id', 'end_date'),
+
+        # Index for plan type filtering
+        Index('ix_account_history_plan', 'plan'),
+
+        # Index for date range queries
+        Index('ix_account_history_dates', 'start_date', 'end_date'),
+    )
+
+    @staticmethod
+    def change_plan(session, account_id: int, new_plan: PlanType) -> "AccountHistory":
+        """
+        Change account plan by ending current plan and starting new one.
+
+        Args:
+            session: Database session
+            account_id: Account ID
+            new_plan: New plan type
+
+        Returns:
+            AccountHistory: The new plan history entry
+        """
+        current_time = datetime.now()
+
+        # End the current active plan
+        current_plan = session.query(AccountHistory).filter(
+            AccountHistory.account_id == account_id,
+            AccountHistory.end_date.is_(None)
+        ).first()
+
+        if current_plan:
+            current_plan.end_date = current_time
+
+        # Create new plan entry
+        new_plan_entry = AccountHistory(
+            account_id=account_id,
+            plan=new_plan,
+            start_date=current_time
+        )
+        session.add(new_plan_entry)
+        session.commit()
+
+        return new_plan_entry

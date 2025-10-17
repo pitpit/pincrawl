@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('My Account') }} - Pincrawl{% endblock %}
+
+{% block content %}
+    {% include '_header.html' %}
+
+    <div class="min-h-screen bg-dark-grey">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+
+            <!-- Page Header -->
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-3xl font-bold text-retro-white retro-glow mb-4">
+                    {{ _('My Account') }}
+                </h2>
+                <p class="text-xl text-gray-300">
+                    {{ _('Manage your account settings and subscription') }}
+                </p>
+            </div>
+
+            <div class="space-y-8">
+
+                <!-- Your Account Section -->
+                <div class="bg-darker-grey border border-retro-white p-6">
+                    <div class="space-y-3">
+                        <div class="flex items-center">
+                            <span class="text-gray-300 w-20">{{ _('Email:') }}</span>
+                            <span class="text-white font-medium">{{ user.email }}</span>
+                        </div>
+                        {% if account %}
+                        <p class="text-gray-300 text-sm mt-1">
+                            {{ _('Member since %s') % account.created_at.strftime('%B %d, %Y') }}
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Plan Section -->
+                <div class="bg-darker-grey border border-retro-white p-6">
+
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-2xl font-bold text-retro-white">{{ _('Current Plan: ') }}
+                            {% if current_plan %}
+                                {% if current_plan.plan.value == 'free_v1' %}
+                                <span class="bg-retro-gold text-black px-2 py-1 text-sm">{{ _('Free') }}</span>
+                                {% elif current_plan.plan.value == 'collector_v1' %}
+                                <span class="bg-retro-pink text-white px-2 py-1 text-sm">{{ _('Collector') }}</span>
+                                {% elif current_plan.plan.value == 'pro_v1' %}
+                                <span class="bg-retro-green text-black px-2 py-1 text-sm">{{ _('Pro') }}</span>
+                                {% else %}
+                                <span class="bg-retro-cyan text-black px-2 py-1 text-sm">{{ current_plan.plan.value }}
+                                {% endif %}
+                            {% endif %}
+                        </h2>
+                        <a href="/{{ locale }}/pricing"
+                            class="inline-block bg-retro-cyan text-black px-8 py-3 text-lg font-bold hover:border-retro-pink hover:bg-retro-pink transition-colors duration-200">
+                            {{ _('Update Plan') }}
+                        </a>
+                    </div>
+                    <div>
+                        <p class="text-gray-300 text-sm">
+                            {% if current_plan %}
+                                {{ _('Active since') }} {{ current_plan.start_date.strftime('%B %d, %Y') }}
+
+                        {% else %}
+                            <span class="text-gray-300">{{ _('No active plan') }}</span>
+                        {% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Payment Method Section -->
+                <div class="bg-darker-grey border border-retro-white p-6">
+                    <h2 class="text-2xl font-bold text-retro-white mb-4">{{ _('Payment Method') }}</h2>
+                    <div class="text-gray-300">
+                        {% if current_plan and current_plan.plan.value != 'free_v1' %}
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="flex items-center space-x-2">
+                                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                                        </svg>
+                                        <span>**** **** **** 1234</span>
+                                    </div>
+                                    <p class="text-sm text-gray-400 mt-1">{{ _('Expires 12/25') }}</p>
+                                </div>
+                                <button class="text-retro-cyan hover:text-retro-cyan-dark font-medium">
+                                    {{ _('Update') }}
+                                </button>
+                            </div>
+                        {% else %}
+                            <p class="text-gray-400">{{ _('No payment method required for free plan') }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Billing Information Section -->
+                <div class="bg-darker-grey border border-retro-white p-6">
+                    <h2 class="text-2xl font-bold text-retro-white mb-4">{{ _('Billing Information') }}</h2>
+                    <div class="text-gray-300">
+                        {% if current_plan and current_plan.plan.value != 'free_v1' %}
+                            <div class="space-y-3">
+                                <div>
+                                    <span class="font-medium">{{ _('Next billing date:') }}</span>
+                                    <span class="ml-2">{{ _('December 15, 2025') }}</span>
+                                </div>
+                                <div>
+                                    <span class="font-medium">{{ _('Billing address:') }}</span>
+                                    <div class="ml-2 mt-1 text-sm">
+                                        <p>123 Main Street</p>
+                                        <p>City, State 12345</p>
+                                        <p>Country</p>
+                                    </div>
+                                </div>
+                                <button class="text-retro-cyan hover:text-retro-cyan-dark font-medium mt-2">
+                                    {{ _('Update Billing Information') }}
+                                </button>
+                            </div>
+                        {% else %}
+                            <p class="text-gray-400">{{ _('No billing information required for free plan') }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Invoice History Section -->
+                <div class="bg-darker-grey border border-retro-white p-6">
+                    <h2 class="text-2xl font-bold text-retro-white mb-2">{{ _('Invoice History') }}</h2>
+
+                    <div class="text-gray-300">
+                        {% if current_plan and current_plan.plan.value != 'free_v1' %}
+                            <div class="space-y-3">
+                                <!-- Sample invoice entries -->
+                                <div class="flex items-center justify-between py-3 border-b border-gray-600">
+                                    <div>
+                                        <span class="font-medium">{{ _('Invoice #001') }}</span>
+                                        <span class="ml-4 text-sm text-gray-400">{{ _('November 15, 2025') }}</span>
+                                    </div>
+                                    <div class="flex items-center space-x-4">
+                                        <span class="text-sm">€9.99</span>
+                                        <button class="text-retro-cyan hover:text-retro-cyan-dark text-sm font-medium">
+                                            {{ _('Download') }}
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between py-3 border-b border-gray-600">
+                                    <div>
+                                        <span class="font-medium">{{ _('Invoice #002') }}</span>
+                                        <span class="ml-4 text-sm text-gray-400">{{ _('October 15, 2025') }}</span>
+                                    </div>
+                                    <div class="flex items-center space-x-4">
+                                        <span class="text-sm">€9.99</span>
+                                        <button class="text-retro-cyan hover:text-retro-cyan-dark text-sm font-medium">
+                                            {{ _('Download') }}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <p class="text-gray-400">{{ _('No invoices available for free plan') }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    {% include '_footer.html' %}
+{% endblock %}

@@ -194,7 +194,7 @@ def subs_send():
                         if ad.opdb_id and ad.opdb_id in products_dict:
                             product = products_dict[ad.opdb_id]
                             if product.monthly_price_average or product.yearly_price_average:
-                                body += f"  Price avg: {product.monthly_price_average or '--'}€|{product.yearly_price_average or '--'}€ ({ product.monthly_ads_count or 0 }|{ product.yearly_ads_count or 0 } ads)\n"
+                                body += f"  Price avg (m|y): {product.monthly_price_average or '--'}€|{product.yearly_price_average or '--'}€ ({ product.monthly_ads_count or 0 }|{ product.yearly_ads_count or 0 } ads)\n"
                             else:
                                 body += "  No price statistics available\n"
                         if ad.city:
