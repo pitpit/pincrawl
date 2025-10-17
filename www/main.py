@@ -511,30 +511,30 @@ async def watch(
             account = Account.get_by_email(session, user_email)
             if not account:
                 raise HTTPException(status_code=404, detail="User account not found")
-            
+
             current_plan = account.get_current_plan(session)
             if not current_plan:
                 raise HTTPException(status_code=500, detail="No active plan found")
-            
+
             # Get current number of watching subscriptions
             current_watching_count = session.query(Watching).filter_by(email=user_email).count()
-            
+
             # Check plan limit
             plan_limit = PLAN_WATCHING_LIMITS.get(current_plan.plan, 0)
-            
+
             if current_watching_count >= plan_limit:
                 session.close()
                 raise HTTPException(
                     status_code=402,  # Payment Required
                     detail=f"Watching limit reached for {current_plan.plan.value} plan ({plan_limit} pinballs max)"
                 )
-            
+
             # Create new subscription
             subscription = Watching(email=user_email, opdb_id=product.opdb_id)
             session.add(subscription)
             logger.info(f"✓ Added subscription: {user_email} -> {product.opdb_id}")
             status = 201  # Created
-            
+
         except HTTPException:
             session.close()
             raise

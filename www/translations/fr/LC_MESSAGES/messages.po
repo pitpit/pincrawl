@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Pincrawl 1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-10-17 21:41+0200\n"
+"POT-Creation-Date: 2025-10-17 23:43+0200\n"
 "PO-Revision-Date: 2025-10-12 15:55+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -86,7 +86,9 @@ msgid "Get instant alerts"
 msgstr "Recevez des alertes instantanées"
 
 #: templates/home.html:63
-msgid "We'll send you an alert within minutes when a matching machine goes up for sale."
+msgid ""
+"We'll send you an alert within minutes when a matching machine goes up "
+"for sale."
 msgstr ""
 "Nous vous enverrons une alerte en quelques minutes quand une machine "
 "correspondante sera mise en vente."
@@ -119,83 +121,25 @@ msgstr "Modifier votre compte et votre abonnement"
 msgid "Email:"
 msgstr "Email :"
 
-#: templates/my-account.html:42
+#: templates/my-account.html:37
 msgid "Current Plan: "
 msgstr "Abonnement"
 
-#: templates/my-account.html:45 templates/pricing.html:27
+#: templates/my-account.html:40 templates/pricing.html:27
 msgid "Free"
 msgstr "Gratuit"
 
-#: templates/my-account.html:47 templates/pricing.html:76
+#: templates/my-account.html:42 templates/pricing.html:76
 msgid "Collector"
 msgstr "Collectionneur"
 
-#: templates/my-account.html:49
+#: templates/my-account.html:44
 msgid "Pro"
 msgstr "Pro"
 
-#: templates/my-account.html:57
+#: templates/my-account.html:52
 msgid "Update Plan"
 msgstr "Changer d'abonnement"
-
-#: templates/my-account.html:66
-msgid "No active plan"
-msgstr "Pas d'abonnement en cours"
-
-#: templates/my-account.html:74
-msgid "Payment Method"
-msgstr "Moyen de paiement"
-
-#: templates/my-account.html:85
-#, python-format
-msgid "Expires %s"
-msgstr "Expire le %s"
-
-#: templates/my-account.html:88
-msgid "Update"
-msgstr "Mettre à jour"
-
-#: templates/my-account.html:92
-msgid "No payment method"
-msgstr "Pas de moyens de paiement"
-
-#: templates/my-account.html:99
-msgid "Billing Information"
-msgstr "Information de facturation"
-
-#: templates/my-account.html:104
-msgid "Next billing date:"
-msgstr "Prochaine date de facturation :"
-
-#: templates/my-account.html:108
-msgid "Billing address:"
-msgstr "Adresse de facturation :"
-
-#: templates/my-account.html:116
-msgid "Update Billing Information"
-msgstr "Mettre à jour les informations de facturation"
-
-#: templates/my-account.html:120
-msgid "No billing information required for free plan"
-msgstr "Pas besoin des informations de paiement pour l'abonnement Gratuit"
-
-#: templates/my-account.html:127
-msgid "Invoice History"
-msgstr "Historique de Facturation"
-
-#: templates/my-account.html:135 templates/my-account.html:147
-#, python-format
-msgid "Invoice #%s"
-msgstr "Facture n°%s"
-
-#: templates/my-account.html:141 templates/my-account.html:153
-msgid "Download"
-msgstr "Télécharger"
-
-#: templates/my-account.html:159
-msgid "No invoices available"
-msgstr "Pas de factures"
 
 #: templates/pinballs.html:15
 msgid "Browse Pinball Machines"
@@ -229,11 +173,11 @@ msgstr "📊 Prix moyen (m|a) :"
 msgid "📊 No price statistics available"
 msgstr "📊 Aucune statistique de prix disponible"
 
-#: templates/pinballs.html:170 templates/pinballs.html:205
+#: templates/pinballs.html:170 templates/pinballs.html:249
 msgid "WATCHING"
 msgstr "SURVEILLÉ"
 
-#: templates/pinballs.html:170 templates/pinballs.html:209
+#: templates/pinballs.html:170 templates/pinballs.html:253
 msgid "WATCH"
 msgstr "SURVEILLER"
 
@@ -247,6 +191,28 @@ msgstr ""
 "Essayez d'ajuster vos termes de recherche ou parcourez toutes les "
 "machines."
 
+#: templates/pinballs.html:213
+msgid "Watching Limit Reached"
+msgstr "Limite atteinte"
+
+#: templates/pinballs.html:217
+msgid ""
+"You have reached the maximum number of pinballs you can watch with your "
+"current plan. Upgrade to continue watching more pinballs and unlock "
+"additional features."
+msgstr ""
+"Vous avez atteind le nombre maximum de flippers que vous pouvez suivre grâce "
+"à votre abonnement. Passez à l'abonnement supérieur pour chercher plus de flippers"
+" et obtenir encore plus de fonctionnalités."
+
+#: templates/pinballs.html:226
+msgid "Cancel"
+msgstr "Annuler"
+
+#: templates/pinballs.html:230
+msgid "Upgrade Plan"
+msgstr "Changer d'abonnement"
+
 #: templates/pricing.html:14
 msgid "Fair pricing that grows with your passion"
 msgstr "Des tarifs qui évoluent avec votre passion"
@@ -256,7 +222,7 @@ msgid "Choose the perfect plan to never miss your next pinball machine."
 msgstr "Choisissez un plan pour ne pas rater votre prochain flipper."
 
 #: templates/pricing.html:31 templates/pricing.html:80
-#: templates/pricing.html:129
+#: templates/pricing.html:130
 msgid "month"
 msgstr "mois"
 
@@ -265,7 +231,7 @@ msgid "Watch up to xx pinballs"
 msgstr "Surveillez jusqu'à 3 flippers"
 
 #: templates/pricing.html:45 templates/pricing.html:94
-#: templates/pricing.html:143
+#: templates/pricing.html:144
 msgid "Email alerts"
 msgstr "Alertes par e-mail"
 
@@ -274,7 +240,7 @@ msgid "Basic support"
 msgstr "Support de base"
 
 #: templates/pricing.html:57 templates/pricing.html:112
-#: templates/pricing.html:167
+#: templates/pricing.html:168
 msgid "Current Plan"
 msgstr "Actuel"
 
@@ -290,84 +256,84 @@ msgstr "Le plus populaire"
 msgid "Watch up to xxx pinballs"
 msgstr "Surveillez jusqu'à xxx flippers"
 
-#: templates/pricing.html:100 templates/pricing.html:149
+#: templates/pricing.html:100 templates/pricing.html:150
 msgid "SMS alerts"
 msgstr "Alertes par SMS"
 
-#: templates/pricing.html:106 templates/pricing.html:161
+#: templates/pricing.html:106 templates/pricing.html:162
 msgid "Priority support"
 msgstr "Support prioritaire"
 
-#: templates/pricing.html:116 templates/pricing.html:171
-msgid "Select plan"
-msgstr "Souscrire"
+#: templates/pricing.html:117 templates/pricing.html:173
+msgid "Coming soon"
+msgstr ""
 
-#: templates/pricing.html:125
+#: templates/pricing.html:126
 msgid "Professional"
 msgstr "Professionnel"
 
-#: templates/pricing.html:137
+#: templates/pricing.html:138
 msgid "Watch unlimited pinballs"
 msgstr "Surveillez un nombre illimité de flippers"
 
-#: templates/pricing.html:155
+#: templates/pricing.html:156
 msgid "WhatsApp alerts"
 msgstr "Alertes par WhatsApp"
 
-#: templates/pricing.html:181
+#: templates/pricing.html:183
 msgid "Frequently Asked Questions"
 msgstr "Questions fréquemment posées"
 
-#: templates/pricing.html:187
+#: templates/pricing.html:189
 msgid "How does billing work?"
 msgstr "Comment fonctionne la facturation ?"
 
-#: templates/pricing.html:190
+#: templates/pricing.html:192
 msgid ""
 "We charge monthly based on your selected plan. You can upgrade or "
 "downgrade at any time, and changes take effect immediately."
 msgstr ""
 "Nous facturons mensuellement selon l'abonnement sélectionné. Vous pouvez "
-"passer à un abonnement supérieur ou inférieur à tout moment, et les changements"
-" prennent effet immédiatement."
+"passer à un abonnement supérieur ou inférieur à tout moment, et les "
+"changements prennent effet immédiatement."
 
-#: templates/pricing.html:196
+#: templates/pricing.html:198
 msgid "Can I change my plan anytime?"
 msgstr "Puis-je changer d'abonnement à tout moment ?"
 
-#: templates/pricing.html:199
+#: templates/pricing.html:201
 msgid ""
 "Yes! You can upgrade or downgrade your plan at any time from your account"
 " settings. Changes are prorated and take effect immediately."
 msgstr ""
-"Oui ! Vous pouvez passer à un abonnement supérieur ou inférieur à tout moment "
-"depuis les paramètres de votre compte. Les changements sont proratisés et"
-" prennent effet immédiatement."
+"Oui ! Vous pouvez passer à un abonnement supérieur ou inférieur à tout "
+"moment depuis les paramètres de votre compte. Les changements sont "
+"proratisés et prennent effet immédiatement."
 
-#: templates/pricing.html:205
+#: templates/pricing.html:207
 msgid "What types of alerts do you support?"
 msgstr "Quels types d'alertes proposez-vous ?"
 
-#: templates/pricing.html:208
+#: templates/pricing.html:210
 msgid ""
 "We support email alerts on all plans. Professional plans also include SMS"
 " and WhatsApp notifications for instant updates on your favorite pinball "
 "machines."
 msgstr ""
-"Nous prenons en charge les alertes par e-mail sur tous les abonnements. Les "
-"abonnements professionnels incluent également les notifications SMS et WhatsApp"
-" pour des mises à jour instantanées sur vos flippers préférés."
+"Nous prenons en charge les alertes par e-mail sur tous les abonnements. "
+"Les abonnements professionnels incluent également les notifications SMS "
+"et WhatsApp pour des mises à jour instantanées sur vos flippers préférés."
 
-#: templates/pricing.html:214
+#: templates/pricing.html:216
 msgid "Is there a free trial?"
 msgstr "Y a-t-il un essai gratuit ?"
 
-#: templates/pricing.html:217
+#: templates/pricing.html:219
 msgid ""
 "Yes! Our Free plan allows you to watch up to 3 pinball machines with "
 "email alerts. You can start using Pincrawl immediately without any "
 "payment information."
 msgstr ""
-"Oui ! Notre abonnement Gratuit vous permet de surveiller jusqu'à 3 flippers "
-"avec des alertes par e-mail. Vous pouvez commencer à utiliser Pincrawl "
-"immédiatement sans aucune information de paiement."
+"Oui ! Notre abonnement Gratuit vous permet de surveiller jusqu'à 3 "
+"flippers avec des alertes par e-mail. Vous pouvez commencer à utiliser "
+"Pincrawl immédiatement sans aucune information de paiement."
