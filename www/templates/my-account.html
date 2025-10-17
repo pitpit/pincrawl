@@ -27,11 +27,6 @@
                             <span class="text-gray-300 w-20">{{ _('Email:') }}</span>
                             <span class="text-white font-medium">{{ user.email }}</span>
                         </div>
-                        {% if account %}
-                        <p class="text-gray-300 text-sm mt-1">
-                            {{ _('Member since %s') % account.created_at.strftime('%B %d, %Y') }}
-                        </p>
-                        {% endif %}
                     </div>
                 </div>
 
@@ -57,18 +52,8 @@
                             {{ _('Update Plan') }}
                         </a>
                     </div>
-                    <div>
-                        <p class="text-gray-300 text-sm">
-                            {% if current_plan %}
-                                {{ _('Active since') }} {{ current_plan.start_date.strftime('%B %d, %Y') }}
-
-                        {% else %}
-                            <span class="text-gray-300">{{ _('No active plan') }}</span>
-                        {% endif %}
-                        </p>
-                    </div>
                 </div>
-
+{#
                 <!-- Payment Method Section -->
                 <div class="bg-darker-grey border border-retro-white p-6">
                     <h2 class="text-2xl font-bold text-retro-white mb-4">{{ _('Payment Method') }}</h2>
@@ -82,14 +67,14 @@
                                         </svg>
                                         <span>**** **** **** 1234</span>
                                     </div>
-                                    <p class="text-sm text-gray-400 mt-1">{{ _('Expires 12/25') }}</p>
+                                    <p class="text-sm text-gray-400 mt-1">{{ _('Expires %s') }}</p>
                                 </div>
                                 <button class="text-retro-cyan hover:text-retro-cyan-dark font-medium">
                                     {{ _('Update') }}
                                 </button>
                             </div>
                         {% else %}
-                            <p class="text-gray-400">{{ _('No payment method required for free plan') }}</p>
+                            <p class="text-gray-400">{{ _('No payment method') }}</p>
                         {% endif %}
                     </div>
                 </div>
@@ -98,11 +83,10 @@
                 <div class="bg-darker-grey border border-retro-white p-6">
                     <h2 class="text-2xl font-bold text-retro-white mb-4">{{ _('Billing Information') }}</h2>
                     <div class="text-gray-300">
-                        {% if current_plan and current_plan.plan.value != 'free_v1' %}
                             <div class="space-y-3">
                                 <div>
                                     <span class="font-medium">{{ _('Next billing date:') }}</span>
-                                    <span class="ml-2">{{ _('December 15, 2025') }}</span>
+                                    <span class="ml-2">December 15, 2025</span>
                                 </div>
                                 <div>
                                     <span class="font-medium">{{ _('Billing address:') }}</span>
@@ -116,9 +100,6 @@
                                     {{ _('Update Billing Information') }}
                                 </button>
                             </div>
-                        {% else %}
-                            <p class="text-gray-400">{{ _('No billing information required for free plan') }}</p>
-                        {% endif %}
                     </div>
                 </div>
 
@@ -132,8 +113,8 @@
                                 <!-- Sample invoice entries -->
                                 <div class="flex items-center justify-between py-3 border-b border-gray-600">
                                     <div>
-                                        <span class="font-medium">{{ _('Invoice #001') }}</span>
-                                        <span class="ml-4 text-sm text-gray-400">{{ _('November 15, 2025') }}</span>
+                                        <span class="font-medium">{{ _('Invoice #%s') }}</span>
+                                        <span class="ml-4 text-sm text-gray-400">November 15, 2025</span>
                                     </div>
                                     <div class="flex items-center space-x-4">
                                         <span class="text-sm">€9.99</span>
@@ -144,8 +125,8 @@
                                 </div>
                                 <div class="flex items-center justify-between py-3 border-b border-gray-600">
                                     <div>
-                                        <span class="font-medium">{{ _('Invoice #002') }}</span>
-                                        <span class="ml-4 text-sm text-gray-400">{{ _('October 15, 2025') }}</span>
+                                        <span class="font-medium">{{ _('Invoice %s') }}</span>
+                                        <span class="ml-4 text-sm text-gray-400">October 15, 2025</span>
                                     </div>
                                     <div class="flex items-center space-x-4">
                                         <span class="text-sm">€9.99</span>
@@ -156,10 +137,11 @@
                                 </div>
                             </div>
                         {% else %}
-                            <p class="text-gray-400">{{ _('No invoices available for free plan') }}</p>
+                            <p class="text-gray-400">{{ _('No invoices available') }}</p>
                         {% endif %}
                     </div>
                 </div>
+#}
 
             </div>
         </div>
