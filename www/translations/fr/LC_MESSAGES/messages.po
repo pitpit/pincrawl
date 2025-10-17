@@ -94,8 +94,8 @@ msgid ""
 "We'll send you an alert within minutes when a matching machine goes up "
 "for sale."
 msgstr ""
-"Nous vous enverrons une alerte en quelques minutes quand une machine "
-"correspondante sera mise en vente."
+"Nous vous enverrons une alerte en quelques minutes quand l'une des machines "
+"que vous cherchez sera mise en vente."
 
 #: templates/home.html:67
 msgid "Be first in line"

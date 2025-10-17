@@ -146,9 +146,8 @@
                         <div class="border-t border-gray-600 pt-3 mt-3">
                             <div class="flex flex-wrap gap-4 text-sm">
                                 {% if product.monthly_price_average or product.yearly_price_average or product.monthly_ads_count or product.yearly_ads_count %}
-                                        <div class="text-retro-cyan">
+                                        <div class="text-retro-white">
                                             {{ _('📊 Price avg (m|y):') }}
-
                                             <span class="font-bold">
                                                 {{ product.monthly_price_average or "--" }}€|{{ product.yearly_price_average or "--" }}€
                                             </span>
