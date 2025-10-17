@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Pincrawl 1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-10-17 23:43+0200\n"
+"POT-Creation-Date: 2025-10-17 23:55+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -23,9 +23,9 @@ msgstr ""
 msgid "Pinballs"
 msgstr "Pinballs"
 
-#: templates/_header.html:18 templates/_header.html:57 templates/pricing.html:3
-msgid "Pricing"
-msgstr "Pricing"
+#: templates/_header.html:18
+msgid "Plan"
+msgstr "Plan"
 
 #: templates/_header.html:21 templates/_header.html:60
 #: templates/my-account.html:3 templates/my-account.html:14
@@ -35,6 +35,10 @@ msgstr "My Account"
 #: templates/_header.html:24 templates/_header.html:63
 msgid "Logout"
 msgstr "Logout"
+
+#: templates/_header.html:57 templates/pricing.html:3
+msgid "Pricing"
+msgstr "Pricing"
 
 #: templates/_pagination.html:7
 msgid "Previous"
@@ -333,3 +337,4 @@ msgstr ""
 "Yes! Our Free plan allows you to watch up to 3 pinball machines with "
 "email alerts. You can start using Pincrawl immediately without any "
 "payment information."
+

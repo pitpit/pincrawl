@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Pincrawl 1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-10-17 23:43+0200\n"
+"POT-Creation-Date: 2025-10-17 23:55+0200\n"
 "PO-Revision-Date: 2025-10-12 15:55+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -23,9 +23,9 @@ msgstr ""
 msgid "Pinballs"
 msgstr "Flippers"
 
-#: templates/_header.html:18 templates/_header.html:57 templates/pricing.html:3
-msgid "Pricing"
-msgstr "Tarifs"
+#: templates/_header.html:18
+msgid "Plan"
+msgstr "Abonnements"
 
 #: templates/_header.html:21 templates/_header.html:60
 #: templates/my-account.html:3 templates/my-account.html:14
@@ -35,6 +35,10 @@ msgstr "Mon Compte"
 #: templates/_header.html:24 templates/_header.html:63
 msgid "Logout"
 msgstr "Déconnexion"
+
+#: templates/_header.html:57 templates/pricing.html:3
+msgid "Pricing"
+msgstr "Tarifs"
 
 #: templates/_pagination.html:7
 msgid "Previous"
@@ -201,9 +205,9 @@ msgid ""
 "current plan. Upgrade to continue watching more pinballs and unlock "
 "additional features."
 msgstr ""
-"Vous avez atteind le nombre maximum de flippers que vous pouvez suivre grâce "
-"à votre abonnement. Passez à l'abonnement supérieur pour chercher plus de flippers"
-" et obtenir encore plus de fonctionnalités."
+"Vous avez atteind le nombre maximum de flippers que vous pouvez suivre "
+"grâce à votre abonnement. Passez à l'abonnement supérieur pour chercher "
+"plus de flippers et obtenir encore plus de fonctionnalités."
 
 #: templates/pinballs.html:226
 msgid "Cancel"
@@ -337,3 +341,4 @@ msgstr ""
 "Oui ! Notre abonnement Gratuit vous permet de surveiller jusqu'à 3 "
 "flippers avec des alertes par e-mail. Vous pouvez commencer à utiliser "
 "Pincrawl immédiatement sans aucune information de paiement."
+

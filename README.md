@@ -78,10 +78,13 @@ Fourth cronjob runs every night:
 ## Compile translations
 
 
-Extract translation strings:
+Update translation strings:
 ```bash
 cd www/
-pybabel extract -F babel.cfg -o translations/en/LC_MESSAGES/messages.po .
+pybabel extract -F babel.cfg -o new.po .
+pybabel update -i new.po -d translations -l en
+pybabel update -i new.po -d translations -l fr
+rm new.po
 ```
 
 Compile translation files:
