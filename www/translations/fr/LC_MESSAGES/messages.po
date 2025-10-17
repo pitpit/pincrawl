@@ -252,8 +252,8 @@ msgid "Fair pricing that grows with your passion"
 msgstr "Des tarifs qui évoluent avec votre passion"
 
 #: templates/pricing.html:17
-msgid "Choose the perfect plan to never miss your next machine."
-msgstr "Choisissez un plan pour ne pas rater votre prochaine machine."
+msgid "Choose the perfect plan to never miss your next pinball machine."
+msgstr "Choisissez un plan pour ne pas rater votre prochain flipper."
 
 #: templates/pricing.html:31 templates/pricing.html:80
 #: templates/pricing.html:129
@@ -261,7 +261,7 @@ msgid "month"
 msgstr "mois"
 
 #: templates/pricing.html:39
-msgid "Watch up to 3 pinballs"
+msgid "Watch up to xx pinballs"
 msgstr "Surveillez jusqu'à 3 flippers"
 
 #: templates/pricing.html:45 templates/pricing.html:94
