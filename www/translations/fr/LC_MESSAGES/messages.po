@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Pincrawl 1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-10-17 23:55+0200\n"
+"POT-Creation-Date: 2025-10-22 22:08+0200\n"
 "PO-Revision-Date: 2025-10-12 15:55+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -17,6 +17,11 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.10.3\n"
+
+#: templates/_footer.html:10 templates/legal-notice.html:3
+#: templates/legal-notice.html:35
+msgid "Legal Notice"
+msgstr "Mentions légales"
 
 #: templates/_header.html:15 templates/_header.html:54
 #: templates/pinballs.html:3
@@ -94,8 +99,8 @@ msgid ""
 "We'll send you an alert within minutes when a matching machine goes up "
 "for sale."
 msgstr ""
-"Nous vous enverrons une alerte en quelques minutes quand l'une des machines "
-"que vous cherchez sera mise en vente."
+"Nous vous enverrons une alerte en quelques minutes quand l'un des "
+"flippers que vous cherchez sera mise en vente."
 
 #: templates/home.html:67
 msgid "Be first in line"
@@ -104,6 +109,207 @@ msgstr "Soyez le premier"
 #: templates/home.html:68
 msgid "Jump on the deal before anyone else."
 msgstr "Sautez sur l'affaire avant tout le monde."
+
+#: templates/legal-notice.html:41
+msgid "Site Publisher"
+msgstr "Éditeur du site"
+
+#: templates/legal-notice.html:43
+msgid "Company Name"
+msgstr "Raison sociale"
+
+#: templates/legal-notice.html:44
+msgid "Legal Form"
+msgstr "Forme juridique"
+
+#: templates/legal-notice.html:45
+msgid "Share Capital"
+msgstr "Capital social"
+
+#: templates/legal-notice.html:46
+msgid "Registration Number"
+msgstr "Numéro SIRET"
+
+#: templates/legal-notice.html:47
+msgid "VAT Number"
+msgstr "Numéro TVA"
+
+#: templates/legal-notice.html:48
+msgid "Registered Office"
+msgstr "Siège social"
+
+#: templates/legal-notice.html:49 templates/legal-notice.html:61
+#: templates/legal-notice.html:107
+msgid "Phone"
+msgstr "Téléphone"
+
+#: templates/legal-notice.html:50 templates/legal-notice.html:105
+#, fuzzy
+msgid "Email"
+msgstr "Email :"
+
+#: templates/legal-notice.html:51
+msgid "Publication Director"
+msgstr "Directeur de publication"
+
+#: templates/legal-notice.html:57
+msgid "Web Hosting"
+msgstr "Hébergement"
+
+#: templates/legal-notice.html:59
+msgid "Host Name"
+msgstr "Nom de l'hébergeur"
+
+#: templates/legal-notice.html:60 templates/legal-notice.html:106
+msgid "Address"
+msgstr "Adresse"
+
+#: templates/legal-notice.html:62
+msgid "Website"
+msgstr "Site web"
+
+#: templates/legal-notice.html:68
+msgid "Intellectual Property"
+msgstr "Propriété intellectuelle"
+
+#: templates/legal-notice.html:69
+#, python-format
+msgid ""
+"The entire content of this site (texts, images, videos, logos, graphics, "
+"etc.) is protected by intellectual property rights and belongs to "
+"%(company_name)s or its partners. Any reproduction, representation, "
+"modification, publication, adaptation of all or part of the elements of "
+"the site, regardless of the means or process used, is prohibited without "
+"prior written authorization from %(company_name)s."
+msgstr ""
+"L'intégralité du contenu de ce site (textes, images, vidéos, logos, "
+"graphiques, etc.) est protégée par les droits de propriété intellectuelle "
+"et appartient à %(company_name)s ou à ses partenaires. Toute reproduction, "
+"représentation, modification, publication, adaptation de tout ou partie des "
+"éléments du site, quel que soit le moyen ou le procédé utilisé, est "
+"interdite sans autorisation écrite préalable de %(company_name)s."
+
+#: templates/legal-notice.html:70
+msgid ""
+"Any unauthorized exploitation of the site or any of its elements will be "
+"considered as constituting an infringement and prosecuted in accordance "
+"with the provisions of articles L.335-2 and following of the Intellectual"
+" Property Code."
+msgstr ""
+"Toute exploitation non autorisée du site ou de l'un quelconque de ses "
+"éléments sera considérée comme constitutive d'une contrefaçon et poursuivie "
+"conformément aux dispositions des articles L.335-2 et suivants du Code de "
+"la propriété intellectuelle."
+
+#: templates/legal-notice.html:75
+msgid "Liability"
+msgstr "Responsabilité"
+
+#: templates/legal-notice.html:76
+#, python-format
+msgid ""
+"The information provided on this site is given for informational purposes"
+" only and is subject to change. %(company_name)s disclaims all "
+"responsibility for any direct or indirect damage that may result from "
+"access to or use of this site."
+msgstr ""
+"Les informations fournies sur ce site sont données à titre indicatif "
+"seulement et sont susceptibles de changer. %(company_name)s décline toute "
+"responsabilité pour tout dommage direct ou indirect pouvant résulter de "
+"l'accès ou de l'utilisation de ce site."
+
+#: templates/legal-notice.html:77
+#, python-format
+msgid ""
+"%(company_name)s cannot be held responsible for the unavailability of the"
+" service, external intrusions, or the presence of computer viruses."
+msgstr ""
+"%(company_name)s ne peut être tenue responsable de l'indisponibilité du "
+"service, d'intrusions extérieures ou de la présence de virus informatiques."
+
+#: templates/legal-notice.html:82
+msgid "Personal Data"
+msgstr "Données personnelles"
+
+#: templates/legal-notice.html:83
+msgid ""
+"In accordance with the French Data Protection Act of January 6, 1978, "
+"modified by the law of August 6, 2004, and European Regulation 2016/679 "
+"of April 27, 2016 (GDPR), you have the right to access, rectify, delete, "
+"and port your personal data."
+msgstr ""
+"Conformément à la loi française Informatique et Libertés du 6 janvier 1978 "
+"modifiée par la loi du 6 août 2004, et au Règlement européen 2016/679 du "
+"27 avril 2016 (RGPD), vous disposez d'un droit d'accès, de rectification, "
+"d'effacement et de portabilité de vos données personnelles."
+
+#: templates/legal-notice.html:84
+#, python-format
+msgid "To exercise these rights, you can contact us at: %(contact_email)s"
+msgstr "Pour exercer ces droits, vous pouvez nous contacter à : %(contact_email)s"
+
+#: templates/legal-notice.html:85
+msgid ""
+"For more information about how we process your personal data, please "
+"consult our Privacy Policy."
+msgstr ""
+"Pour plus d'informations sur la façon dont nous traitons vos données "
+"personnelles, veuillez consulter notre Politique de confidentialité."
+
+#: templates/legal-notice.html:90
+msgid "Cookies"
+msgstr "Cookies"
+
+#: templates/legal-notice.html:91
+msgid ""
+"This site uses cookies to improve user experience and analyze traffic. By"
+" continuing to browse this site, you accept the use of cookies in "
+"accordance with our Cookie Policy."
+msgstr ""
+"Ce site utilise des cookies pour améliorer l'expérience utilisateur et "
+"analyser le trafic. En continuant de naviguer sur ce site, vous acceptez "
+"l'utilisation de cookies conformément à notre Politique de cookies."
+
+#: templates/legal-notice.html:96
+msgid "Applicable Law"
+msgstr "Droit applicable"
+
+#: templates/legal-notice.html:97
+#, python-format
+msgid "These legal notices are governed by French law. In case of dispute, and after seeking an amicable solution, the french courts shall have exclusive jurisdiction."
+msgstr ""
+"Ces mentions légales sont régies par le droit français. En cas de litige, "
+"et après recherche d'une solution amiable, les tribunaux français "
+"auront compétence exclusive."
+
+#: templates/legal-notice.html:102
+msgid "Contact"
+msgstr "Contact"
+
+#: templates/legal-notice.html:103
+msgid "For any questions regarding these legal notices, you can contact us:"
+msgstr "Pour toute question concernant ces mentions légales, vous pouvez nous contacter :"
+
+#: templates/legal-notice.html:113
+msgid "Mediation"
+msgstr "Médiation"
+
+#: templates/legal-notice.html:114
+#, python-format
+msgid ""
+"In accordance with Article L. 616-1 of the Consumer Code, we inform you "
+"that you have the possibility of using mediation in case of dispute. The "
+"mediator we work with is: %(mediator_name)s - %(mediator_website)s"
+msgstr ""
+"Conformément à l'article L. 616-1 du Code de la consommation, nous vous "
+"informons que vous avez la possibilité de recourir à la médiation en cas "
+"de litige. Le médiateur avec lequel nous travaillons est : "
+"%(mediator_name)s - %(mediator_website)s"
+
+#: templates/legal-notice.html:118
+#, python-format
+msgid "Last updated: %(last_update_date)s"
+msgstr "Dernière mise à jour : %(last_update_date)s"
 
 #: templates/login.html:3
 msgid "Login"
@@ -173,33 +379,33 @@ msgstr "[Effacer les filtres]"
 msgid "📊 Price avg (m|y):"
 msgstr "📊 Prix moyen (m|a) :"
 
-#: templates/pinballs.html:159
+#: templates/pinballs.html:158
 msgid "📊 No price statistics available"
 msgstr "📊 Aucune statistique de prix disponible"
 
-#: templates/pinballs.html:170 templates/pinballs.html:249
+#: templates/pinballs.html:169 templates/pinballs.html:248
 msgid "WATCHING"
 msgstr "SURVEILLÉ"
 
-#: templates/pinballs.html:170 templates/pinballs.html:253
+#: templates/pinballs.html:169 templates/pinballs.html:252
 msgid "WATCH"
 msgstr "SURVEILLER"
 
-#: templates/pinballs.html:184
+#: templates/pinballs.html:183
 msgid "No pinball machines found"
 msgstr "Aucun flipper trouvé"
 
-#: templates/pinballs.html:185
+#: templates/pinballs.html:184
 msgid "Try adjusting your search terms or browse all machines."
 msgstr ""
 "Essayez d'ajuster vos termes de recherche ou parcourez toutes les "
 "machines."
 
-#: templates/pinballs.html:213
+#: templates/pinballs.html:212
 msgid "Watching Limit Reached"
 msgstr "Limite atteinte"
 
-#: templates/pinballs.html:217
+#: templates/pinballs.html:216
 msgid ""
 "You have reached the maximum number of pinballs you can watch with your "
 "current plan. Upgrade to continue watching more pinballs and unlock "
@@ -209,11 +415,11 @@ msgstr ""
 "grâce à votre abonnement. Passez à l'abonnement supérieur pour chercher "
 "plus de flippers et obtenir encore plus de fonctionnalités."
 
-#: templates/pinballs.html:226
+#: templates/pinballs.html:225
 msgid "Cancel"
 msgstr "Annuler"
 
-#: templates/pinballs.html:230
+#: templates/pinballs.html:229
 msgid "Upgrade Plan"
 msgstr "Changer d'abonnement"
 

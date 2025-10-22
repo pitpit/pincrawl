@@ -1,8 +1,15 @@
 <!-- Footer -->
 <footer class="bg-darker-grey py-8 mt-auto">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <p class="text-gray-500">
-            © 2025 PITPIT
-        </p>
+        <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+            <p class="text-gray-500">
+                © 2025 PINCHBALL
+            </p>
+            <div class="flex space-x-6">
+                <a href="/{{ locale }}/legal-notice" class="text-gray-500 hover:text-retro-gold transition-colors duration-200">
+                    {{ _('Legal Notice') }}
+                </a>
+            </div>
+        </div>
     </div>
 </footer>

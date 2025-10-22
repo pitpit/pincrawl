@@ -95,6 +95,8 @@ pybabel compile -d translations
 
 ## TODO
 
+- [ ] unwatch pinball from email
+- [ ] download image and visit archive (ot do a screenshot)
 - [ ] limit number of subscriptions to 3 / user
 - [ ] check opdb_id when creating a subscription
 - [ ] mentions legales

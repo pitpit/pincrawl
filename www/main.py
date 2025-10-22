@@ -436,6 +436,20 @@ async def pricing(
     )
 
 
+@app.get("/{locale}/legal-notice")
+async def legal_notice(
+    request: Request,
+    locale: str = Path(..., pattern=f"^({'|'.join(SUPPORTED_LOCALES)})$")
+):
+    """Handle legal notice page"""
+    locale = validate_locale(locale)
+
+    return templates.TemplateResponse(
+        "legal-notice.html",
+        create_template_context(request, locale)
+    )
+
+
 @app.get("/{locale}/my-account")
 async def my_account(
     request: Request,
