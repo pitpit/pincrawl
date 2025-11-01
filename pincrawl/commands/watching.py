@@ -166,6 +166,11 @@ def watching_send():
 
             smtp_client = Smtp(SMTP_URL)
 
+            # mail control
+            # if this fails, we want to know before sending user emails
+            smtp_client.send(FROM_EMAIL, "pitpittt@gmail.com", "pincrawl test", "ping")
+            click.echo(f"✓ Sent email control")
+
             email_count = 0
             for email, ads in email_to_ads.items():
                 try:
@@ -210,6 +215,7 @@ def watching_send():
 
                 except Exception as e:
                     click.echo(f"❌ Failed to send email to {email}: {str(e)}")
+                    continue
 
             # Mark task as successful
             task_manager.update_task_status(session, current_task, TaskStatus.SUCCESS)
