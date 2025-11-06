@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Pincrawl 1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-10-22 22:08+0200\n"
+"POT-Creation-Date: 2025-11-06 19:25+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Generated-By: Babel 2.10.3\n"
 
 #: templates/_footer.html:10 templates/legal-notice.html:3
-#: templates/legal-notice.html:35
+#: templates/legal-notice.html:27
 msgid "Legal Notice"
 msgstr ""
 
@@ -28,21 +28,8 @@ msgstr ""
 msgid "Pinballs"
 msgstr ""
 
-#: templates/_header.html:18
-msgid "Plan"
-msgstr ""
-
-#: templates/_header.html:21 templates/_header.html:60
-#: templates/my-account.html:3 templates/my-account.html:14
-msgid "My Account"
-msgstr ""
-
 #: templates/_header.html:24 templates/_header.html:63
 msgid "Logout"
-msgstr ""
-
-#: templates/_header.html:57 templates/pricing.html:3
-msgid "Pricing"
 msgstr ""
 
 #: templates/_pagination.html:7
@@ -51,32 +38,7 @@ msgstr ""
 
 #: templates/_pagination.html:11
 #, python-format
-#: templates/_pagination.html:11
 msgid "Page %s of %s"
-msgstr ""
-
-#: templates/_pagination.html:15
-msgid "Next"
-msgstr ""
-
-#: templates/home.html:3
-msgid "Pincrawl - Find your dream pinball machine"
-msgstr ""
-
-#: templates/home.html:28
-msgid "Your next pinball is just an alert away"
-msgstr ""
-
-#: templates/home.html:31
-msgid "Be the first to know when a machine goes up for sale!"
-msgstr ""
-
-#: templates/home.html:36
-msgid "Search for a pinball machine..."
-msgstr ""
-
-#: templates/home.html:39
-msgid "SEARCH"
 msgstr ""
 
 #: templates/_pagination.html:17
@@ -103,19 +65,19 @@ msgstr ""
 msgid "SEARCH"
 msgstr ""
 
-#: templates/home.html:51
+#: templates/home.html:52
 msgid "How does it work?"
 msgstr ""
 
-#: templates/home.html:55
+#: templates/home.html:57
 msgid "Watch pinballs"
 msgstr ""
 
-#: templates/home.html:56
+#: templates/home.html:58
 msgid "Tell us which pinball machines you're hunting for."
 msgstr ""
 
-#: templates/home.html:59
+#: templates/home.html:62
 msgid "Get instant alerts"
 msgstr ""
 
@@ -133,68 +95,59 @@ msgstr ""
 msgid "Jump on the deal before anyone else."
 msgstr ""
 
-#: templates/legal-notice.html:41
+#: templates/legal-notice.html:33
 msgid "Site Publisher"
 msgstr ""
 
-#: templates/legal-notice.html:43
+#: templates/legal-notice.html:35
 msgid "Company Name"
 msgstr ""
 
-#: templates/legal-notice.html:44
+#: templates/legal-notice.html:36
 msgid "Legal Form"
 msgstr ""
 
-#: templates/legal-notice.html:45
-msgid "Share Capital"
-msgstr ""
-
-#: templates/legal-notice.html:46
+#: templates/legal-notice.html:37
 msgid "Registration Number"
 msgstr ""
 
-#: templates/legal-notice.html:47
+#: templates/legal-notice.html:38
 msgid "VAT Number"
 msgstr ""
 
-#: templates/legal-notice.html:48
+#: templates/legal-notice.html:39
 msgid "Registered Office"
 msgstr ""
 
-#: templates/legal-notice.html:49 templates/legal-notice.html:61
-#: templates/legal-notice.html:107
-msgid "Phone"
-msgstr ""
-
-#: templates/legal-notice.html:50 templates/legal-notice.html:105
+#: templates/legal-notice.html:40
 msgid "Email"
 msgstr "Email:"
 
-#: templates/legal-notice.html:51
-msgid "Publication Director"
-msgstr ""
-
-#: templates/legal-notice.html:57
+#: templates/legal-notice.html:46
 msgid "Web Hosting"
 msgstr ""
 
-#: templates/legal-notice.html:59
+#: templates/legal-notice.html:48
 msgid "Host Name"
 msgstr ""
 
-#: templates/legal-notice.html:60 templates/legal-notice.html:106
+#: templates/legal-notice.html:49
 msgid "Address"
 msgstr ""
 
-#: templates/legal-notice.html:62
+#: templates/legal-notice.html:50
+msgid "Phone"
+msgstr ""
+
+#: templates/legal-notice.html:51
 msgid "Website"
 msgstr ""
 
-#: templates/legal-notice.html:68
+#: templates/legal-notice.html:57
 msgid "Intellectual Property"
 msgstr ""
 
-#: templates/legal-notice.html:69
+#: templates/legal-notice.html:58
 #, python-format
 msgid ""
 "The entire content of this site (texts, images, videos, logos, graphics, "
@@ -205,7 +158,7 @@ msgid ""
 "prior written authorization from %(company_name)s."
 msgstr ""
 
-#: templates/legal-notice.html:70
+#: templates/legal-notice.html:59
 msgid ""
 "Any unauthorized exploitation of the site or any of its elements will be "
 "considered as constituting an infringement and prosecuted in accordance "
@@ -213,11 +166,11 @@ msgid ""
 " Property Code."
 msgstr ""
 
-#: templates/legal-notice.html:75
+#: templates/legal-notice.html:64
 msgid "Liability"
 msgstr ""
 
-#: templates/legal-notice.html:76
+#: templates/legal-notice.html:65
 #, python-format
 msgid ""
 "The information provided on this site is given for informational purposes"
@@ -226,18 +179,18 @@ msgid ""
 "access to or use of this site."
 msgstr ""
 
-#: templates/legal-notice.html:77
+#: templates/legal-notice.html:66
 #, python-format
 msgid ""
 "%(company_name)s cannot be held responsible for the unavailability of the"
 " service, external intrusions, or the presence of computer viruses."
 msgstr ""
 
-#: templates/legal-notice.html:82
+#: templates/legal-notice.html:71
 msgid "Personal Data"
 msgstr ""
 
-#: templates/legal-notice.html:83
+#: templates/legal-notice.html:72
 msgid ""
 "In accordance with the French Data Protection Act of January 6, 1978, "
 "modified by the law of August 6, 2004, and European Regulation 2016/679 "
@@ -245,60 +198,37 @@ msgid ""
 "and port your personal data."
 msgstr ""
 
-#: templates/legal-notice.html:84
+#: templates/legal-notice.html:73
 #, python-format
 msgid "To exercise these rights, you can contact us at: %(contact_email)s"
 msgstr ""
 
-#: templates/legal-notice.html:85
+#: templates/legal-notice.html:74
 msgid ""
 "For more information about how we process your personal data, please "
 "consult our Privacy Policy."
 msgstr ""
 
-#: templates/legal-notice.html:90
+#: templates/legal-notice.html:79
 msgid "Cookies"
 msgstr ""
 
-#: templates/legal-notice.html:91
+#: templates/legal-notice.html:80
 msgid ""
 "This site uses cookies to improve user experience and analyze traffic. By"
 " continuing to browse this site, you accept the use of cookies in "
 "accordance with our Cookie Policy."
 msgstr ""
 
-#: templates/legal-notice.html:96
+#: templates/legal-notice.html:85
 msgid "Applicable Law"
 msgstr ""
 
-#: templates/legal-notice.html:97
-#, python-format
-msgid "These legal notices are governed by French law. In case of dispute, and after seeking an amicable solution, the french courts shall have exclusive jurisdiction."
-msgstr ""
-
-#: templates/legal-notice.html:102
-msgid "Contact"
-msgstr ""
-
-#: templates/legal-notice.html:103
-msgid "For any questions regarding these legal notices, you can contact us:"
-msgstr ""
-
-#: templates/legal-notice.html:113
-msgid "Mediation"
-msgstr ""
-
-#: templates/legal-notice.html:114
-#, python-format
+#: templates/legal-notice.html:86
 msgid ""
-"In accordance with Article L. 616-1 of the Consumer Code, we inform you "
-"that you have the possibility of using mediation in case of dispute. The "
-"mediator we work with is: %(mediator_name)s - %(mediator_website)s"
-msgstr ""
-
-#: templates/legal-notice.html:118
-#, python-format
-msgid "Last updated: %(last_update_date)s"
+"These legal notices are governed by French law. In case of dispute, and "
+"after seeking an amicable solution, the french courts shall have "
+"exclusive jurisdiction."
 msgstr ""
 
 #: templates/login.html:3
@@ -311,6 +241,10 @@ msgstr ""
 
 #: templates/login.html:28
 msgid "LOGIN"
+msgstr ""
+
+#: templates/my-account.html:3 templates/my-account.html:14
+msgid "My Account"
 msgstr ""
 
 #: templates/my-account.html:17
@@ -373,11 +307,11 @@ msgstr ""
 msgid "📊 No price statistics available"
 msgstr ""
 
-#: templates/pinballs.html:169 templates/pinballs.html:248
+#: templates/pinballs.html:169 templates/pinballs.html:250
 msgid "WATCHING"
 msgstr ""
 
-#: templates/pinballs.html:169 templates/pinballs.html:252
+#: templates/pinballs.html:169 templates/pinballs.html:254
 msgid "WATCH"
 msgstr ""
 
@@ -393,23 +327,17 @@ msgstr ""
 msgid "Watching Limit Reached"
 msgstr ""
 
-#: templates/pinballs.html:216
-msgid ""
-"You have reached the maximum number of pinballs you can watch with your "
-"current plan. Upgrade to continue watching more pinballs and unlock "
-"additional features."
+#: templates/pinballs.html:217
+msgid "You have reached the maximum number of pinballs you can watch for now."
 msgstr ""
-"You have reached the maximum number of pinballs you can watch with your "
-"current plan. Upgrade to continue watching more pinballs and unlock "
-"additional features."
 
-#: templates/pinballs.html:225
+#: templates/pinballs.html:227
 msgid "Cancel"
 msgstr ""
 
-#: templates/pinballs.html:229
-msgid "Upgrade Plan"
-msgstr "Update Plan"
+#: templates/pricing.html:3
+msgid "Pricing"
+msgstr ""
 
 #: templates/pricing.html:14
 msgid "Fair pricing that grows with your passion"
@@ -523,5 +451,50 @@ msgid ""
 "email alerts. You can start using Pincrawl immediately without any "
 "payment information."
 msgstr ""
-""
+
+#~ msgid "Plan"
+#~ msgstr ""
+
+#~ msgid "Share Capital"
+#~ msgstr ""
+
+#~ msgid "Publication Director"
+#~ msgstr ""
+
+#~ msgid "Contact"
+#~ msgstr ""
+
+#~ msgid "For any questions regarding these legal notices, you can contact us:"
+#~ msgstr ""
+
+#~ msgid "Mediation"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "In accordance with Article L. 616-1 "
+#~ "of the Consumer Code, we inform "
+#~ "you that you have the possibility "
+#~ "of using mediation in case of "
+#~ "dispute. The mediator we work with "
+#~ "is: %(mediator_name)s - %(mediator_website)s"
+#~ msgstr ""
+
+#~ msgid "Last updated: %(last_update_date)s"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "You have reached the maximum number "
+#~ "of pinballs you can watch with "
+#~ "your current plan. Upgrade to continue"
+#~ " watching more pinballs and unlock "
+#~ "additional features."
+#~ msgstr ""
+#~ "You have reached the maximum number "
+#~ "of pinballs you can watch with "
+#~ "your current plan. Upgrade to continue"
+#~ " watching more pinballs and unlock "
+#~ "additional features."
+
+#~ msgid "Upgrade Plan"
+#~ msgstr "Update Plan"
 
