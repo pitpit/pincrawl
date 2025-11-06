@@ -16,7 +16,11 @@ class Smtp:
     def send(self, from_email, to_email, subject, body, html=False):
         if html:
             msg = MIMEMultipart('alternative')
-            msg.attach(MIMEText(body, 'html'))
+            # Add plain text version
+            text_body = "Please view this email in an HTML-capable email client."
+            msg.attach(MIMEText(text_body, 'plain'))
+            # Add HTML version with charset
+            msg.attach(MIMEText(body, 'html', 'utf-8'))
         else:
             msg = MIMEText(body)
 

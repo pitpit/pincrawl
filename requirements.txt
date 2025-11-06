@@ -11,3 +11,5 @@ beautifulsoup4
 markdownify
 pytest==8.4.2
 scrapingbee
+matplotlib
+jinja2

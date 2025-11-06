@@ -106,6 +106,7 @@ pybabel compile -d translations
 - [ ] setup mailersend
 - [X] custom domain pincrawl.pitp.it
 - [ ] use internal id of product as a foreign key in subscription instead of opdb_id
+- [ ] translate svg files
 
 ## 3rd party tools
 

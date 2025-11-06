@@ -348,17 +348,27 @@ async def pinballs(
         limit=PRODUCTS_PER_PAGE
     )
 
-    # Enrich products with subscription status
+    # Enrich products with subscription status and check for graph existence
     # Also get manufacturers and year range using the same database session
     try:
+        user_watching = set()
         if user_email:
             user_watching = Watching.get_user_watching(session, user_email)
-            for product in products:
-                product.is_watching = product.opdb_id in user_watching
-        else:
-            # Mark all as not watching if no user email
-            for product in products:
-                product.is_watching = False
+            # for product in products:
+            #     product.is_watching = product.opdb_id in user_watching
+
+        # Check if price graph exists for each product and store the filepath
+
+        graph_dir = "static/img/graphs"
+        nodata_graph_path = f"{graph_dir}/nodata.svg"
+        for product in products:
+            product.is_watching = product.opdb_id in user_watching
+
+            graph_path = f"{graph_dir}/{product.opdb_id}.svg"
+            if os.path.exists(graph_path):
+                product.price_graph_url = f"/{graph_path}"
+            else:
+                product.price_graph_url = f"/{nodata_graph_path}"
 
         # Get list of all manufacturers for dropdown
         manufacturers = Product.get_manufacturers(session)

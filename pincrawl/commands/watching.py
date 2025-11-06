@@ -2,16 +2,22 @@ import click
 import logging
 import os
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
+from pathlib import Path
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import and_
 from pincrawl.database import Database, Watching, Ad, Task, TaskStatus, Product
 from pincrawl.task_manager import TaskManager
 from pincrawl.smtp import Smtp
-
+from pincrawl.email_utils import send_ad_notification_email
+from pincrawl.graph_utils import generate_price_graph
+import random
 
 # Global configuration
 SMTP_URL = os.getenv("SMTP_URL")
+if not SMTP_URL:
+    raise Exception("SMTP_URL environment variable not set")
+
 FROM_EMAIL = os.getenv("FROM_EMAIL", "noreply@localhost")
 
 # Database and task manager instances
@@ -161,9 +167,6 @@ def watching_send():
                 task_manager.update_task_status(session, current_task, TaskStatus.SUCCESS)
                 return
 
-            if not SMTP_URL:
-                raise Exception("SMTP_URL environment variable not set")
-
             smtp_client = Smtp(SMTP_URL)
 
             # mail control
@@ -174,47 +177,14 @@ def watching_send():
             email_count = 0
             for email, ads in email_to_ads.items():
                 try:
-                    # Get all unique opdb_ids for this email's ads
-                    opdb_ids = [ad.opdb_id for ad in ads if ad.opdb_id]
-
-                    # Fetch all products at once to avoid N+1 queries
-                    products_dict = {}
-                    if opdb_ids:
-                        products = session.query(Product).filter(Product.opdb_id.in_(opdb_ids)).all()
-                        products_dict = {product.opdb_id: product for product in products}
-
-                    # Create email content
-                    subject = f"New pinball machines found - {len(ads)} match{'es' if len(ads) == 1 else ''}"
-
-                    body = "Hello,\n\n"
-                    body += f"We found {len(ads)} new pinball machine{'s' if len(ads) != 1 else ''} matching your subscriptions:\n\n"
-
-                    for ad in ads:
-                        body += f"• {ad.product}, {ad.manufacturer}, {ad.year}\n"
-                        body += f"  URL: {ad.url}\n"
-                        if ad.amount and ad.currency:
-                            body += f"  Price: {ad.amount} {ad.currency}\n"
-
-                        # Add price averages if available
-                        if ad.opdb_id and ad.opdb_id in products_dict:
-                            product = products_dict[ad.opdb_id]
-                            if product.monthly_price_average or product.yearly_price_average:
-                                body += f"  Price avg (m|y): {product.monthly_price_average or '--'}€|{product.yearly_price_average or '--'}€ ({ product.monthly_ads_count or 0 }|{ product.yearly_ads_count or 0 } ads)\n"
-                            else:
-                                body += "  No price statistics available\n"
-                        if ad.city:
-                            body += f"  Location: {ad.city},  {ad.zipcode}\n"
-                        body += "\n"
-
-                    body += "Best regards,\nPincrawl Team"
-
-                    # Send email
-                    smtp_client.send(FROM_EMAIL, email, subject, body)
+                    # Send email with HTML - pass Ad objects directly
+                    send_ad_notification_email(smtp_client, FROM_EMAIL, email, ads)
                     email_count += 1
                     click.echo(f"✓ Sent email to {email} with {len(ads)} ads")
 
                 except Exception as e:
                     click.echo(f"❌ Failed to send email to {email}: {str(e)}")
+                    logging.exception(f"Email error for {email}")
                     continue
 
             # Mark task as successful
@@ -228,3 +198,83 @@ def watching_send():
 
     finally:
         session.close()
+
+
+@watching.command("test-email")
+@click.argument("to")
+def test_email(to):
+    """Send a test email to verify SMTP configuration.
+
+    Args:
+        to: Email address to send the test email to
+    """
+
+    smtp_client = Smtp(SMTP_URL)
+
+    # Get base URL from environment variable
+    PINCRAWL_BASE_URL = os.getenv('PINCRAWL_BASE_URL')
+    if not PINCRAWL_BASE_URL:
+        raise Exception("PINCRAWL_BASE_URL environment variable not set")
+
+    # Generate a fake graph for testing
+
+
+    # Generate fake data for the last year (12 months)
+    current_date = datetime.now()
+    dates = [current_date - timedelta(days=365-i*30) for i in range(12)]
+    base_price = 8000
+    variation = 1500
+    prices = [base_price + random.randint(-variation//2, variation) for _ in range(12)]
+
+    # Generate and save the graph (SVG format)
+    graph_path = 'www/static/img/graphs/test_fake_graph.svg'
+    generate_price_graph(dates, prices, graph_path)
+    graph_url = f"{PINCRAWL_BASE_URL}/static/img/graphs/test_fake_graph.svg"
+
+    nodata_graph_path = f"{PINCRAWL_BASE_URL}/static/img/graphs/test_fake_graph.svg"
+
+    # Create fake ad data for testing
+    fake_ads_data = [
+        {
+            'product': 'Medieval Madness',
+            'manufacturer': 'Williams',
+            'year': '1997',
+            'url': 'https://example.com/ad/123',
+            'price': 8500,
+            'currency': 'EUR',
+            'location': 'Paris, 75001',
+            'graph_url': graph_url
+        },
+        {
+            'product': 'Attack from Mars',
+            'manufacturer': 'Bally',
+            'year': '1995',
+            'url': 'https://example.com/ad/456',
+            'price': 7200,
+            'currency': 'EUR',
+            'location': 'Lyon, 69001',
+            'graph_url': nodata_graph_path
+        },
+        {
+            'product': 'The Addams Family',
+            'manufacturer': 'Bally',
+            'year': '1992',
+            'url': 'https://example.com/ad/789',
+            'price': 6500,
+            'currency': 'EUR',
+            'location': 'Marseille, 13001',
+            'graph_url': nodata_graph_path
+        }
+    ]
+
+    # Send test email using the shared function
+    subject = "PinCrawl Email Test - Sample Notification"
+
+    send_ad_notification_email(smtp_client, FROM_EMAIL, to, fake_ads_data, subject=subject)
+
+    click.echo(f"✓ Test email sent successfully to {to}")
+
+
+
+
+

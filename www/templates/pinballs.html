@@ -145,19 +145,9 @@
                         <!-- Price Statistics -->
                         <div class="border-t border-gray-600 pt-3 mt-3">
                             <div class="flex flex-wrap gap-4 text-sm">
-                                {% if product.monthly_price_average or product.yearly_price_average or product.monthly_ads_count or product.yearly_ads_count %}
-                                        <div class="text-retro-white">
-                                            {{ _('📊 Price avg (m|y):') }}
-                                            <span class="font-bold">
-                                                {{ product.monthly_price_average or "--" }}€|{{ product.yearly_price_average or "--" }}€
-                                            </span>
-                                            <span class="text-xs text-gray-400">({{ product.monthly_ads_count or 0 }}|{{ product.yearly_ads_count or 0 }} ads)</span>
-                                        </div>
-                                {% else %}
-                                    <div class="text-gray-500 text-sm">
-                                        {{ _('📊 No price statistics available') }}
-                                    </div>
-                                {% endif %}
+                                <div class="text-retro-white w-full">
+                                    <img src="{{ product.price_graph_url }}" alt="Price timeline for {{ product.name }}">
+                                </div>
                             </div>
                         </div>
                     </div>

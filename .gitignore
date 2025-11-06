@@ -8,3 +8,6 @@ __pycache__/
 .pip-cache/
 pincrawl.egg-info/
 build/
+test_email.html
+/www/static/img/graphs/*.svg
+!/www/static/img/graphs/test_fake_graph.svg

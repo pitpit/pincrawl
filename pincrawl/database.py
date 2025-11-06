@@ -372,10 +372,6 @@ class Product(Base):
     manufacturer = Column(String, nullable=True, index=True)
     type = Column(String, nullable=True, index=True)
     year = Column(String, nullable=True, index=True)
-    monthly_price_average = Column(Integer, nullable=True)  # Average monthly price in cents
-    yearly_price_average = Column(Integer, nullable=True)   # Average yearly price in cents
-    monthly_ads_count = Column(Integer, nullable=True)      # Number of ads in last 30 days
-    yearly_ads_count = Column(Integer, nullable=True)       # Number of ads in last 365 days
     created_at = Column(DateTime, default=datetime.now, nullable=False)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now, nullable=False)
 
@@ -547,10 +543,11 @@ class Product(Base):
     def compute_price_statistics(session, save_to_db: bool = False) -> dict:
         """
         Compute monthly and yearly price statistics for all pinball machines.
+        Note: save_to_db parameter is deprecated and has no effect.
 
         Args:
             session: Database session
-            save_to_db: If True, save the computed statistics to the database
+            save_to_db: Deprecated - kept for backward compatibility
 
         Returns:
             dict: Statistics data with the following structure:
@@ -618,7 +615,6 @@ class Product(Base):
 
         # Build statistics dictionary
         statistics = {}
-        updated_count = 0
 
         for opdb_id in all_opdb_ids:
             monthly_data = monthly_stats.get(opdb_id)
@@ -644,47 +640,13 @@ class Product(Base):
                 'yearly_count': yearly_count
             }
 
-            # Save to database if requested
-            if save_to_db:
-                if Product.update_price_averages(session, opdb_id, monthly_avg, yearly_avg, monthly_count, yearly_count):
-                    updated_count += 1
-
-        if save_to_db:
-            session.commit()
-
         # Add metadata to the result
         return {
             'statistics': statistics,
             'total_machines': len(all_opdb_ids),
-            'updated_count': updated_count if save_to_db else 0,
-            'saved_to_db': save_to_db
+            'updated_count': 0,  # No longer saves to DB
+            'saved_to_db': False
         }
-
-    @staticmethod
-    def update_price_averages(session, opdb_id: str, monthly_avg: Optional[int], yearly_avg: Optional[int],
-                            monthly_count: Optional[int] = None, yearly_count: Optional[int] = None) -> bool:
-        """
-        Update price averages and ad counts for a specific product.
-
-        Args:
-            session: Database session
-            opdb_id: Product OPDB ID
-            monthly_avg: Monthly average price in cents (or None)
-            yearly_avg: Yearly average price in cents (or None)
-            monthly_count: Number of ads in last 30 days (or None)
-            yearly_count: Number of ads in last 365 days (or None)
-
-        Returns:
-            bool: True if product was found and updated, False otherwise
-        """
-        product = session.query(Product).filter(Product.opdb_id == opdb_id).first()
-        if product:
-            product.monthly_price_average = monthly_avg
-            product.yearly_price_average = yearly_avg
-            product.monthly_ads_count = monthly_count
-            product.yearly_ads_count = yearly_count
-            return True
-        return False
 
 
 class Account(Base):
