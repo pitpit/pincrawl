@@ -132,7 +132,7 @@
         <div class="space-y-4 mb-8">
             {% for product in products %}
             <div class="bg-darker-grey border border-retro-white p-6 ">
-                <div class="flex justify-between items-start">
+                <div class="flex flex-col md:flex-row md:justify-between md:items-start">
                     <div class="flex-grow">
                         <h3 class="text-xl font-bold text-retro-white mb-2 retro-glow">{{ product.name }}</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-300 mb-2">
@@ -151,9 +151,9 @@
                             </div>
                         </div>
                     </div>
-                    <div class="ml-6 flex-shrink-0">
+                    <div class="mt-4 md:mt-0 md:ml-6 flex-shrink-0">
                         <button
-                            class="px-6 py-2 {% if product.is_watching %}text-retro-pink border-retro-pink hover:text-black hover:bg-retro-pink hover:border-retro-pink{% else %}text-retro-cyan border-retro-cyan hover:bg-retro-cyan hover:text-black hover:border-retro-cyan{% endif %} font-bold transition-all duration-300 border "
+                            class="w-full md:w-auto px-6 py-2 {% if product.is_watching %}text-retro-pink border-retro-pink hover:text-black hover:bg-retro-pink hover:border-retro-pink{% else %}text-retro-cyan border-retro-cyan hover:bg-retro-cyan hover:text-black hover:border-retro-cyan{% endif %} font-bold transition-all duration-300 border "
                             onclick="toggleWatch(this, '{{ product.id }}')"
                         >
                             {% if product.is_watching %}{{ _('WATCHING') }}{% else %}{{ _('WATCH') }}{% endif %}
