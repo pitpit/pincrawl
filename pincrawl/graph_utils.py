@@ -92,7 +92,7 @@ def generate_price_graph(dates: List[datetime], prices: List[float], output_path
     save_format = format.lower()
     if save_format not in ['svg', 'png']:
         save_format = 'svg'  # Default to SVG if invalid format
-    
+
     plt.savefig(output_path, format=save_format, facecolor=fig.get_facecolor(), edgecolor='none', bbox_inches='tight')
     plt.close(fig)
 

@@ -172,7 +172,7 @@ async def get_graph(product_id: int, format: str):
 
     Generates the graph on-demand and caches it. If the cached graph is from
     a previous day, it will be regenerated.
-    
+
     Args:
         product_id: The ID of the product
         format: The output format ('svg' or 'png')
@@ -180,9 +180,9 @@ async def get_graph(product_id: int, format: str):
     # Validate format
     if format.lower() not in ['svg', 'png']:
         raise HTTPException(status_code=400, detail="Format must be 'svg' or 'png'")
-    
+
     format = format.lower()
-    
+
     # Define graph directory and paths
     graph_dir = "var/graphs"
     os.makedirs(graph_dir, exist_ok=True)
@@ -261,7 +261,7 @@ async def get_graph(product_id: int, format: str):
 
     # Determine the media type based on format
     media_type = "image/svg+xml" if format == "svg" else "image/png"
-    
+
     # Serve the graph file
     if os.path.exists(graph_path):
         return FileResponse(graph_path, media_type=media_type)
