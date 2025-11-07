@@ -5,6 +5,7 @@ import logging
 import os
 from pathlib import Path
 from jinja2 import Template
+from pincrawl.database import Database, Product
 
 
 def send_ad_notification_email(smtp_client, from_email, to_email, ads, subject=None):
@@ -29,40 +30,48 @@ def send_ad_notification_email(smtp_client, from_email, to_email, ads, subject=N
     if not PINCRAWL_BASE_URL:
         raise Exception("PINCRAWL_BASE_URL environment variable not set")
 
-    # Prepare ads data for template
-    ads_data = []
-    for ad in ads:
-        # Check if it's an Ad object or a dictionary
-        if hasattr(ad, 'product'):
-            # It's an Ad object from database
-            ad_info = {
-                'product': ad.product or 'Unknown',
-                'manufacturer': ad.manufacturer,
-                'year': ad.year,
-                'url': ad.url,
-                'price': ad.amount,
-                'currency': ad.currency,
-                'location': None,
-                'graph_url': None
-            }
+    # Get database session to look up product IDs
+    db = Database()
+    session = db.get_db()
 
-            # Format location
-            if ad.city:
-                location_parts = [ad.city]
-                if ad.zipcode:
-                    location_parts.append(ad.zipcode)
-                ad_info['location'] = ', '.join(location_parts)
+    try:
+        # Prepare ads data for template
+        ads_data = []
+        for ad in ads:
+            # Check if it's an Ad object or a dictionary
+            if hasattr(ad, 'product'):
+                # It's an Ad object from database
+                ad_info = {
+                    'product': ad.product or 'Unknown',
+                    'manufacturer': ad.manufacturer,
+                    'year': ad.year,
+                    'url': ad.url,
+                    'price': ad.amount,
+                    'currency': ad.currency,
+                    'location': None,
+                    'graph_url': None
+                }
 
-            # Set graph URL if available
-            if ad.opdb_id:
-                graph_path = Path(f"www/static/img/graphs/{ad.opdb_id}.svg")
-                if graph_path.exists():
-                    ad_info['graph_url'] = f"{PINCRAWL_BASE_URL}/static/img/graphs/{ad.opdb_id}.svg"
-        else:
-            # It's already a dictionary (for testing)
-            ad_info = ad
+                # Format location
+                if ad.city:
+                    location_parts = [ad.city]
+                    if ad.zipcode:
+                        location_parts.append(ad.zipcode)
+                    ad_info['location'] = ', '.join(location_parts)
 
-        ads_data.append(ad_info)
+                # Set graph URL if available - look up product_id from opdb_id
+                if ad.opdb_id:
+                    product = session.query(Product).filter_by(opdb_id=ad.opdb_id).first()
+                    if product:
+                        # Use the dynamic graph endpoint with product_id instead of static files
+                        ad_info['graph_url'] = f"{PINCRAWL_BASE_URL}/graphs/{product.id}.svg"
+            else:
+                # It's already a dictionary (for testing)
+                ad_info = ad
+
+            ads_data.append(ad_info)
+    finally:
+        session.close()
 
     # Load email template
     template_path = Path(__file__).parent / 'templates' / 'email_notification.html'

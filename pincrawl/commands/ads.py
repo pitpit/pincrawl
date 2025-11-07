@@ -9,7 +9,6 @@ from pincrawl.scrapingbee_wrapped_scraper import ScrapingbeeWrappedScraper
 from pincrawl.product_matcher import ProductMatcher
 from datetime import datetime, timedelta
 import os
-from pincrawl.graph_utils import generate_price_graph, generate_nodata_graph
 
 logger = logging.getLogger(__name__)
 
@@ -218,7 +217,7 @@ def ads_stats(save):
 
         if save:
             click.echo(f"\n⚠️  Note: --save option is deprecated. Statistics are now displayed as graphs.")
-            click.echo(f"💡 Use 'pincrawl ads generate-graph' to create visual price timelines")
+            click.echo(f"💡 Graphs are generated on-demand by the web service at /graphs/{{opdb_id}}.svg")
 
         click.echo(f"\n✓ Found price data for {total_machines} pinball machines")
 
@@ -228,81 +227,3 @@ def ads_stats(save):
         raise
     finally:
         session.close()
-
-
-@ads.command("generate-graph")
-@click.option("--output-dir", "-o", default="www/static/img/graphs", help="Output directory for graphs")
-def ads_generate_graph(output_dir):
-    """Generate price timeline graphs for each pinball machine from the last year."""
-
-    session = database.get_db()
-
-    try:
-        click.echo("Generating price timeline graphs for pinball machines...")
-
-        # Generate a default empty graph for products with no data
-        nodata_graph_filename = "nodata.svg"
-        nodata_graph_path = os.path.join(output_dir, nodata_graph_filename)
-        generate_nodata_graph(nodata_graph_path)
-        click.echo(f"✓ Generated no data graph: {nodata_graph_filename}")
-
-        # Get date range for last year
-        current_date = datetime.now()
-        one_year_ago = current_date - timedelta(days=365)
-
-        # Query all products
-        products = session.query(Product).all()
-
-        generated_count = 0
-        skipped_count = 0
-
-        for product in products:
-            try:
-                # Query ads for this product from the last year
-                ads = session.query(Ad).filter(
-                    Ad.opdb_id == product.opdb_id,
-                    Ad.amount.isnot(None),
-                    Ad.currency == 'EUR',
-                    Ad.ignored == False,
-                    Ad.created_at >= one_year_ago
-                ).order_by(Ad.created_at).all()
-
-                if not ads:
-                    skipped_count += 1
-                    continue
-
-                # Prepare data for plotting
-                dates = [ad.created_at for ad in ads]
-                prices = [ad.amount for ad in ads]  # Prices in cents
-
-                # Generate and save the graph (SVG format)
-                filename = f"{product.opdb_id}.svg"
-                filepath = os.path.join(output_dir, filename)
-                generate_price_graph(dates, prices, filepath)
-
-                # Save the filename to the database
-                product.price_graph_filename = filename
-                session.add(product)
-
-                generated_count += 1
-
-                if generated_count % 10 == 0:
-                    click.echo(f"Generated {generated_count} graphs...")
-
-            except Exception as e:
-                logger.exception(f"✗ Error generating graph for {product.name}: {str(e)}")
-                continue
-
-        # Commit database changes
-        session.commit()
-
-        click.echo(f"\n✓ Generated {generated_count} price timeline graphs")
-        click.echo(f"⚠ Skipped {skipped_count} products (no price data)")
-
-    except Exception as e:
-        session.rollback()
-        click.echo(f"✗ Error generating graphs: {str(e)}")
-        raise
-    finally:
-        session.close()
-

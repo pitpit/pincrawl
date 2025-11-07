@@ -4,87 +4,114 @@
     <meta charset="UTF-8">
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Courier New', monospace;
             line-height: 1.6;
-            color: #333;
+            color: #ffffff;
             max-width: 600px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 0;
+            background: #2D2D2D;
         }
         .header {
-            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+            background: #2D2D2D;
             color: #00FFFF;
-            padding: 20px;
+            padding: 30px 20px;
             text-align: center;
-            border-radius: 5px 5px 0 0;
+            text-shadow: 0 0 10px #00FFFF;
+        }
+        .header h1 {
+            margin: 0 0 10px 0;
+            font-size: 32px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+        .header p {
+            margin: 0;
+            font-size: 16px;
+            color: #ffffff;
         }
         .content {
-            background: #f9f9f9;
+            background: #2D2D2D;
             padding: 20px;
-            border: 1px solid #ddd;
+        }
+        .intro {
+            color: #ffffff;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .intro strong {
+            color: #00FFFF;
         }
         .ad-item {
-            background: white;
+
+            background: #1a1a1a;
             margin: 15px 0;
             padding: 15px;
-            border-left: 4px solid #00FFFF;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: 1px solid #ffffff;
         }
         .ad-title {
             font-size: 18px;
             font-weight: bold;
-            color: #2a2a2a;
+            color: #ffffff;
             margin-bottom: 10px;
+            letter-spacing: 1px;
         }
         .ad-detail {
-            margin: 5px 0;
-            color: #666;
+            margin: 8px 0;
+            color: #ffffff;
+            font-size: 14px;
         }
         .ad-detail strong {
-            color: #333;
+            color: #ffffff;
         }
         .price-graph {
             margin: 10px 0;
-            border: 2px solid #00FFFF;
             max-width: 100%;
-        }
-        .graph-caption {
-            font-size: 12px;
-            color: #666;
-            font-style: italic;
+            display: block;
         }
         .footer {
-            background: #f9f9f9;
-            color: #000;
-            padding: 15px;
+            background: #2a2a2a;
+            color: #ffffff;
+            padding: 20px;
             text-align: center;
-            border-radius: 0 0 5px 5px;
             font-size: 14px;
+        }
+        .footer a {
+            color: #00FFFF;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .footer a:hover {
+            color: #FF10F0;
         }
         .button {
             display: inline-block;
-            background: #00FFFF;
-            color: #000;
-            padding: 10px 20px;
+            background: transparent;
+            color: #00FFFF;
+            padding: 8px 24px;
             text-decoration: none;
-            border-radius: 3px;
             font-weight: bold;
             margin: 10px 0;
+            border: 1px solid #00FFFF;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         .button:hover {
-            background: #00DDDD;
+            background: #00FFFF;
+            color: #000000 !important;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>PINCRAWL Alert</h1>
-        <p>New Pinball Machines Found!</p>
+        <h1>PINCRAWL</h1>
     </div>
 
     <div class="content">
-        <p>Hello,</p>
-        <p>We found <strong>{{ ads_count }}</strong> new pinball machine{{ 's' if ads_count != 1 else '' }} matching your subscriptions:</p>
+        <div class="intro">
+            <p>Hello,</p>
+            <p>We found <strong>{{ ads_count }}</strong> new pinball machine{{ 's' if ads_count != 1 else '' }} matching your subscriptions:</p>
+        </div>
 
         {% for ad_data in ads %}
         <div class="ad-item">
@@ -99,23 +126,20 @@
             {% endif %}
 
             {% if ad_data.graph_url %}
-            <div style="margin: 10px 0;">
-                <img src="{{ ad_data.graph_url }}" alt="Price timeline" class="price-graph">
+            <div style="margin: 15px 0;">
+                <img src="{{ ad_data.graph_url }}" alt="Price timeline" class="price-graph" width="320" height="120">
             </div>
             {% endif %}
 
-            <div class="ad-detail">
-                <a href="{{ ad_data.url }}" class="button">View ad</a>
+            <div class="ad-detail" style="margin-top: 15px;">
+                <a href="{{ ad_data.url }}" class="button" style="color: #00FFFF; text-decoration: none;">View Ad</a>
             </div>
         </div>
         {% endfor %}
     </div>
 
     <div class="footer">
-        <p>Best regards,<br>The PINCRAWL Team</p>
-        <p style="font-size: 12px; margin-top: 10px;">
-            <a href="{{ base_url }}" style="color: #000;">Visit PINCRAWL</a>
-        </p>
+        <p>Best regards,<br>The <a style="color: #00FFFF;text-decoration: none;" href="{{ base_url }}">PINCRAWL</a> Team</p>
     </div>
 </body>
 </html>

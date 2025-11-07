@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Pincrawl 1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-11-06 23:46+0100\n"
+"POT-Creation-Date: 2025-11-07 00:27+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -299,35 +299,31 @@ msgstr ""
 msgid "[Clear filters]"
 msgstr ""
 
-#: templates/pinballs.html:154
-msgid "No price history available"
-msgstr ""
-
-#: templates/pinballs.html:165 templates/pinballs.html:246
+#: templates/pinballs.html:159 templates/pinballs.html:240
 msgid "WATCHING"
 msgstr ""
 
-#: templates/pinballs.html:165 templates/pinballs.html:250
+#: templates/pinballs.html:159 templates/pinballs.html:244
 msgid "WATCH"
 msgstr ""
 
-#: templates/pinballs.html:179
+#: templates/pinballs.html:173
 msgid "No pinball machines found"
 msgstr ""
 
-#: templates/pinballs.html:180
+#: templates/pinballs.html:174
 msgid "Try adjusting your search terms or browse all machines."
 msgstr ""
 
-#: templates/pinballs.html:208
+#: templates/pinballs.html:202
 msgid "Watching Limit Reached"
 msgstr ""
 
-#: templates/pinballs.html:213
+#: templates/pinballs.html:207
 msgid "You have reached the maximum number of pinballs you can watch for now."
 msgstr ""
 
-#: templates/pinballs.html:223
+#: templates/pinballs.html:217
 msgid "Cancel"
 msgstr ""
 
@@ -501,5 +497,8 @@ msgstr ""
 #~ msgstr ""
 
 #~ msgid "📊 Price timeline (last year)"
+#~ msgstr ""
+
+#~ msgid "No price history available"
 #~ msgstr ""
 

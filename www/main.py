@@ -11,14 +11,16 @@ from urllib.request import urlopen
 
 from fastapi import FastAPI, Request, HTTPException, Depends, Path, Query
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 from authlib.integrations.starlette_client import OAuth
 from dotenv import load_dotenv
+from datetime import datetime, timedelta
 from pincrawl.product_matcher import ProductMatcher
-from pincrawl.database import Database, Watching, Product, Account, PLAN_WATCHING_LIMITS
+from pincrawl.database import Database, Watching, Product, Account, PLAN_WATCHING_LIMITS, Ad
+from pincrawl.graph_utils import generate_price_graph, generate_nodata_graph
 from i18n import get_locale_from_request, validate_locale, I18nContext, SUPPORTED_LOCALES, DEFAULT_LOCALE
 from fastapi.exceptions import RequestValidationError
 
@@ -162,6 +164,96 @@ def get_authenticated_user(request: Request):
         raise HTTPException(status_code=401, detail="Not authenticated")
     return user
 
+
+# Public endpoint for graph generation
+@app.get("/graphs/{product_id}.svg")
+async def get_graph(product_id: int):
+    """Generate and serve price graph for a pinball machine.
+
+    Generates the graph on-demand and caches it. If the cached graph is from
+    a previous day, it will be regenerated.
+    """
+    # Define graph directory and paths
+    graph_dir = "var/graphs"
+    os.makedirs(graph_dir, exist_ok=True)
+
+    graph_path = os.path.join(graph_dir, f"{product_id}.svg")
+    nodata_graph_path = os.path.join(graph_dir, "nodata.svg")
+
+    # Check if we need to regenerate the graph
+    should_regenerate = True
+
+    if os.path.exists(graph_path):
+        # Check if the file was created today
+        file_mtime = datetime.fromtimestamp(os.path.getmtime(graph_path))
+        today = datetime.now().date()
+
+        if file_mtime.date() == today:
+            should_regenerate = False
+
+    if should_regenerate:
+        logger.info(f"Generating graph for product_id={product_id}")
+
+        session = db.get_db()
+        try:
+            # Verify product exists
+            product = session.query(Product).filter_by(id=product_id).first()
+            if not product:
+                # Product not found, return 404
+                session.close()
+                raise HTTPException(status_code=404, detail="Product not found")
+
+            # Get date range for last year
+            current_date = datetime.now()
+            one_year_ago = current_date - timedelta(days=365)
+
+            # Query ads for this product from the last year
+            ads = session.query(Ad).filter(
+                Ad.opdb_id == product.opdb_id,
+                Ad.amount.isnot(None),
+                Ad.currency == 'EUR',
+                Ad.ignored == False,
+                Ad.created_at >= one_year_ago
+            ).order_by(Ad.created_at).all()
+
+            if ads:
+                # Prepare data for plotting
+                dates = [ad.created_at for ad in ads]
+                prices = [ad.amount for ad in ads]
+
+                # Generate the graph
+                generate_price_graph(dates, prices, graph_path)
+                logger.info(f"✓ Generated graph for product_id={product_id} ({product.opdb_id}) with {len(ads)} data points")
+            else:
+                # No data available, generate "no data" graph
+                        # Check if nodata graph needs regeneration (once per day)
+                should_regenerate_nodata = True
+
+                if os.path.exists(nodata_graph_path):
+                    nodata_mtime = datetime.fromtimestamp(os.path.getmtime(nodata_graph_path))
+                    today = datetime.now().date()
+
+                    if nodata_mtime.date() == today:
+                        should_regenerate_nodata = False
+
+                if should_regenerate_nodata:
+                    generate_nodata_graph(nodata_graph_path)
+                    logger.info("✓ Generated/refreshed nodata graph")
+
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"❌ Error generating graph for product_id={product_id}: {str(e)}")
+            session.close()
+            raise HTTPException(status_code=500, detail="Failed to generate graph")
+        finally:
+            session.close()
+
+    # Serve the graph file
+    if os.path.exists(graph_path):
+        return FileResponse(graph_path, media_type="image/svg+xml")
+    else:
+        return FileResponse(nodata_graph_path, media_type="image/svg+xml")
 
 # Redirect root to default locale
 @app.get("/")
@@ -348,27 +440,18 @@ async def pinballs(
         limit=PRODUCTS_PER_PAGE
     )
 
-    # Enrich products with subscription status and check for graph existence
+    # Enrich products with subscription status
     # Also get manufacturers and year range using the same database session
     try:
         user_watching = set()
         if user_email:
             user_watching = Watching.get_user_watching(session, user_email)
-            # for product in products:
-            #     product.is_watching = product.opdb_id in user_watching
 
-        # Check if price graph exists for each product and store the filepath
-
-        graph_dir = "static/img/graphs"
-        nodata_graph_path = f"{graph_dir}/nodata.svg"
+        # Set graph URL to the dynamic endpoint and subscription status
         for product in products:
             product.is_watching = product.opdb_id in user_watching
-
-            graph_path = f"{graph_dir}/{product.opdb_id}.svg"
-            if os.path.exists(graph_path):
-                product.price_graph_url = f"/{graph_path}"
-            else:
-                product.price_graph_url = f"/{nodata_graph_path}"
+            # Use the dynamic graph endpoint instead of static files
+            product.price_graph_url = f"/graphs/{product.id}.svg"
 
         # Get list of all manufacturers for dropdown
         manufacturers = Product.get_manufacturers(session)

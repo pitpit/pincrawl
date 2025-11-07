@@ -27,8 +27,8 @@ def generate_price_graph(dates: List[datetime], prices: List[float], output_path
     # Create output directory if it doesn't exist
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
-    # Create figure with specific size (300px wide x 240px high at 100 DPI)
-    fig, ax = plt.subplots(figsize=(3, 1.2), dpi=100)
+    # Create figure with specific size (320px wide x 120px high at 100 DPI)
+    fig, ax = plt.subplots(figsize=(3.2, 1.2), dpi=100)
 
     # Plot the data (markers only, no line) if data is provided
     if dates and prices:
@@ -37,10 +37,10 @@ def generate_price_graph(dates: List[datetime], prices: List[float], output_path
     # Styling to match the retro theme
     fig.patch.set_facecolor('#1a1a1a')
     ax.set_facecolor('#2a2a2a')
-    ax.spines['bottom'].set_color('#00FFFF')
-    ax.spines['top'].set_color('#00FFFF')
-    ax.spines['right'].set_color('#00FFFF')
-    ax.spines['left'].set_color('#00FFFF')
+    ax.spines['bottom'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['left'].set_visible(False)
     ax.tick_params(axis='x', colors='#ffffff', labelsize=7)
     ax.tick_params(axis='y', colors='#ffffff', labelsize=7)
 
