@@ -107,6 +107,7 @@ pybabel compile -d translations
 - [X] custom domain pincrawl.pitp.it
 - [ ] use internal id of product as a foreign key in subscription instead of opdb_id
 - [ ] translate svg files
+- [ ] créer une tâche d'envoie par destinaire pour pouvoir rejouer en cas de plantage
 
 ## 3rd party tools
 

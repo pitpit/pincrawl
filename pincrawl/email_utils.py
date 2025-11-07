@@ -6,6 +6,11 @@ import os
 from pathlib import Path
 from jinja2 import Template
 from pincrawl.database import Database, Product
+try:
+    from importlib.resources import files
+except ImportError:
+    # Fallback for Python < 3.9
+    from importlib_resources import files
 
 
 def send_ad_notification_email(smtp_client, from_email, to_email, ads, subject=None):
@@ -73,10 +78,16 @@ def send_ad_notification_email(smtp_client, from_email, to_email, ads, subject=N
     finally:
         session.close()
 
-    # Load email template
-    template_path = Path(__file__).parent / 'templates' / 'email_notification.html'
-    with open(template_path, 'r') as f:
-        template_content = f.read()
+    # Load email template using importlib.resources for proper package data access
+    try:
+        # Python 3.9+
+        template_file = files('pincrawl').joinpath('templates', 'email_notification.html')
+        template_content = template_file.read_text()
+    except (AttributeError, TypeError):
+        # Fallback for older Python or if files() doesn't work as expected
+        template_path = Path(__file__).parent / 'templates' / 'email_notification.html'
+        with open(template_path, 'r') as f:
+            template_content = f.read()
 
     template = Template(template_content)
     html_body = template.render(
