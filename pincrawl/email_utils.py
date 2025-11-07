@@ -68,8 +68,8 @@ def send_ad_notification_email(smtp_client, from_email, to_email, ads, subject=N
                 if ad.opdb_id:
                     product = session.query(Product).filter_by(opdb_id=ad.opdb_id).first()
                     if product:
-                        # Use the dynamic graph endpoint with product_id instead of static files
-                        ad_info['graph_url'] = f"{PINCRAWL_BASE_URL}/graphs/{product.id}.svg"
+                        # Use the dynamic graph endpoint with product_id (PNG for better email client support)
+                        ad_info['graph_url'] = f"{PINCRAWL_BASE_URL}/graphs/{product.id}.png"
             else:
                 # It's already a dictionary (for testing)
                 ad_info = ad

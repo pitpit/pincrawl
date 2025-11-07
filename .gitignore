@@ -10,3 +10,4 @@ pincrawl.egg-info/
 build/
 test_email.html
 /www/var/graphs/*.svg
+/www/var/graphs/*.png

@@ -166,19 +166,29 @@ def get_authenticated_user(request: Request):
 
 
 # Public endpoint for graph generation
-@app.get("/graphs/{product_id}.svg")
-async def get_graph(product_id: int):
+@app.get("/graphs/{product_id}.{format}")
+async def get_graph(product_id: int, format: str):
     """Generate and serve price graph for a pinball machine.
 
     Generates the graph on-demand and caches it. If the cached graph is from
     a previous day, it will be regenerated.
+    
+    Args:
+        product_id: The ID of the product
+        format: The output format ('svg' or 'png')
     """
+    # Validate format
+    if format.lower() not in ['svg', 'png']:
+        raise HTTPException(status_code=400, detail="Format must be 'svg' or 'png'")
+    
+    format = format.lower()
+    
     # Define graph directory and paths
     graph_dir = "var/graphs"
     os.makedirs(graph_dir, exist_ok=True)
 
-    graph_path = os.path.join(graph_dir, f"{product_id}.svg")
-    nodata_graph_path = os.path.join(graph_dir, "nodata.svg")
+    graph_path = os.path.join(graph_dir, f"{product_id}.{format}")
+    nodata_graph_path = os.path.join(graph_dir, f"nodata.{format}")
 
     # Check if we need to regenerate the graph
     should_regenerate = True
@@ -222,7 +232,7 @@ async def get_graph(product_id: int):
                 prices = [ad.amount for ad in ads]
 
                 # Generate the graph
-                generate_price_graph(dates, prices, graph_path)
+                generate_price_graph(dates, prices, graph_path, format=format)
                 logger.info(f"✓ Generated graph for product_id={product_id} ({product.opdb_id}) with {len(ads)} data points")
             else:
                 # No data available, generate "no data" graph
@@ -237,8 +247,8 @@ async def get_graph(product_id: int):
                         should_regenerate_nodata = False
 
                 if should_regenerate_nodata:
-                    generate_nodata_graph(nodata_graph_path)
-                    logger.info("✓ Generated/refreshed nodata graph")
+                    generate_nodata_graph(nodata_graph_path, format=format)
+                    logger.info(f"✓ Generated/refreshed nodata graph ({format})")
 
         except HTTPException:
             raise
@@ -249,11 +259,14 @@ async def get_graph(product_id: int):
         finally:
             session.close()
 
+    # Determine the media type based on format
+    media_type = "image/svg+xml" if format == "svg" else "image/png"
+    
     # Serve the graph file
     if os.path.exists(graph_path):
-        return FileResponse(graph_path, media_type="image/svg+xml")
+        return FileResponse(graph_path, media_type=media_type)
     else:
-        return FileResponse(nodata_graph_path, media_type="image/svg+xml")
+        return FileResponse(nodata_graph_path, media_type=media_type)
 
 # Redirect root to default locale
 @app.get("/")

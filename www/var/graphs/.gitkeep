@@ -1,3 +1,3 @@
 # This directory stores dynamically generated price graphs
-# Graphs are generated on-demand via /graphs/{product_id}.svg endpoint
+# Graphs are generated on-demand via /graphs/{product_id}.svg or /graphs/{product_id}.png endpoint
 

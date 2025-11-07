@@ -10,7 +10,7 @@ import matplotlib.dates as mdates
 from matplotlib.ticker import FixedLocator
 
 
-def generate_price_graph(dates: List[datetime], prices: List[float], output_path: str, no_data: bool = False) -> str:
+def generate_price_graph(dates: List[datetime], prices: List[float], output_path: str, no_data: bool = False, format: str = 'svg') -> str:
     """Generate a price timeline graph and save it to disk.
 
     Args:
@@ -18,6 +18,7 @@ def generate_price_graph(dates: List[datetime], prices: List[float], output_path
         prices: List of prices (in euros) for the y-axis
         output_path: Full path where the graph should be saved
         no_data: If True and no data, show "No data" text in center
+        format: Output format ('svg' or 'png')
 
     Raises:
         Exception: If graph generation fails
@@ -87,19 +88,24 @@ def generate_price_graph(dates: List[datetime], prices: List[float], output_path
     plt.tight_layout(pad=0.1)
     plt.subplots_adjust(left=0.01)
 
-    # Save the figure as SVG
-    plt.savefig(output_path, format='svg', facecolor=fig.get_facecolor(), edgecolor='none', bbox_inches='tight')
+    # Save the figure in the requested format
+    save_format = format.lower()
+    if save_format not in ['svg', 'png']:
+        save_format = 'svg'  # Default to SVG if invalid format
+    
+    plt.savefig(output_path, format=save_format, facecolor=fig.get_facecolor(), edgecolor='none', bbox_inches='tight')
     plt.close(fig)
 
     # Return the filename (basename)
     return os.path.basename(output_path)
 
 
-def generate_nodata_graph(output_path: str) -> str:
+def generate_nodata_graph(output_path: str, format: str = 'svg') -> str:
     """Generate an empty price timeline graph (no data) and save it to disk.
 
     Args:
         output_path: Full path where the graph should be saved
+        format: Output format ('svg' or 'png')
 
     Returns:
         str: The filename (basename) of the saved graph
@@ -108,4 +114,4 @@ def generate_nodata_graph(output_path: str) -> str:
         Exception: If graph generation fails
     """
     # Call generate_price_graph with no_data flag
-    return generate_price_graph([], [], output_path, no_data=True)
+    return generate_price_graph([], [], output_path, no_data=True, format=format)
