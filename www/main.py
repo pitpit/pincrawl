@@ -27,15 +27,18 @@ from fastapi.exceptions import RequestValidationError
 # Load environment variables
 load_dotenv()
 
+www_log_level = os.getenv("WWW_LOG_LEVEL", "info").upper()
+
 logging.basicConfig(
-    level=logging.INFO,
+    level=www_log_level,
     format='%(levelname)s: %(message)s',
     handlers=[logging.StreamHandler(sys.stdout)]
 )
 
+logging.getLogger("pincrawl").setLevel(www_log_level)
+
 # Setup logging
 logger = logging.getLogger(__name__)
-# logging.getLogger("pincrawl").setLevel(logging.DEBUG)
 
 app = FastAPI(title="Pincrawl")
 
