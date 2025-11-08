@@ -95,6 +95,9 @@ Translation files are located in:
 
 ## TODO
 
+- thumbnail for pinball
+- [] pink dot for current ad in price graph in email
+- [] manual fix / product check for ads
 - [] rename page /pricing to /plans
 - [ ] use internal id of product as a foreign key in Watching instead of opdb_id
 - [ ] check opdb_id when creating a Watching
@@ -107,7 +110,7 @@ Translation files are located in:
 - [ ] translate svg/png price graph files
 - [ ] créer une tâche d'envoie par destinaire pour pouvoir rejouer en cas de plantage
 - [ ] améliorer le moteur de recherche
-- [ ] add a bcc mailcatcher to all sent mails
+- [X] add a bcc mailcatcher to all sent mails
 - [X] remove validate_locale everywhere
 - [X] use internal id of the user as a foreign key in Watching entity instead of email
 - [X] traduire le mail en FR (email template now supports EN/FR translation)
