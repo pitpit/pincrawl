@@ -15,6 +15,11 @@ DEFAULT_LOCALE = 'en'
 
 # Translation directory path (shared root directory)
 TRANSLATIONS_DIR = os.path.join(os.path.dirname(__file__), '..', 'translations')
+# Ensure translations directory exists
+if not os.path.exists(TRANSLATIONS_DIR):
+    logger.error(f"Translations directory does not exist: {TRANSLATIONS_DIR}")
+else:
+    logger.debug(f"Translations directory exists: {TRANSLATIONS_DIR}")
 
 # Cache for translation objects
 _translations = {}

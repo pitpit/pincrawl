@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Pincrawl 1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-11-08 16:27+0100\n"
+"POT-Creation-Date: 2025-11-08 18:19+0100\n"
 "PO-Revision-Date: 2025-10-12 15:55+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -18,8 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.10.3\n"
 
-#: build/lib/pincrawl/email_utils.py:114 pincrawl/email_utils.py:112
-#, python-format
+#: build/lib/pincrawl/email_utils.py:112 pincrawl/email_utils.py:112
 msgid "New pinball machines found"
 msgstr "Nouveaux flippers trouvés"
 
@@ -51,8 +50,11 @@ msgid "Location: <strong>%s</strong>"
 msgstr "Lieu: <strong>%s</strong>"
 
 #: build/lib/pincrawl/templates/email_notification.html:130
-msgid "Price timeline"
-msgstr "Historique des prix"
+#: pincrawl/templates/email_notification.html:130
+#: www/templates/pinballs.html:149
+#, python-format
+msgid "Price timeline for %s"
+msgstr "Historique des prix pour %s"
 
 #: build/lib/pincrawl/templates/email_notification.html:135
 #: pincrawl/templates/email_notification.html:135
@@ -73,12 +75,6 @@ msgid ""
 msgstr ""
 "L'équipe <a style=\"color: #00FFFF;text-decoration: none;\" "
 "href=\"%s\">PINCRAWL</a>"
-
-#: pincrawl/templates/email_notification.html:130
-#: www/templates/pinballs.html:149
-#, python-format
-msgid "Price timeline for %s"
-msgstr "Historique des prix pour %s"
 
 #: www/templates/_footer.html:10 www/templates/legal-notice.html:3
 #: www/templates/legal-notice.html:27

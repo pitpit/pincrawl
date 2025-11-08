@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Pincrawl 1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-11-08 16:27+0100\n"
+"POT-Creation-Date: 2025-11-08 18:19+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -18,8 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.10.3\n"
 
-#: build/lib/pincrawl/email_utils.py:114 pincrawl/email_utils.py:112
-#, python-format
+#: build/lib/pincrawl/email_utils.py:112 pincrawl/email_utils.py:112
 msgid "New pinball machines found"
 msgstr ""
 
@@ -49,7 +48,10 @@ msgid "Location: <strong>%s</strong>"
 msgstr ""
 
 #: build/lib/pincrawl/templates/email_notification.html:130
-msgid "Price timeline"
+#: pincrawl/templates/email_notification.html:130
+#: www/templates/pinballs.html:149
+#, python-format
+msgid "Price timeline for %s"
 msgstr ""
 
 #: build/lib/pincrawl/templates/email_notification.html:135
@@ -68,12 +70,6 @@ msgstr ""
 msgid ""
 "The <a style=\"color: #00FFFF;text-decoration: none;\" "
 "href=\"%s\">PINCRAWL</a> Team"
-msgstr ""
-
-#: pincrawl/templates/email_notification.html:130
-#: www/templates/pinballs.html:149
-#, python-format
-msgid "Price timeline for %s"
 msgstr ""
 
 #: www/templates/_footer.html:10 www/templates/legal-notice.html:3
@@ -510,4 +506,3 @@ msgid ""
 "email alerts. You can start using Pincrawl immediately without any "
 "payment information."
 msgstr ""
-
