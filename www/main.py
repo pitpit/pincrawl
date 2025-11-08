@@ -21,7 +21,7 @@ from datetime import datetime, timedelta
 from pincrawl.product_matcher import ProductMatcher
 from pincrawl.database import Database, Watching, Product, Account, PLAN_WATCHING_LIMITS, Ad
 from pincrawl.graph_utils import generate_price_graph, generate_nodata_graph
-from i18n import get_locale_from_request, validate_locale, I18nContext, SUPPORTED_LOCALES, DEFAULT_LOCALE
+from pincrawl.i18n import get_locale_from_request, validate_locale, I18nContext, SUPPORTED_LOCALES, DEFAULT_LOCALE
 from fastapi.exceptions import RequestValidationError
 
 # Load environment variables
@@ -165,6 +165,38 @@ def get_authenticated_user(request: Request):
     return user
 
 
+def get_browser_language(request: Request) -> str:
+    """Extract preferred language from browser's Accept-Language header.
+
+    Args:
+        request: The request object containing headers
+
+    Returns:
+        str: The preferred locale code (e.g., 'en', 'fr') or DEFAULT_LOCALE if none found
+    """
+    accept_language = request.headers.get('accept-language', '')
+
+    if accept_language:
+        try:
+            # Parse Accept-Language header (format: "en-US,en;q=0.9,fr;q=0.8")
+            languages = accept_language.split(',')
+            for lang in languages:
+                # Remove quality factor (;q=0.9) if present
+                lang_code = lang.split(';')[0].strip().lower()
+
+                # Extract just the language part (before any country code)
+                primary_lang = lang_code.split('-')[0]
+
+                # Check if this language is supported
+                if primary_lang in SUPPORTED_LOCALES:
+                    return primary_lang
+        except:
+            # If parsing fails, use default
+            pass
+
+    return DEFAULT_LOCALE
+
+
 # Public endpoint for graph generation
 @app.get("/graphs/{product_id}.{format}")
 async def get_graph(product_id: int, format: str):
@@ -270,31 +302,13 @@ async def get_graph(product_id: int, format: str):
 
 # Redirect root to default locale
 @app.get("/")
-async def root_redirect(request: Request):
+async def root_redirect(
+    request: Request,
+    user=Depends(get_authenticated_user)
+):
     """Redirect root path to user's preferred locale based on browser language"""
-    # Get browser's preferred language from Accept-Language header
-    accept_language = request.headers.get('accept-language', '')
-    locale = DEFAULT_LOCALE
-
-    if accept_language:
-        # Parse Accept-Language header (format: "en-US,en;q=0.9,fr;q=0.8")
-        try:
-            # Split by comma and get the first preference
-            languages = accept_language.split(',')
-            for lang in languages:
-                # Remove quality factor (;q=0.9) if present
-                lang_code = lang.split(';')[0].strip().lower()
-
-                # Extract just the language part (before any country code)
-                primary_lang = lang_code.split('-')[0]
-
-                # Check if this language is supported
-                if primary_lang in SUPPORTED_LOCALES:
-                    locale = primary_lang
-                    break
-        except:
-            # If parsing fails, use default
-            locale = DEFAULT_LOCALE
+    # Always use browser language for navigation
+    locale = get_browser_language(request)
 
     return RedirectResponse(url=f"/{locale}/")
 
@@ -366,8 +380,10 @@ async def callback(
                     # Get or create account (automatically creates free plan if new)
                     account = Account.get_by_email(session, user_email)
                     if account is None:
-                        account = Account.create_account(session, user_email)
-                        logger.info(f"✓ Created new account for user: {user_email}")
+                        # Detect browser language for new users (used for communication preferences)
+                        browser_language = get_browser_language(request)
+                        account = Account.create_account(session, user_email, language=browser_language)
+                        logger.info(f"✓ Created new account for user: {user_email} with communication language: {browser_language}")
                     else:
                         logger.info(f"✓ Found existing account for user: {user_email}")
 
@@ -593,6 +609,51 @@ async def my_account(
             current_plan=current_plan
         )
     )
+
+
+@app.put("/{locale}/my-account")
+async def update_my_account(
+    request: Request,
+    locale: str = Path(..., pattern=f"^({'|'.join(SUPPORTED_LOCALES)})$"),
+    user=Depends(get_authenticated_user)
+):
+    """Update account preferences"""
+    locale = validate_locale(locale)
+    user_email = user.get('email')
+
+    data = await request.json()
+
+    session = db.get_db()
+
+    try:
+        account = Account.get_by_email(session, user_email)
+        if not account:
+            raise HTTPException(status_code=404, detail="User account not found")
+
+        # Update language preference if provided
+        if 'language' in data:
+            language = data.get('language')
+            if language not in SUPPORTED_LOCALES:
+                raise HTTPException(status_code=400, detail="Invalid language")
+            account.language = language
+            logger.info(f"✓ Updated language for user {user_email} to {language}")
+
+        # Future: Add more preference updates here
+        # if 'other_preference' in data:
+        #     account.other_preference = data.get('other_preference')
+
+        session.commit()
+
+        return HTMLResponse(status_code=200, content="")
+    except HTTPException:
+        session.close()
+        raise
+    except Exception as e:
+        session.close()
+        logger.error(f"❌ Error updating account preferences for user {user_email}: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+    finally:
+        session.close()
 
 
 @app.post("/watch")

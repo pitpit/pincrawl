@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 from jinja2 import Template
 from pincrawl.database import Database, Product
+from pincrawl.i18n import I18nContext, DEFAULT_LOCALE, validate_locale
 try:
     from importlib.resources import files
 except ImportError:
@@ -13,7 +14,7 @@ except ImportError:
     from importlib_resources import files
 
 
-def send_ad_notification_email(smtp_client, from_email, to_email, ads, subject=None):
+def send_ad_notification_email(smtp_client, from_email, to_email, ads, locale=None):
     """
     Send an email notification with ad data using HTML template.
 
@@ -23,6 +24,7 @@ def send_ad_notification_email(smtp_client, from_email, to_email, ads, subject=N
         to_email: Recipient email address
         ads: List of Ad objects from database or list of dictionaries with ad data
         subject: str (optional) - Email subject, defaults to auto-generated
+        locale: str (optional) - Language code ('en', 'fr'), defaults to DEFAULT_LOCALE
 
     Returns:
         None
@@ -30,6 +32,15 @@ def send_ad_notification_email(smtp_client, from_email, to_email, ads, subject=N
     Raises:
         Exception: If template cannot be loaded or email fails to send
     """
+    # Validate and set locale
+    if locale is None:
+        locale = DEFAULT_LOCALE
+    else:
+        locale = validate_locale(locale)
+
+    # Create i18n context for the template
+    i18n_context = I18nContext(locale)
+
     # Get base URL from environment variable
     PINCRAWL_BASE_URL = os.getenv('PINCRAWL_BASE_URL')
     if not PINCRAWL_BASE_URL:
@@ -93,13 +104,12 @@ def send_ad_notification_email(smtp_client, from_email, to_email, ads, subject=N
     html_body = template.render(
         ads_count=len(ads_data),
         ads=ads_data,
-        base_url=PINCRAWL_BASE_URL
+        base_url=PINCRAWL_BASE_URL,
+        _=i18n_context._,
+        locale=locale
     )
 
-    # Create email subject if not provided
-    if subject is None:
-        subject = f"New pinball machines found - {len(ads_data)} match{'es' if len(ads_data) != 1 else ''}"
-
+    subject = i18n_context._('New pinball machine(s) found %s match(es)' % len(ads_data))
 
     # For debugging: save rendered HTML to file
     # TODO comment

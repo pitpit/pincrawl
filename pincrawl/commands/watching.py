@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import and_
-from pincrawl.database import Database, Watching, Ad, Task, TaskStatus, Product
+from pincrawl.database import Database, Watching, Ad, Task, TaskStatus, Product, Account
 from pincrawl.task_manager import TaskManager
 from pincrawl.smtp import Smtp
 from pincrawl.email_utils import send_ad_notification_email
@@ -177,10 +177,14 @@ def watching_send():
             email_count = 0
             for email, ads in email_to_ads.items():
                 try:
-                    # Send email with HTML - pass Ad objects directly
-                    send_ad_notification_email(smtp_client, FROM_EMAIL, email, ads)
+                    # Get user's language preference from Account
+                    account = session.query(Account).filter_by(email=email).first()
+                    locale = account.locale if account and account.locale else 'en'
+
+                    # Send email with HTML - pass Ad objects directly with locale
+                    send_ad_notification_email(smtp_client, FROM_EMAIL, email, ads, locale=locale)
                     email_count += 1
-                    click.echo(f"✓ Sent email to {email} with {len(ads)} ads")
+                    click.echo(f"✓ Sent email to {email} with {len(ads)} ads (locale: {locale})")
 
                 except Exception as e:
                     click.echo(f"❌ Failed to send email to {email}: {str(e)}")
@@ -202,11 +206,13 @@ def watching_send():
 
 @watching.command("test-email")
 @click.argument("to")
-def test_email(to):
+@click.option("--locale", default="en", help="Language locale (en or fr)")
+def test_email(to, locale):
     """Send a test email to verify SMTP configuration.
 
     Args:
         to: Email address to send the test email to
+        locale: Language locale for the email (default: en)
     """
 
     smtp_client = Smtp(SMTP_URL)
@@ -227,11 +233,13 @@ def test_email(to):
     prices = [base_price + random.randint(-variation//2, variation) for _ in range(12)]
 
     # Generate and save the graph (SVG format)
-    graph_path = 'www/static/img/graphs/test_fake_graph.svg'
-    generate_price_graph(dates, prices, graph_path)
-    graph_url = f"{PINCRAWL_BASE_URL}/static/img/graphs/test_fake_graph.svg"
+    graph_filepath = 'var/graphs/fake_data.png'
+    generate_price_graph(dates, prices, f'www/{graph_filepath}', format='png')
+    graph_url = f"{PINCRAWL_BASE_URL}/{graph_filepath}"
 
-    nodata_graph_path = f"{PINCRAWL_BASE_URL}/static/img/graphs/test_fake_graph.svg"
+    graph_filepath = 'var/graphs/nodata.png'
+    generate_price_graph(dates, prices, f'www/{graph_filepath}', format='png')
+    nodata_graph_url = f"{PINCRAWL_BASE_URL}/{graph_filepath}"
 
     # Create fake ad data for testing
     fake_ads_data = [
@@ -253,7 +261,7 @@ def test_email(to):
             'price': 7200,
             'currency': 'EUR',
             'location': 'Lyon, 69001',
-            'graph_url': nodata_graph_path
+            'graph_url': nodata_graph_url
         },
         {
             'product': 'The Addams Family',
@@ -263,16 +271,13 @@ def test_email(to):
             'price': 6500,
             'currency': 'EUR',
             'location': 'Marseille, 13001',
-            'graph_url': nodata_graph_path
+            'graph_url': nodata_graph_url
         }
     ]
 
-    # Send test email using the shared function
-    subject = "PinCrawl Email Test - Sample Notification"
+    send_ad_notification_email(smtp_client, FROM_EMAIL, to, fake_ads_data, locale=locale)
 
-    send_ad_notification_email(smtp_client, FROM_EMAIL, to, fake_ads_data, subject=subject)
-
-    click.echo(f"✓ Test email sent successfully to {to}")
+    click.echo(f"✓ Test email sent successfully to {to} (locale: {locale})")
 
 
 

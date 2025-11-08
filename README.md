@@ -75,39 +75,42 @@ Fourth cronjob runs every night:
 0 2 * * * pincrawl ads stats --save >> /var/log/pincrawl.log 2>&1
 ```
 
-## Compile translations
+## Translations
 
+The project uses a shared translation directory at the root level (`/translations/`) for both the website and CLI/email services.
 
-Update translation strings:
+### Update translation strings:
 ```bash
-cd www/
-pybabel extract -F babel.cfg -o new.po .
-pybabel update -i new.po -d translations -l en
-pybabel update -i new.po -d translations -l fr
-rm new.po
+pybabel extract -F babel.cfg -o new.po . && pybabel update -i new.po -d translations && rm new.po
 ```
 
-Compile translation files:
+### Compile all translation files:
 ```bash
-cd www/
 pybabel compile -d translations
 ```
 
+Translation files are located in:
+- `translations/en/LC_MESSAGES/messages.po` (English)
+- `translations/fr/LC_MESSAGES/messages.po` (French)
+
 ## TODO
 
+- [ ] use internal id of product as a foreign key in subscription instead of opdb_id
+- [ ] check opdb_id when creating a subscription
+- [X] traduire le mail en FR (email template now supports EN/FR translation)
+- [ ] add a cci mailcatcher to all sent mails
 - [ ] unwatch pinball from email
 - [ ] download image and visit archive (ot do a screenshot)
-- [ ] limit number of subscriptions to 3 / user
-- [ ] check opdb_id when creating a subscription
-- [ ] mentions legales
 - [ ] CGU
 - [ ] better logo
 - [ ] setup stripe
 - [ ] setup mailersend
-- [X] custom domain pincrawl.pitp.it
-- [ ] use internal id of product as a foreign key in subscription instead of opdb_id
-- [ ] translate svg files
+- [ ] translate svg/png price graph files
 - [ ] créer une tâche d'envoie par destinaire pour pouvoir rejouer en cas de plantage
+- [ ] améliorer le moteur de recherche
+- [X] limit number of subscriptions to 3 / user
+- [X] mentions legales
+- [X] custom domain pincrawl.pitp.it
 
 ## 3rd party tools
 

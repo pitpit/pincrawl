@@ -67,7 +67,7 @@ def generate_price_graph(dates: List[datetime], prices: List[float], output_path
     plt.setp(ax.xaxis.get_majorticklabels(), rotation=0, ha='center')
 
     # Add labels
-    ax.set_ylabel('Price (€)', color='#ffffff', fontsize=8)
+    ax.set_ylabel('Price hist. (€)', color='#ffffff', fontsize=8)
     ax.grid(True, alpha=0.2, color='#00FFFF')
 
     # Add "No data" text if requested and no data provided

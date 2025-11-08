@@ -656,6 +656,7 @@ class Account(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     email = Column(String, unique=True, index=True, nullable=False)
+    language = Column(String(2), nullable=True, default=None)  # ISO 639-1 language code for communication (email, SMS, WhatsApp) - does not affect UI navigation
     created_at = Column(DateTime, default=datetime.now, nullable=False)
 
     # Relationship to account history
@@ -669,19 +670,20 @@ class Account(Base):
     )
 
     @staticmethod
-    def create_account(session, email: str) -> "Account":
+    def create_account(session, email: str, language: Optional[str] = None) -> "Account":
         """
         Create a new account with automatic free plan history entry.
 
         Args:
             session: Database session
             email: Account email address
+            language: Optional preferred language code for communication (e.g., 'en', 'fr')
 
         Returns:
             Account: The created account object
         """
         # Create the account
-        account = Account(email=email)
+        account = Account(email=email, language=language)
         session.add(account)
         session.flush()  # Flush to get the account ID
 

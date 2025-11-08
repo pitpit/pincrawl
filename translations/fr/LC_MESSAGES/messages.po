@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Pincrawl 1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-11-07 00:27+0100\n"
+"POT-Creation-Date: 2025-11-08 16:27+0100\n"
 "PO-Revision-Date: 2025-10-12 15:55+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -18,70 +18,137 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.10.3\n"
 
-#: templates/_footer.html:10 templates/legal-notice.html:3
-#: templates/legal-notice.html:27
+#: build/lib/pincrawl/email_utils.py:114 pincrawl/email_utils.py:112
+#, python-format
+msgid "New pinball machine(s) found %s match(es)"
+msgstr "Nouveau(x) flipper(s) trouvé(s) %s correspondance(s)"
+
+#: build/lib/pincrawl/templates/email_notification.html:112
+#: pincrawl/templates/email_notification.html:112
+msgid "Hello,"
+msgstr "Bonjour,"
+
+#: build/lib/pincrawl/templates/email_notification.html:113
+#: pincrawl/templates/email_notification.html:113
+#, python-format
+msgid ""
+"We found <strong>%s</strong> new pinball machine(s) matching your "
+"subscriptions:"
+msgstr ""
+"Nous avons trouvé <strong>%s</strong> nouveau(x) flipper(s) correspondant"
+" à vos recherches :"
+
+#: build/lib/pincrawl/templates/email_notification.html:121
+#: pincrawl/templates/email_notification.html:121
+#, python-format
+msgid "Price: <strong>%s %s</strong>"
+msgstr "Prix: <strong>%s %s</strong>"
+
+#: build/lib/pincrawl/templates/email_notification.html:125
+#: pincrawl/templates/email_notification.html:125
+#, python-format
+msgid "Location: <strong>%s</strong>"
+msgstr "Lieu: <strong>%s</strong>"
+
+#: build/lib/pincrawl/templates/email_notification.html:130
+msgid "Price timeline"
+msgstr "Historique des prix"
+
+#: build/lib/pincrawl/templates/email_notification.html:135
+#: pincrawl/templates/email_notification.html:135
+msgid "View Ad"
+msgstr "Voir l'annonce"
+
+#: build/lib/pincrawl/templates/email_notification.html:142
+#: pincrawl/templates/email_notification.html:142
+msgid "Best regards,"
+msgstr "Cordialement,"
+
+#: build/lib/pincrawl/templates/email_notification.html:142
+#: pincrawl/templates/email_notification.html:142
+#, python-format
+msgid ""
+"The <a style=\"color: #00FFFF;text-decoration: none;\" "
+"href=\"%s\">PINCRAWL</a> Team"
+msgstr ""
+"L'équipe <a style=\"color: #00FFFF;text-decoration: none;\" "
+"href=\"%s\">PINCRAWL</a>"
+
+#: pincrawl/templates/email_notification.html:130
+#: www/templates/pinballs.html:149
+#, python-format
+msgid "Price timeline for %s"
+msgstr "Historique des prix pour %s"
+
+#: www/templates/_footer.html:10 www/templates/legal-notice.html:3
+#: www/templates/legal-notice.html:27
 msgid "Legal Notice"
 msgstr "Mentions légales"
 
-#: templates/_header.html:15 templates/_header.html:54
-#: templates/pinballs.html:3
+#: www/templates/_header.html:15 www/templates/_header.html:54
+#: www/templates/pinballs.html:3
 msgid "Pinballs"
 msgstr "Flippers"
 
-#: templates/_header.html:24 templates/_header.html:63
+#: www/templates/_header.html:21 www/templates/_header.html:60
+#: www/templates/my-account.html:3 www/templates/my-account.html:14
+msgid "My Account"
+msgstr "Mon Compte"
+
+#: www/templates/_header.html:24 www/templates/_header.html:63
 msgid "Logout"
 msgstr "Déconnexion"
 
-#: templates/_pagination.html:7
+#: www/templates/_pagination.html:7
 msgid "Previous"
 msgstr "Précédent"
 
-#: templates/_pagination.html:11
+#: www/templates/_pagination.html:11
 #, python-format
 msgid "Page %s of %s"
 msgstr "Page %s sur %s"
 
-#: templates/_pagination.html:17
+#: www/templates/_pagination.html:17
 msgid "Next"
 msgstr "Suivant"
 
-#: templates/home.html:3
+#: www/templates/home.html:3
 msgid "Pincrawl - Find your dream pinball machine"
 msgstr "Pincrawl - Trouvez votre flipper de rêve"
 
-#: templates/home.html:21
+#: www/templates/home.html:21
 msgid "Your next pinball is just an alert away"
 msgstr "Trouvez le flipper de vos rêves"
 
-#: templates/home.html:23
+#: www/templates/home.html:23
 msgid "Be the first to know when a machine goes up for sale!"
 msgstr "Soyez le premier averti quand une machine est mise en vente !"
 
-#: templates/home.html:32 templates/pinballs.html:26
+#: www/templates/home.html:32 www/templates/pinballs.html:26
 msgid "Search for a pinball machine..."
 msgstr "Rechercher un flipper..."
 
-#: templates/home.html:40 templates/pinballs.html:34
+#: www/templates/home.html:40 www/templates/pinballs.html:34
 msgid "SEARCH"
 msgstr "RECHERCHER"
 
-#: templates/home.html:52
+#: www/templates/home.html:52
 msgid "How does it work?"
 msgstr "Comment ça marche ?"
 
-#: templates/home.html:57
+#: www/templates/home.html:57
 msgid "Watch pinballs"
 msgstr "Surveillez des flippers"
 
-#: templates/home.html:58
+#: www/templates/home.html:58
 msgid "Tell us which pinball machines you're hunting for."
 msgstr "Dites-nous quels flippers vous recherchez."
 
-#: templates/home.html:62
+#: www/templates/home.html:62
 msgid "Get instant alerts"
 msgstr "Recevez des alertes instantanées"
 
-#: templates/home.html:63
+#: www/templates/home.html:63
 msgid ""
 "We'll send you an alert within minutes when a matching machine goes up "
 "for sale."
@@ -89,67 +156,67 @@ msgstr ""
 "Nous vous enverrons une alerte en quelques minutes quand l'un des "
 "flippers que vous cherchez sera mise en vente."
 
-#: templates/home.html:67
+#: www/templates/home.html:67
 msgid "Be first in line"
 msgstr "Soyez le premier"
 
-#: templates/home.html:68
+#: www/templates/home.html:68
 msgid "Jump on the deal before anyone else."
 msgstr "Sautez sur l'affaire avant tout le monde."
 
-#: templates/legal-notice.html:33
+#: www/templates/legal-notice.html:33
 msgid "Site Publisher"
 msgstr "Éditeur du site"
 
-#: templates/legal-notice.html:35
+#: www/templates/legal-notice.html:35
 msgid "Company Name"
 msgstr "Raison sociale"
 
-#: templates/legal-notice.html:36
+#: www/templates/legal-notice.html:36
 msgid "Legal Form"
 msgstr "Forme juridique"
 
-#: templates/legal-notice.html:37
+#: www/templates/legal-notice.html:37
 msgid "Registration Number"
 msgstr "Numéro SIRET"
 
-#: templates/legal-notice.html:38
+#: www/templates/legal-notice.html:38
 msgid "VAT Number"
 msgstr "Numéro TVA"
 
-#: templates/legal-notice.html:39
+#: www/templates/legal-notice.html:39
 msgid "Registered Office"
 msgstr "Siège social"
 
-#: templates/legal-notice.html:40
+#: www/templates/legal-notice.html:40
 msgid "Email"
 msgstr "Email :"
 
-#: templates/legal-notice.html:46
+#: www/templates/legal-notice.html:46
 msgid "Web Hosting"
 msgstr "Hébergement"
 
-#: templates/legal-notice.html:48
+#: www/templates/legal-notice.html:48
 msgid "Host Name"
 msgstr "Nom de l'hébergeur"
 
-#: templates/legal-notice.html:49
+#: www/templates/legal-notice.html:49
 msgid "Address"
 msgstr "Adresse"
 
-#: templates/legal-notice.html:50
+#: www/templates/legal-notice.html:50
 msgid "Phone"
 msgstr "Téléphone"
 
-#: templates/legal-notice.html:51
+#: www/templates/legal-notice.html:51
 msgid "Website"
 msgstr "Site web"
 
-#: templates/legal-notice.html:57
+#: www/templates/legal-notice.html:57
 msgid "Intellectual Property"
 msgstr "Propriété intellectuelle"
 
-#: templates/legal-notice.html:58
+#: www/templates/legal-notice.html:58
 #, python-format
 msgid ""
 "The entire content of this site (texts, images, videos, logos, graphics, "
@@ -167,7 +234,7 @@ msgstr ""
 " utilisé, est interdite sans autorisation écrite préalable de "
 "%(company_name)s."
 
-#: templates/legal-notice.html:59
+#: www/templates/legal-notice.html:59
 msgid ""
 "Any unauthorized exploitation of the site or any of its elements will be "
 "considered as constituting an infringement and prosecuted in accordance "
@@ -179,11 +246,11 @@ msgstr ""
 "poursuivie conformément aux dispositions des articles L.335-2 et suivants"
 " du Code de la propriété intellectuelle."
 
-#: templates/legal-notice.html:64
+#: www/templates/legal-notice.html:64
 msgid "Liability"
 msgstr "Responsabilité"
 
-#: templates/legal-notice.html:65
+#: www/templates/legal-notice.html:65
 #, python-format
 msgid ""
 "The information provided on this site is given for informational purposes"
@@ -196,7 +263,7 @@ msgstr ""
 " responsabilité pour tout dommage direct ou indirect pouvant résulter de "
 "l'accès ou de l'utilisation de ce site."
 
-#: templates/legal-notice.html:66
+#: www/templates/legal-notice.html:66
 #, python-format
 msgid ""
 "%(company_name)s cannot be held responsible for the unavailability of the"
@@ -206,11 +273,11 @@ msgstr ""
 "service, d'intrusions extérieures ou de la présence de virus "
 "informatiques."
 
-#: templates/legal-notice.html:71
+#: www/templates/legal-notice.html:71
 msgid "Personal Data"
 msgstr "Données personnelles"
 
-#: templates/legal-notice.html:72
+#: www/templates/legal-notice.html:72
 msgid ""
 "In accordance with the French Data Protection Act of January 6, 1978, "
 "modified by the law of August 6, 2004, and European Regulation 2016/679 "
@@ -223,12 +290,12 @@ msgstr ""
 "rectification, d'effacement et de portabilité de vos données "
 "personnelles."
 
-#: templates/legal-notice.html:73
+#: www/templates/legal-notice.html:73
 #, python-format
 msgid "To exercise these rights, you can contact us at: %(contact_email)s"
 msgstr "Pour exercer ces droits, vous pouvez nous contacter à : %(contact_email)s"
 
-#: templates/legal-notice.html:74
+#: www/templates/legal-notice.html:74
 msgid ""
 "For more information about how we process your personal data, please "
 "consult our Privacy Policy."
@@ -236,11 +303,11 @@ msgstr ""
 "Pour plus d'informations sur la façon dont nous traitons vos données "
 "personnelles, veuillez consulter notre Politique de confidentialité."
 
-#: templates/legal-notice.html:79
+#: www/templates/legal-notice.html:79
 msgid "Cookies"
 msgstr "Cookies"
 
-#: templates/legal-notice.html:80
+#: www/templates/legal-notice.html:80
 msgid ""
 "This site uses cookies to improve user experience and analyze traffic. By"
 " continuing to browse this site, you accept the use of cookies in "
@@ -250,11 +317,11 @@ msgstr ""
 "analyser le trafic. En continuant de naviguer sur ce site, vous acceptez "
 "l'utilisation de cookies conformément à notre Politique de cookies."
 
-#: templates/legal-notice.html:85
+#: www/templates/legal-notice.html:85
 msgid "Applicable Law"
 msgstr "Droit applicable"
 
-#: templates/legal-notice.html:86
+#: www/templates/legal-notice.html:86
 msgid ""
 "These legal notices are governed by French law. In case of dispute, and "
 "after seeking an amicable solution, the french courts shall have "
@@ -264,186 +331,190 @@ msgstr ""
 " et après recherche d'une solution amiable, les tribunaux français auront"
 " compétence exclusive."
 
-#: templates/login.html:3
+#: www/templates/login.html:3
 msgid "Login"
 msgstr "Connexion"
 
-#: templates/login.html:21
+#: www/templates/login.html:21
 msgid "Authentication Required"
 msgstr "Authentification requise"
 
-#: templates/login.html:28
+#: www/templates/login.html:28
 msgid "LOGIN"
 msgstr "SE CONNECTER"
 
-#: templates/my-account.html:3 templates/my-account.html:14
-msgid "My Account"
-msgstr "Mon Compte"
+#: www/templates/my-account.html:17
+msgid "Manage your account settings"
+msgstr "Modifier votre compte"
 
-#: templates/my-account.html:17
-msgid "Manage your account settings and subscription"
-msgstr "Modifier votre compte et votre abonnement"
+#: www/templates/my-account.html:25
+msgid "Account Settings"
+msgstr "Paramètres du compte"
 
-#: templates/my-account.html:27
+#: www/templates/my-account.html:29
 msgid "Email:"
 msgstr "Email :"
 
-#: templates/my-account.html:37
-msgid "Current Plan: "
-msgstr "Abonnement"
+#: www/templates/my-account.html:33
+msgid "Communication Language:"
+msgstr "Langue des communications :"
 
-#: templates/my-account.html:40 templates/pricing.html:27
-msgid "Free"
-msgstr "Gratuit"
+#: www/templates/my-account.html:42
+msgid "SAVE"
+msgstr "ENREGISTRER"
 
-#: templates/my-account.html:42 templates/pricing.html:76
-msgid "Collector"
-msgstr "Collectionneur"
+#: www/templates/my-account.html:84
+msgid "SAVED!"
+msgstr "ENREGISTRÉ !"
 
-#: templates/my-account.html:44
-msgid "Pro"
-msgstr "Pro"
+#: www/templates/my-account.html:90 www/templates/my-account.html:94
+msgid "Failed to save preferences"
+msgstr "Échec de l'enregistrement des préférences"
 
-#: templates/my-account.html:52
-msgid "Update Plan"
-msgstr "Changer d'abonnement"
-
-#: templates/pinballs.html:15
+#: www/templates/pinballs.html:15
 msgid "Browse Pinball Machines"
 msgstr "Parcourir les flippers"
 
-#: templates/pinballs.html:45
+#: www/templates/pinballs.html:45
 msgid "All manufacturers"
 msgstr "Tous les fabricants"
 
-#: templates/pinballs.html:56
+#: www/templates/pinballs.html:56
 msgid "From:"
 msgstr "De :"
 
-#: templates/pinballs.html:78
+#: www/templates/pinballs.html:78
 msgid "To:"
 msgstr "À :"
 
-#: templates/pinballs.html:114
+#: www/templates/pinballs.html:114
 msgid "Show only watched pinballs"
 msgstr "Afficher uniquement les flippers surveillés"
 
-#: templates/pinballs.html:119
+#: www/templates/pinballs.html:119
 msgid "[Clear filters]"
 msgstr "[Effacer les filtres]"
 
-#: templates/pinballs.html:159 templates/pinballs.html:240
+#: www/templates/pinballs.html:159 www/templates/pinballs.html:240
 msgid "WATCHING"
 msgstr "SURVEILLÉ"
 
-#: templates/pinballs.html:159 templates/pinballs.html:244
+#: www/templates/pinballs.html:159 www/templates/pinballs.html:244
 msgid "WATCH"
 msgstr "SURVEILLER"
 
-#: templates/pinballs.html:173
+#: www/templates/pinballs.html:173
 msgid "No pinball machines found"
 msgstr "Aucun flipper trouvé"
 
-#: templates/pinballs.html:174
+#: www/templates/pinballs.html:174
 msgid "Try adjusting your search terms or browse all machines."
 msgstr ""
 "Essayez d'ajuster vos termes de recherche ou parcourez toutes les "
 "machines."
 
-#: templates/pinballs.html:202
+#: www/templates/pinballs.html:202
 msgid "Watching Limit Reached"
 msgstr "Limite atteinte"
 
-#: templates/pinballs.html:207
+#: www/templates/pinballs.html:207
 msgid "You have reached the maximum number of pinballs you can watch for now."
 msgstr ""
 "Vous avez atteind le nombre maximum de flippers que vous pouvez suivre "
 "pour le moment."
 
-#: templates/pinballs.html:217
+#: www/templates/pinballs.html:217
 msgid "Cancel"
 msgstr "Annuler"
 
-#: templates/pricing.html:3
+#: www/templates/pricing.html:3
 msgid "Pricing"
 msgstr "Tarifs"
 
-#: templates/pricing.html:14
+#: www/templates/pricing.html:14
 msgid "Fair pricing that grows with your passion"
 msgstr "Des tarifs qui évoluent avec votre passion"
 
-#: templates/pricing.html:17
+#: www/templates/pricing.html:17
 msgid "Choose the perfect plan to never miss your next pinball machine."
 msgstr "Choisissez un plan pour ne pas rater votre prochain flipper."
 
-#: templates/pricing.html:31 templates/pricing.html:80
-#: templates/pricing.html:130
+#: www/templates/pricing.html:27
+msgid "Free"
+msgstr "Gratuit"
+
+#: www/templates/pricing.html:31 www/templates/pricing.html:80
+#: www/templates/pricing.html:130
 msgid "month"
 msgstr "mois"
 
-#: templates/pricing.html:39
+#: www/templates/pricing.html:39
 msgid "Watch up to xx pinballs"
 msgstr "Surveillez jusqu'à 3 flippers"
 
-#: templates/pricing.html:45 templates/pricing.html:94
-#: templates/pricing.html:144
+#: www/templates/pricing.html:45 www/templates/pricing.html:94
+#: www/templates/pricing.html:144
 msgid "Email alerts"
 msgstr "Alertes par e-mail"
 
-#: templates/pricing.html:51
+#: www/templates/pricing.html:51
 msgid "Basic support"
 msgstr "Support de base"
 
-#: templates/pricing.html:57 templates/pricing.html:112
-#: templates/pricing.html:168
+#: www/templates/pricing.html:57 www/templates/pricing.html:112
+#: www/templates/pricing.html:168
 msgid "Current Plan"
 msgstr "Actuel"
 
-#: templates/pricing.html:61
+#: www/templates/pricing.html:61
 msgid "Get Started"
 msgstr "Commencer"
 
-#: templates/pricing.html:71
+#: www/templates/pricing.html:71
 msgid "Most Popular"
 msgstr "Le plus populaire"
 
-#: templates/pricing.html:88
+#: www/templates/pricing.html:76
+msgid "Collector"
+msgstr "Collectionneur"
+
+#: www/templates/pricing.html:88
 msgid "Watch up to xxx pinballs"
 msgstr "Surveillez jusqu'à xxx flippers"
 
-#: templates/pricing.html:100 templates/pricing.html:150
+#: www/templates/pricing.html:100 www/templates/pricing.html:150
 msgid "SMS alerts"
 msgstr "Alertes par SMS"
 
-#: templates/pricing.html:106 templates/pricing.html:162
+#: www/templates/pricing.html:106 www/templates/pricing.html:162
 msgid "Priority support"
 msgstr "Support prioritaire"
 
-#: templates/pricing.html:117 templates/pricing.html:173
+#: www/templates/pricing.html:117 www/templates/pricing.html:173
 msgid "Coming soon"
-msgstr ""
+msgstr "Bientôt disponible"
 
-#: templates/pricing.html:126
+#: www/templates/pricing.html:126
 msgid "Professional"
 msgstr "Professionnel"
 
-#: templates/pricing.html:138
+#: www/templates/pricing.html:138
 msgid "Watch unlimited pinballs"
 msgstr "Surveillez un nombre illimité de flippers"
 
-#: templates/pricing.html:156
+#: www/templates/pricing.html:156
 msgid "WhatsApp alerts"
 msgstr "Alertes par WhatsApp"
 
-#: templates/pricing.html:183
+#: www/templates/pricing.html:183
 msgid "Frequently Asked Questions"
 msgstr "Questions fréquemment posées"
 
-#: templates/pricing.html:189
+#: www/templates/pricing.html:189
 msgid "How does billing work?"
 msgstr "Comment fonctionne la facturation ?"
 
-#: templates/pricing.html:192
+#: www/templates/pricing.html:192
 msgid ""
 "We charge monthly based on your selected plan. You can upgrade or "
 "downgrade at any time, and changes take effect immediately."
@@ -452,11 +523,11 @@ msgstr ""
 "passer à un abonnement supérieur ou inférieur à tout moment, et les "
 "changements prennent effet immédiatement."
 
-#: templates/pricing.html:198
+#: www/templates/pricing.html:198
 msgid "Can I change my plan anytime?"
 msgstr "Puis-je changer d'abonnement à tout moment ?"
 
-#: templates/pricing.html:201
+#: www/templates/pricing.html:201
 msgid ""
 "Yes! You can upgrade or downgrade your plan at any time from your account"
 " settings. Changes are prorated and take effect immediately."
@@ -465,11 +536,11 @@ msgstr ""
 "moment depuis les paramètres de votre compte. Les changements sont "
 "proratisés et prennent effet immédiatement."
 
-#: templates/pricing.html:207
+#: www/templates/pricing.html:207
 msgid "What types of alerts do you support?"
 msgstr "Quels types d'alertes proposez-vous ?"
 
-#: templates/pricing.html:210
+#: www/templates/pricing.html:210
 msgid ""
 "We support email alerts on all plans. Professional plans also include SMS"
 " and WhatsApp notifications for instant updates on your favorite pinball "
@@ -479,11 +550,11 @@ msgstr ""
 "Les abonnements professionnels incluent également les notifications SMS "
 "et WhatsApp pour des mises à jour instantanées sur vos flippers préférés."
 
-#: templates/pricing.html:216
+#: www/templates/pricing.html:216
 msgid "Is there a free trial?"
 msgstr "Y a-t-il un essai gratuit ?"
 
-#: templates/pricing.html:219
+#: www/templates/pricing.html:219
 msgid ""
 "Yes! Our Free plan allows you to watch up to 3 pinball machines with "
 "email alerts. You can start using Pincrawl immediately without any "
@@ -492,73 +563,4 @@ msgstr ""
 "Oui ! Notre abonnement Gratuit vous permet de surveiller jusqu'à 3 "
 "flippers avec des alertes par e-mail. Vous pouvez commencer à utiliser "
 "Pincrawl immédiatement sans aucune information de paiement."
-
-#~ msgid "Plan"
-#~ msgstr "Abonnements"
-
-#~ msgid "Share Capital"
-#~ msgstr "Capital social"
-
-#~ msgid "Publication Director"
-#~ msgstr "Directeur de publication"
-
-#~ msgid "Contact"
-#~ msgstr "Contact"
-
-#~ msgid "For any questions regarding these legal notices, you can contact us:"
-#~ msgstr ""
-#~ "Pour toute question concernant ces "
-#~ "mentions légales, vous pouvez nous "
-#~ "contacter :"
-
-#~ msgid "Mediation"
-#~ msgstr "Médiation"
-
-#~ msgid ""
-#~ "In accordance with Article L. 616-1 "
-#~ "of the Consumer Code, we inform "
-#~ "you that you have the possibility "
-#~ "of using mediation in case of "
-#~ "dispute. The mediator we work with "
-#~ "is: %(mediator_name)s - %(mediator_website)s"
-#~ msgstr ""
-#~ "Conformément à l'article L. 616-1 du "
-#~ "Code de la consommation, nous vous "
-#~ "informons que vous avez la possibilité"
-#~ " de recourir à la médiation en "
-#~ "cas de litige. Le médiateur avec "
-#~ "lequel nous travaillons est : "
-#~ "%(mediator_name)s - %(mediator_website)s"
-
-#~ msgid "Last updated: %(last_update_date)s"
-#~ msgstr "Dernière mise à jour : %(last_update_date)s"
-
-#~ msgid ""
-#~ "You have reached the maximum number "
-#~ "of pinballs you can watch with "
-#~ "your current plan. Upgrade to continue"
-#~ " watching more pinballs and unlock "
-#~ "additional features."
-#~ msgstr ""
-#~ "Vous avez atteind le nombre maximum "
-#~ "de flippers que vous pouvez suivre "
-#~ "grâce à votre abonnement. Passez à "
-#~ "l'abonnement supérieur pour chercher plus "
-#~ "de flippers et obtenir encore plus "
-#~ "de fonctionnalités."
-
-#~ msgid "Upgrade Plan"
-#~ msgstr "Changer d'abonnement"
-
-#~ msgid "📊 Price avg (m|y):"
-#~ msgstr "📊 Prix moyen (m|a) :"
-
-#~ msgid "📊 No price statistics available"
-#~ msgstr "📊 Aucune statistique de prix disponible"
-
-#~ msgid "📊 Price timeline (last year)"
-#~ msgstr ""
-
-#~ msgid "No price history available"
-#~ msgstr "Aucune statistique de prix disponible"
 
