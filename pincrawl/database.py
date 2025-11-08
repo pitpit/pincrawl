@@ -309,34 +309,37 @@ class Watching(Base):
     __tablename__ = "watching"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    email = Column(String, nullable=False, index=True)
+    account_id = Column(Integer, ForeignKey('accounts.id'), nullable=False, index=True)
     opdb_id = Column(String, nullable=False, index=True)
     created_at = Column(DateTime, default=datetime.now, nullable=False)
 
+    # Relationship to account
+    account = relationship("Account")
+
     @staticmethod
-    def get_user_watching(session, user_email):
+    def get_user_watching(session, account_id: int):
         """
         Get a set of opdb_ids that the user is watching.
 
         Args:
-            user_email: User email watching
+            account_id: Account ID watching
 
         Returns:
             set: Set of opdb_ids the user is watching
         """
 
         # Query user subscriptions
-        items = session.query(Watching.opdb_id).filter(Watching.email == user_email).all()
+        items = session.query(Watching.opdb_id).filter(Watching.account_id == account_id).all()
 
         # Convert to set of opdb_ids
         opdb_ids = {item[0] for item in items if item[0]}
 
         return opdb_ids
 
-
-    # Define unique constraint on email + opdb_id combination
+    # Define unique constraint on account_id + opdb_id combination
     __table_args__ = (
-        UniqueConstraint('email', 'opdb_id', name='unique_watching_email_opdb_id'),
+        UniqueConstraint('account_id', 'opdb_id', name='unique_watching_account_opdb_id'),
+        Index('ix_watching_account_id', 'account_id'),
     )
 
 
@@ -468,7 +471,7 @@ class Product(Base):
         return {'min_year': min_year, 'max_year': max_year}
 
     @staticmethod
-    def fetch(session, query=None, manufacturer=None, year_min=None, year_max=None, subscribed_only_user_email=None, offset=0, limit=10):
+    def fetch(session, query=None, manufacturer=None, year_min=None, year_max=None, subscribed_only_account_id=None, offset=0, limit=10):
         """
         List products from database or search using full-text index.
 
@@ -478,7 +481,7 @@ class Product(Base):
             manufacturer: Optional manufacturer filter
             year_min: Optional minimum year filter
             year_max: Optional maximum year filter
-            subscribed_only_user_email: Optional user email for subscription filtering only
+            subscribed_only_account_id: Optional account ID for subscription filtering only
             offset: Number of products to skip (for pagination)
             limit: Maximum number of products to return
 
@@ -486,14 +489,14 @@ class Product(Base):
             dict: Contains 'products' list and 'total' count
         """
         db_query = session.query(Product)
-        db_query = Product._apply_filters(db_query, manufacturer, year_min, year_max, subscribed_only_user_email)
+        db_query = Product._apply_filters(db_query, manufacturer, year_min, year_max, subscribed_only_account_id)
 
         if query is not None and query.strip() != "":
             ts_query = func.plainto_tsquery('english', query)
             db_query = db_query.filter(Product.search_vector.op('@@')(ts_query))
             rank_score = func.ts_rank(Product.search_vector, ts_query).label('rank_score')
             db_query = session.query(Product, rank_score).filter(Product.search_vector.op('@@')(ts_query))
-            db_query = Product._apply_filters(db_query, manufacturer, year_min, year_max, subscribed_only_user_email)
+            db_query = Product._apply_filters(db_query, manufacturer, year_min, year_max, subscribed_only_account_id)
             db_query = db_query.order_by(rank_score.desc())
             total = db_query.count()
             results = db_query.offset(offset).limit(limit).all()
@@ -506,7 +509,7 @@ class Product(Base):
         return products, total
 
     @staticmethod
-    def _apply_filters(db_query, manufacturer=None, year_min=None, year_max=None, subscribed_only_user_email=None):
+    def _apply_filters(db_query, manufacturer=None, year_min=None, year_max=None, subscribed_only_account_id=None):
         """
         Apply manufacturer, year, and subscription filters to a database query.
 
@@ -515,7 +518,7 @@ class Product(Base):
             manufacturer: Optional manufacturer filter
             year_min: Optional minimum year filter
             year_max: Optional maximum year filter
-            subscribed_only_user_email: Optional string to show only subscribed products
+            subscribed_only_account_id: Optional account ID to show only subscribed products
 
         Returns:
             Modified query object with filters applied
@@ -534,8 +537,8 @@ class Product(Base):
                 db_query = db_query.filter(Product.year.cast(Integer) <= year_max_int)
             except (ValueError, TypeError):
                 pass
-        if subscribed_only_user_email is not None:
-            db_query = db_query.join(Watching, Product.opdb_id == Watching.opdb_id).filter(Watching.email == subscribed_only_user_email)
+        if subscribed_only_account_id is not None:
+            db_query = db_query.join(Watching, Product.opdb_id == Watching.opdb_id).filter(Watching.account_id == subscribed_only_account_id)
 
         return db_query
 
@@ -711,6 +714,20 @@ class Account(Base):
             Account or None if not found
         """
         return session.query(Account).filter(Account.email == email).first()
+
+    @staticmethod
+    def get_by_id(session, account_id: int) -> Optional["Account"]:
+        """
+        Get account by ID.
+
+        Args:
+            session: Database session
+            account_id: Account ID
+
+        Returns:
+            Account or None if not found
+        """
+        return session.query(Account).filter(Account.id == account_id).first()
 
     def get_current_plan(self, session) -> Optional["AccountHistory"]:
         """

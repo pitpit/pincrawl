@@ -109,7 +109,7 @@ def send_ad_notification_email(smtp_client, from_email, to_email, ads, locale=No
         locale=locale
     )
 
-    subject = i18n_context._('New pinball machine(s) found %s match(es)' % len(ads_data))
+    subject = i18n_context._('New pinball machines found')
 
     # For debugging: save rendered HTML to file
     # TODO comment

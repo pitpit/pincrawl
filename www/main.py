@@ -452,10 +452,17 @@ async def pinballs(
     # Pagination settings
     offset = (page - 1) * PRODUCTS_PER_PAGE
 
-    # Get user email for subscription filtering
+    # Get user email and account
     user_email = user.get('email')
 
     session = db.get_db()
+
+    # Get account for subscription filtering
+    account_id = None
+    if user_email and subscribed:
+        account = Account.get_by_email(session, user_email)
+        if account:
+            account_id = account.id
 
     # Initialize ProductMatcher and get products
     products, total = Product.fetch(
@@ -464,7 +471,7 @@ async def pinballs(
         manufacturer=manufacturer,
         year_min=year_min,
         year_max=year_max,
-        subscribed_only_user_email=user_email if subscribed else None,
+        subscribed_only_account_id=account_id,
         offset=offset,
         limit=PRODUCTS_PER_PAGE
     )
@@ -474,7 +481,9 @@ async def pinballs(
     try:
         user_watching = set()
         if user_email:
-            user_watching = Watching.get_user_watching(session, user_email)
+            account = Account.get_by_email(session, user_email)
+            if account:
+                user_watching = Watching.get_user_watching(session, account.id)
 
         # Set graph URL to the dynamic endpoint and subscription status
         for product in products:
@@ -628,7 +637,7 @@ async def update_my_account(
     try:
         account = Account.get_by_email(session, user_email)
         if not account:
-            raise HTTPException(status_code=404, detail="User account not found")
+            raise HTTPException(status_code=400, detail="User account not found")
 
         # Update language preference if provided
         if 'language' in data:
@@ -666,6 +675,10 @@ async def watch(
     user_email = user.get('email')
     session = db.get_db()
 
+    account = Account.get_by_email(session, user_email)
+    if not account:
+        raise HTTPException(status_code=400, detail="User account not found")
+
     data = await request.json()
     id = data.get("id")
     if not id:
@@ -677,7 +690,7 @@ async def watch(
 
     # Check if subscription already exists
     existing = session.query(Watching).filter_by(
-        email=user_email,
+        account_id=account.id,
         opdb_id=product.opdb_id
     ).first()
 
@@ -688,17 +701,12 @@ async def watch(
     else:
         # Check plan limits before adding new subscription
         try:
-            # Get user's account and current plan
-            account = Account.get_by_email(session, user_email)
-            if not account:
-                raise HTTPException(status_code=404, detail="User account not found")
-
             current_plan = account.get_current_plan(session)
             if not current_plan:
                 raise HTTPException(status_code=500, detail="No active plan found")
 
             # Get current number of watching subscriptions
-            current_watching_count = session.query(Watching).filter_by(email=user_email).count()
+            current_watching_count = session.query(Watching).filter_by(account_id=account.id).count()
 
             # Check plan limit
             plan_limit = PLAN_WATCHING_LIMITS.get(current_plan.plan, 0)
@@ -711,7 +719,7 @@ async def watch(
                 )
 
             # Create new subscription
-            subscription = Watching(email=user_email, opdb_id=product.opdb_id)
+            subscription = Watching(account_id=account.id, opdb_id=product.opdb_id)
             session.add(subscription)
             logger.info(f"✓ Added subscription: {user_email} -> {product.opdb_id}")
             status = 201  # Created

@@ -29,46 +29,6 @@ def watching():
     """Manage user watching list for pinball machines."""
     pass
 
-@watching.command("add")
-@click.argument("email")
-@click.argument("opdb_id")
-def watching_add(email, opdb_id):
-    """Add a new watching entry for a user to a specific pinball machine.
-
-    Args:
-        email: User's email address
-        opdb_id: OPDB ID of the pinball machine
-    """
-    # Initialize database connection
-    session = database.get_db()
-
-    try:
-        # Check if watching entry already exists
-        existing = session.query(Watching).filter_by(
-            email=email,
-            opdb_id=opdb_id
-        ).first()
-
-        if existing:
-            click.echo(f"✓ User {email} is already subscribed to {opdb_id}")
-            return
-
-        # Create new watching entry
-        subscription = Watching(email=email, opdb_id=opdb_id)
-        session.add(subscription)
-        session.commit()
-
-        click.echo(f"✓ Added watching entry: {email} -> {opdb_id}")
-
-    except IntegrityError:
-        session.rollback()
-        click.echo(f"✓ User {email} is already subscribed to {opdb_id}")
-    except Exception as e:
-        session.rollback()
-        raise
-    finally:
-        session.close()
-
 @watching.command("list")
 def watching_list():
     """List all current watching entries."""
@@ -147,7 +107,10 @@ def watching_send():
             relevant_subscriptions = session.query(Watching).filter(Watching.opdb_id.in_(new_opdb_ids)).all()
 
             for subscription in relevant_subscriptions:
-                subscriptions_by_email[subscription.email].add(subscription.opdb_id)
+                account = Account.get_by_id(session, subscription.account_id)
+                if not account:
+                    continue
+                subscriptions_by_email[account.email].add(subscription.opdb_id)
 
             if not subscriptions_by_email:
                 click.echo("✓ No subscriptions found")
@@ -179,12 +142,11 @@ def watching_send():
                 try:
                     # Get user's language preference from Account
                     account = session.query(Account).filter_by(email=email).first()
-                    locale = account.locale if account and account.locale else 'en'
 
                     # Send email with HTML - pass Ad objects directly with locale
-                    send_ad_notification_email(smtp_client, FROM_EMAIL, email, ads, locale=locale)
+                    send_ad_notification_email(smtp_client, FROM_EMAIL, email, ads, locale=account.language)
                     email_count += 1
-                    click.echo(f"✓ Sent email to {email} with {len(ads)} ads (locale: {locale})")
+                    click.echo(f"✓ Sent email to {email} with {len(ads)} ads (locale: {account.language})")
 
                 except Exception as e:
                     click.echo(f"❌ Failed to send email to {email}: {str(e)}")
@@ -244,7 +206,7 @@ def test_email(to, locale):
     # Create fake ad data for testing
     fake_ads_data = [
         {
-            'product': 'Medieval Madness',
+            'product': '[Fake] Medieval Madness',
             'manufacturer': 'Williams',
             'year': '1997',
             'url': 'https://example.com/ad/123',
@@ -254,7 +216,7 @@ def test_email(to, locale):
             'graph_url': graph_url
         },
         {
-            'product': 'Attack from Mars',
+            'product': '[Fake] Attack from Mars',
             'manufacturer': 'Bally',
             'year': '1995',
             'url': 'https://example.com/ad/456',
@@ -264,7 +226,7 @@ def test_email(to, locale):
             'graph_url': nodata_graph_url
         },
         {
-            'product': 'The Addams Family',
+            'product': '[Fake] The Addams Family',
             'manufacturer': 'Bally',
             'year': '1992',
             'url': 'https://example.com/ad/789',

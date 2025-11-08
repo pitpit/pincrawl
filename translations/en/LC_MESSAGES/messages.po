@@ -20,7 +20,7 @@ msgstr ""
 
 #: build/lib/pincrawl/email_utils.py:114 pincrawl/email_utils.py:112
 #, python-format
-msgid "New pinball machine(s) found %s match(es)"
+msgid "New pinball machines found"
 msgstr ""
 
 #: build/lib/pincrawl/templates/email_notification.html:112

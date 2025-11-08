@@ -95,9 +95,11 @@ Translation files are located in:
 
 ## TODO
 
+- [] renommer validate_locale en normalize_locale
+- [] rename page /pricing to /plans
+- [X] use internal id of the user as a foreign key in Watching entity instead of email
 - [ ] use internal id of product as a foreign key in subscription instead of opdb_id
 - [ ] check opdb_id when creating a subscription
-- [X] traduire le mail en FR (email template now supports EN/FR translation)
 - [ ] add a cci mailcatcher to all sent mails
 - [ ] unwatch pinball from email
 - [ ] download image and visit archive (ot do a screenshot)
@@ -108,6 +110,7 @@ Translation files are located in:
 - [ ] translate svg/png price graph files
 - [ ] créer une tâche d'envoie par destinaire pour pouvoir rejouer en cas de plantage
 - [ ] améliorer le moteur de recherche
+- [X] traduire le mail en FR (email template now supports EN/FR translation)
 - [X] limit number of subscriptions to 3 / user
 - [X] mentions legales
 - [X] custom domain pincrawl.pitp.it
