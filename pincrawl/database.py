@@ -39,13 +39,15 @@ class TaskStatus(enum.Enum):
 
 class PlanType(enum.Enum):
     """Enum for subscription plan types."""
-    FREE = "free_v1"
-    COLLECTOR = "collector_v1"
-    PRO = "pro_v1"
+    ALPHA = "ALPHA"
+    FREE = "FREE"
+    COLLECTOR = "COLLECTOR"
+    PRO = "PRO"
 
 # Plan limits for watching pinballs
 PLAN_WATCHING_LIMITS = {
     PlanType.FREE: 3,
+    PlanType.ALPHA: 10,
     PlanType.COLLECTOR: 10,
     PlanType.PRO: float('inf')  # Unlimited
 }

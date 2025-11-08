@@ -36,7 +36,7 @@
                                 <svg class="w-5 h-5 text-retro-gold mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
                                 </svg>
-                                <span class="text-gray-300">{{ _('Watch up to xx pinballs') }}</span>
+                                <span class="text-gray-300">{{ _('Watch up to 3 pinballs') }}</span>
                             </div>
                             <div class="flex items-start space-x-3">
                                 <svg class="w-5 h-5 text-retro-gold mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -52,7 +52,7 @@
                             </div>
                         </div>
 
-                        {% if current_plan and current_plan.plan.value == 'free_v1' %}
+                        {% if current_plan and current_plan.plan.value == 'free' %}
                             <button class="w-full mt-8 bg-gray-600 text-gray-300 font-bold py-3 px-6 cursor-not-allowed" disabled>
                                 {{ _('Current Plan') }}
                             </button>
@@ -85,7 +85,7 @@
                                 <svg class="w-5 h-5 text-retro-pink mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
                                 </svg>
-                                <span class="text-gray-300">{{ _('Watch up to xxx pinballs') }}</span>
+                                <span class="text-gray-300">{{ _('Watch up to 20 pinballs') }}</span>
                             </div>
                             <div class="flex items-start space-x-3">
                                 <svg class="w-5 h-5 text-retro-pink mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -107,7 +107,7 @@
                             </div>
                         </div>
 
-                        {% if current_plan and current_plan.plan.value == 'collector_v1' %}
+                        {% if current_plan and current_plan.plan.value == 'COLLECTOR' %}
                             <button class="w-full mt-8 bg-gray-600 text-gray-300 font-bold py-3 px-6 cursor-not-allowed" disabled>
                                 {{ _('Current Plan') }}
                             </button>
@@ -163,7 +163,7 @@
                             </div>
                         </div>
 
-                        {% if current_plan and current_plan.plan.value == 'pro_v1' %}
+                        {% if current_plan and current_plan.plan.value == 'PRO' %}
                             <button class="w-full mt-8 bg-gray-600 text-gray-300 font-bold py-3 px-6 cursor-not-allowed" disabled>
                                 {{ _('Current Plan') }}
                             </button>

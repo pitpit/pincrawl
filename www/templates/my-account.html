@@ -95,36 +95,37 @@
                         }
                     });
                 </script>
-{#
                 <!-- Plan Section -->
                 <div class="bg-darker-grey border border-retro-white p-6">
 
                     <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-2xl font-bold text-retro-white">{{ _('Current Plan: ') }}
+                        <h2 class="text-2xl font-bold text-retro-white">{{ _('Current Plan:') }}
                             {% if current_plan %}
-                                {% if current_plan.plan.value == 'free_v1' %}
-                                <span class="bg-retro-gold text-black px-2 py-1 text-sm">{{ _('Free') }}</span>
-                                {% elif current_plan.plan.value == 'collector_v1' %}
-                                <span class="bg-retro-pink text-white px-2 py-1 text-sm">{{ _('Collector') }}</span>
-                                {% elif current_plan.plan.value == 'pro_v1' %}
-                                <span class="bg-retro-green text-black px-2 py-1 text-sm">{{ _('Pro') }}</span>
+                                {% if current_plan.plan.value == 'FREE' %}
+                                <span class="bg-retro-gold text-black px-2 py-1">{{ _('Free') }}</span>
+                                {% elif current_plan.plan.value == 'ALPHA' %}
+                                <span class="bg-retro-gold text-black px-2 py-1">{{ _('Alpha') }}</span>
+                                {% elif current_plan.plan.value == 'COLLECTOR' %}
+                                <span class="bg-retro-pink text-white px-2 py-1">{{ _('Collector') }}</span>
+                                {% elif current_plan.plan.value == 'PRO' %}
+                                <span class="bg-retro-green text-black px-2 py-1">{{ _('Pro') }}</span>
                                 {% else %}
-                                <span class="bg-retro-cyan text-black px-2 py-1 text-sm">{{ current_plan.plan.value }}
+                                <span class="bg-retro-cyan text-black px-2 py-1">{{ current_plan.plan.value }}</span>
                                 {% endif %}
                             {% endif %}
                         </h2>
-                        <a href="/{{ locale }}/pricing"
+                        {# <a href="/{{ locale }}/pricing"
                             class="inline-block bg-retro-cyan text-black px-8 py-3 text-lg font-bold hover:border-retro-pink hover:bg-retro-pink transition-colors duration-200">
                             {{ _('Update Plan') }}
-                        </a>
+                        </a> #}
                     </div>
                 </div>
-
+{#
                 <!-- Payment Method Section -->
                 <div class="bg-darker-grey border border-retro-white p-6">
                     <h2 class="text-2xl font-bold text-retro-white mb-4">{{ _('Payment Method') }}</h2>
                     <div class="text-gray-300">
-                        {% if current_plan and current_plan.plan.value != 'free_v1' %}
+                        {% if current_plan and current_plan.plan.value != 'FREE' %}
                             <div class="flex items-center justify-between">
                                 <div>
                                     <div class="flex items-center space-x-2">
@@ -174,7 +175,7 @@
                     <h2 class="text-2xl font-bold text-retro-white mb-2">{{ _('Invoice History') }}</h2>
 
                     <div class="text-gray-300">
-                        {% if current_plan and current_plan.plan.value != 'free_v1' %}
+                        {% if current_plan and current_plan.plan.value != 'FREE' %}
                             <div class="space-y-3">
                                 <!-- Sample invoice entries -->
                                 <div class="flex items-center justify-between py-3 border-b border-gray-600">

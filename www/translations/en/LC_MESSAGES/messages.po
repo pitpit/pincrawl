@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Pincrawl 1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-11-08 20:59+0100\n"
+"POT-Creation-Date: 2025-11-08 22:51+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -276,6 +276,22 @@ msgstr ""
 msgid "Failed to save preferences"
 msgstr ""
 
+#: templates/my-account.html:103
+msgid "Current Plan:"
+msgstr ""
+
+#: templates/my-account.html:106 templates/pricing.html:27
+msgid "Free"
+msgstr ""
+
+#: templates/my-account.html:108 templates/pricing.html:76
+msgid "Collector"
+msgstr ""
+
+#: templates/my-account.html:110
+msgid "Pro"
+msgstr ""
+
 #: templates/pinballs.html:15
 msgid "Browse Pinball Machines"
 msgstr ""
@@ -345,17 +361,13 @@ msgstr ""
 msgid "Choose the perfect plan to never miss your next pinball machine."
 msgstr ""
 
-#: templates/pricing.html:27
-msgid "Free"
-msgstr ""
-
 #: templates/pricing.html:31 templates/pricing.html:80
 #: templates/pricing.html:130
 msgid "month"
 msgstr ""
 
 #: templates/pricing.html:39
-msgid "Watch up to xx pinballs"
+msgid "Watch up to 3 pinballs"
 msgstr "Watch up to 3 pinballs"
 
 #: templates/pricing.html:45 templates/pricing.html:94
@@ -380,12 +392,8 @@ msgstr ""
 msgid "Most Popular"
 msgstr ""
 
-#: templates/pricing.html:76
-msgid "Collector"
-msgstr ""
-
 #: templates/pricing.html:88
-msgid "Watch up to xxx pinballs"
+msgid "Watch up to 10 pinballs"
 msgstr ""
 
 #: templates/pricing.html:100 templates/pricing.html:150
@@ -457,3 +465,4 @@ msgid ""
 "email alerts. You can start using Pincrawl immediately without any "
 "payment information."
 msgstr ""
+

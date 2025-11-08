@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Pincrawl 1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-11-08 20:59+0100\n"
+"POT-Creation-Date: 2025-11-08 22:51+0100\n"
 "PO-Revision-Date: 2025-10-12 15:55+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -309,6 +309,22 @@ msgstr "ENREGISTRÉ !"
 msgid "Failed to save preferences"
 msgstr "Échec de l'enregistrement des préférences"
 
+#: templates/my-account.html:103
+msgid "Current Plan:"
+msgstr "Abonnement actuel: "
+
+#: templates/my-account.html:106 templates/pricing.html:27
+msgid "Free"
+msgstr "Free"
+
+#: templates/my-account.html:108 templates/pricing.html:76
+msgid "Collector"
+msgstr "Collector"
+
+#: templates/my-account.html:110
+msgid "Pro"
+msgstr "Pro"
+
 #: templates/pinballs.html:15
 msgid "Browse Pinball Machines"
 msgstr "Parcourir les flippers"
@@ -382,17 +398,13 @@ msgstr "Des tarifs qui évoluent avec votre passion"
 msgid "Choose the perfect plan to never miss your next pinball machine."
 msgstr "Choisissez un plan pour ne pas rater votre prochain flipper."
 
-#: templates/pricing.html:27
-msgid "Free"
-msgstr "Gratuit"
-
 #: templates/pricing.html:31 templates/pricing.html:80
 #: templates/pricing.html:130
 msgid "month"
 msgstr "mois"
 
 #: templates/pricing.html:39
-msgid "Watch up to xx pinballs"
+msgid "Watch up to 3 pinballs"
 msgstr "Surveillez jusqu'à 3 flippers"
 
 #: templates/pricing.html:45 templates/pricing.html:94
@@ -417,13 +429,9 @@ msgstr "Commencer"
 msgid "Most Popular"
 msgstr "Le plus populaire"
 
-#: templates/pricing.html:76
-msgid "Collector"
-msgstr "Collectionneur"
-
 #: templates/pricing.html:88
-msgid "Watch up to xxx pinballs"
-msgstr "Surveillez jusqu'à xxx flippers"
+msgid "Watch up to 10 pinballs"
+msgstr "Surveillez jusqu'à 10 flippers"
 
 #: templates/pricing.html:100 templates/pricing.html:150
 msgid "SMS alerts"
@@ -506,3 +514,4 @@ msgstr ""
 "Oui ! Notre abonnement Gratuit vous permet de surveiller jusqu'à 3 "
 "flippers avec des alertes par e-mail. Vous pouvez commencer à utiliser "
 "Pincrawl immédiatement sans aucune information de paiement."
+
