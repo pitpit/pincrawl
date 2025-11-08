@@ -19,6 +19,7 @@ if not SMTP_URL:
     raise Exception("SMTP_URL environment variable not set")
 
 FROM_EMAIL = os.getenv("FROM_EMAIL", "noreply@localhost")
+PING_EMAIL = os.getenv("PING_EMAIL", None)
 
 # Database and task manager instances
 database = Database()
@@ -134,8 +135,9 @@ def watching_send():
 
             # mail control
             # if this fails, we want to know before sending user emails
-            smtp_client.send(FROM_EMAIL, "pitpittt@gmail.com", "pincrawl test", "ping")
-            click.echo(f"✓ Sent email control")
+            if PING_EMAIL:
+                smtp_client.send(FROM_EMAIL, PING_EMAIL, "pincrawl ping", "ping")
+                click.echo(f"✓ Sent email control")
 
             email_count = 0
             for email, ads in email_to_ads.items():

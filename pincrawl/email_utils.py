@@ -36,6 +36,9 @@ def send_ad_notification_email(smtp_client, from_email, to_email, ads, locale=No
     if not PINCRAWL_BASE_URL:
         raise Exception("PINCRAWL_BASE_URL environment variable not set")
 
+    # Get BCC recipient from environment variable
+    BCC_EMAIL = os.getenv('BCC_EMAIL', None)
+
     # Get database session to look up product IDs
     db = Database()
     session = db.get_db()
@@ -103,4 +106,4 @@ def send_ad_notification_email(smtp_client, from_email, to_email, ads, locale=No
         f.write(html_body)
 
     # Send email with HTML
-    smtp_client.send(from_email, to_email, subject, html_body, html=True)
+    smtp_client.send(from_email, to_email, subject, html_body, html=True, bcc=BCC_EMAIL)
