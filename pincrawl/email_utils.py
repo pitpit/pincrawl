@@ -6,13 +6,11 @@ import os
 from pathlib import Path
 from jinja2 import Template
 from pincrawl.database import Database, Product
-from pincrawl.i18n import I18nContext, DEFAULT_LOCALE, validate_locale
-try:
-    from importlib.resources import files
-except ImportError:
-    # Fallback for Python < 3.9
-    from importlib_resources import files
+from pincrawl.i18n import I18n
+from importlib.resources import files
 
+# Create i18n instance
+i18n = I18n(files('pincrawl').joinpath('translations'))
 
 def send_ad_notification_email(smtp_client, from_email, to_email, ads, locale=None):
     """
@@ -24,7 +22,7 @@ def send_ad_notification_email(smtp_client, from_email, to_email, ads, locale=No
         to_email: Recipient email address
         ads: List of Ad objects from database or list of dictionaries with ad data
         subject: str (optional) - Email subject, defaults to auto-generated
-        locale: str (optional) - Language code ('en', 'fr'), defaults to DEFAULT_LOCALE
+        locale: str (optional) - Language code ('en', 'fr')
 
     Returns:
         None
@@ -32,14 +30,6 @@ def send_ad_notification_email(smtp_client, from_email, to_email, ads, locale=No
     Raises:
         Exception: If template cannot be loaded or email fails to send
     """
-    # Validate and set locale
-    if locale is None:
-        locale = DEFAULT_LOCALE
-    else:
-        locale = validate_locale(locale)
-
-    # Create i18n context for the template
-    i18n_context = I18nContext(locale)
 
     # Get base URL from environment variable
     PINCRAWL_BASE_URL = os.getenv('PINCRAWL_BASE_URL')
@@ -90,15 +80,10 @@ def send_ad_notification_email(smtp_client, from_email, to_email, ads, locale=No
         session.close()
 
     # Load email template using importlib.resources for proper package data access
-    try:
-        # Python 3.9+
-        template_file = files('pincrawl').joinpath('templates', 'email_notification.html')
-        template_content = template_file.read_text()
-    except (AttributeError, TypeError):
-        # Fallback for older Python or if files() doesn't work as expected
-        template_path = Path(__file__).parent / 'templates' / 'email_notification.html'
-        with open(template_path, 'r') as f:
-            template_content = f.read()
+    template_file = files('pincrawl').joinpath('templates', 'email_notification.html')
+    template_content = template_file.read_text()
+
+    i18n_context = i18n.create_context(locale)
 
     template = Template(template_content)
     html_body = template.render(
@@ -106,7 +91,7 @@ def send_ad_notification_email(smtp_client, from_email, to_email, ads, locale=No
         ads=ads_data,
         base_url=PINCRAWL_BASE_URL,
         _=i18n_context._,
-        locale=locale
+        locale=i18n_context.locale
     )
 
     subject = i18n_context._('New pinball machines found')

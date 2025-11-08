@@ -95,7 +95,7 @@ Translation files are located in:
 
 ## TODO
 
-- [] renommer validate_locale en normalize_locale
+- [X] renommer validate_locale en normalize_locale
 - [] rename page /pricing to /plans
 - [X] use internal id of the user as a foreign key in Watching entity instead of email
 - [ ] use internal id of product as a foreign key in subscription instead of opdb_id

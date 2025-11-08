@@ -21,7 +21,7 @@ from datetime import datetime, timedelta
 from pincrawl.product_matcher import ProductMatcher
 from pincrawl.database import Database, Watching, Product, Account, PLAN_WATCHING_LIMITS, Ad
 from pincrawl.graph_utils import generate_price_graph, generate_nodata_graph
-from pincrawl.i18n import get_locale_from_request, validate_locale, I18nContext, SUPPORTED_LOCALES, DEFAULT_LOCALE
+from pincrawl.i18n import I18n
 from fastapi.exceptions import RequestValidationError
 
 # Load environment variables
@@ -56,14 +56,14 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 # Add i18n context processor
-def create_template_context(request: Request, locale: str, **kwargs):
+def create_template_context(request: Request, locale: str|None, **kwargs):
     """Create template context with i18n support"""
-    i18n_context = I18nContext(locale)
+    i18n_context = i18n.create_context(locale)
     context = {
         "request": request,
-        "locale": locale,
+        "locale": i18n_context.locale,
         "_": i18n_context._,  # Add simple _ function for Babel extraction
-        "supported_locales": SUPPORTED_LOCALES,
+        "supported_locales": i18n.SUPPORTED_LOCALES,
         **kwargs
     }
     return context
@@ -96,6 +96,9 @@ oauth.register(
 
 db = Database()
 
+# Create i18n instance
+i18n = I18n(os.path.join(os.path.dirname(__file__), 'translations'))
+
 @app.exception_handler(StarletteHTTPException)
 async def auth_exception_handler(request: Request, exc: StarletteHTTPException):
     """Handle authentication exceptions by serving login page"""
@@ -103,7 +106,7 @@ async def auth_exception_handler(request: Request, exc: StarletteHTTPException):
     if exc.status_code in [401, 403]:
         # Extract locale from path or use default
         path_parts = request.url.path.strip('/').split('/')
-        locale = path_parts[0] if path_parts and path_parts[0] in SUPPORTED_LOCALES else DEFAULT_LOCALE
+        locale = path_parts[0] if path_parts and path_parts[0] else None
 
         return templates.TemplateResponse(
             "login.html",
@@ -166,38 +169,6 @@ def get_authenticated_user(request: Request):
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
     return user
-
-
-def get_browser_language(request: Request) -> str:
-    """Extract preferred language from browser's Accept-Language header.
-
-    Args:
-        request: The request object containing headers
-
-    Returns:
-        str: The preferred locale code (e.g., 'en', 'fr') or DEFAULT_LOCALE if none found
-    """
-    accept_language = request.headers.get('accept-language', '')
-
-    if accept_language:
-        try:
-            # Parse Accept-Language header (format: "en-US,en;q=0.9,fr;q=0.8")
-            languages = accept_language.split(',')
-            for lang in languages:
-                # Remove quality factor (;q=0.9) if present
-                lang_code = lang.split(';')[0].strip().lower()
-
-                # Extract just the language part (before any country code)
-                primary_lang = lang_code.split('-')[0]
-
-                # Check if this language is supported
-                if primary_lang in SUPPORTED_LOCALES:
-                    return primary_lang
-        except:
-            # If parsing fails, use default
-            pass
-
-    return DEFAULT_LOCALE
 
 
 # Public endpoint for graph generation
@@ -311,7 +282,7 @@ async def root_redirect(
 ):
     """Redirect root path to user's preferred locale based on browser language"""
     # Always use browser language for navigation
-    locale = get_browser_language(request)
+    locale = i18n.get_locale_from_accept_language(request.headers.get('accept-language', None))
 
     return RedirectResponse(url=f"/{locale}/")
 
@@ -323,11 +294,11 @@ class LocaleName(str, Enum):
 @app.get("/{locale}/", response_class=HTMLResponse)
 async def homepage(
     request: Request,
-    locale: str = Path(..., pattern=f"^({'|'.join(SUPPORTED_LOCALES)})$"),
+    locale: str = Path(..., pattern=i18n.get_supported_locales_pattern()),
     user=Depends(get_authenticated_user)
 ):
     """Protected homepage - only for authenticated users"""
-    locale = validate_locale(locale)
+
     return templates.TemplateResponse(
         "home.html",
         create_template_context(request, locale, user=user)
@@ -384,7 +355,7 @@ async def callback(
                     account = Account.get_by_email(session, user_email)
                     if account is None:
                         # Detect browser language for new users (used for communication preferences)
-                        browser_language = get_browser_language(request)
+                        browser_language = i18n.get_locale_from_accept_language(request.headers.get('accept-language', None))
                         account = Account.create_account(session, user_email, language=browser_language)
                         logger.info(f"✓ Created new account for user: {user_email} with communication language: {browser_language}")
                     else:
@@ -438,7 +409,7 @@ async def logout(request: Request):
 @app.get("/{locale}/pinballs")
 async def pinballs(
     request: Request,
-    locale: str = Path(..., pattern=f"^({'|'.join(SUPPORTED_LOCALES)})$"),
+    locale: str = Path(..., pattern=i18n.get_supported_locales_pattern()),
     query: str = None,
     manufacturer: str = None,
     year_min: int = None,
@@ -448,7 +419,6 @@ async def pinballs(
     user=Depends(get_authenticated_user)
 ):
     """Handle pinballs listing with pagination and search functionality"""
-    locale = validate_locale(locale)
 
     logger.info(f"Products endpoint called with query='{query}', manufacturer='{manufacturer}', year_min={year_min}, year_max={year_max}, subscribed={subscribed}, page={page}")
 
@@ -536,11 +506,10 @@ async def pinballs(
 @app.get("/{locale}/pricing")
 async def pricing(
     request: Request,
-    locale: str = Path(..., pattern=f"^({'|'.join(SUPPORTED_LOCALES)})$"),
+    locale: str = Path(..., pattern=i18n.get_supported_locales_pattern()),
     user=Depends(get_authenticated_user)
 ):
     """Handle pricing page"""
-    locale = validate_locale(locale)
 
     # Get user's current plan to show appropriate buttons
     user_email = user.get('email')
@@ -573,10 +542,9 @@ async def pricing(
 @app.get("/{locale}/legal-notice")
 async def legal_notice(
     request: Request,
-    locale: str = Path(..., pattern=f"^({'|'.join(SUPPORTED_LOCALES)})$")
+    locale: str = Path(..., pattern=i18n.get_supported_locales_pattern())
 ):
     """Handle legal notice page"""
-    locale = validate_locale(locale)
 
     return templates.TemplateResponse(
         "legal-notice.html",
@@ -587,11 +555,10 @@ async def legal_notice(
 @app.get("/{locale}/my-account")
 async def my_account(
     request: Request,
-    locale: str = Path(..., pattern=f"^({'|'.join(SUPPORTED_LOCALES)})$"),
+    locale: str = Path(..., pattern=i18n.get_supported_locales_pattern()),
     user=Depends(get_authenticated_user)
 ):
     """Handle my account page"""
-    locale = validate_locale(locale)
 
     # Get user email and account information
     user_email = user.get('email')
@@ -626,11 +593,10 @@ async def my_account(
 @app.put("/{locale}/my-account")
 async def update_my_account(
     request: Request,
-    locale: str = Path(..., pattern=f"^({'|'.join(SUPPORTED_LOCALES)})$"),
+    locale: str = Path(..., pattern=i18n.get_supported_locales_pattern()),
     user=Depends(get_authenticated_user)
 ):
     """Update account preferences"""
-    locale = validate_locale(locale)
     user_email = user.get('email')
 
     data = await request.json()
@@ -645,7 +611,7 @@ async def update_my_account(
         # Update language preference if provided
         if 'language' in data:
             language = data.get('language')
-            if language not in SUPPORTED_LOCALES:
+            if language not in i18n.SUPPORTED_LOCALES:
                 raise HTTPException(status_code=400, detail="Invalid language")
             account.language = language
             logger.info(f"✓ Updated language for user {user_email} to {language}")
