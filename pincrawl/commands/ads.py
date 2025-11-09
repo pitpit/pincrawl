@@ -72,6 +72,8 @@ def ads_list(scraped, ignored, identified):
             additionnal_parts.append(ad.city)
         if ad.zipcode:
             additionnal_parts.append(ad.zipcode)
+        if ad.seller:
+            additionnal_parts.append(f"seller:{ad.seller}")
         additional_text = f"{'/'.join(additionnal_parts)}"
 
         click.echo(f"{url} {scraped}{identified}{ignored} {product_text} {additional_text}")

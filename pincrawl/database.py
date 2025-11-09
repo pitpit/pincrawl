@@ -159,6 +159,9 @@ class Ad(Base):
         # Index for OPDB matching
         Index('ix_ads_opdb_id', 'opdb_id'),
 
+        # Index for seller searches
+        Index('ix_ads_seller', 'seller'),
+
         # Composite index for workflow status tracking
         Index('ix_ads_workflow_status', 'scraped_at', 'identified_at', 'ignored'),
     )
