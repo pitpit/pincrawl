@@ -503,13 +503,13 @@ async def pinballs(
     )
 
 
-@app.get("/{locale}/pricing")
-async def pricing(
+@app.get("/{locale}/plans")
+async def plans(
     request: Request,
     locale: str = Path(..., pattern=i18n.get_supported_locales_pattern()),
     user=Depends(get_authenticated_user)
 ):
-    """Handle pricing page"""
+    """Handle plans page"""
 
     # Get user's current plan to show appropriate buttons
     user_email = user.get('email')
@@ -529,7 +529,7 @@ async def pricing(
             session.close()
 
     return templates.TemplateResponse(
-        "pricing.html",
+        "plans.html",
         create_template_context(
             request,
             locale,
