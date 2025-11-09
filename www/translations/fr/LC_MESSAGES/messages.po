@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Pincrawl 1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-11-09 14:59+0100\n"
+"POT-Creation-Date: 2025-11-09 20:32+0100\n"
 "PO-Revision-Date: 2025-10-12 15:55+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -130,8 +130,8 @@ msgid "Email:"
 msgstr "Email :"
 
 #: templates/my-account.html:33
-msgid "Communication Language:"
-msgstr "Langue des communications :"
+msgid "Alert Language:"
+msgstr "Langue des alertes :"
 
 #: templates/my-account.html:42
 msgid "SAVE"
@@ -254,7 +254,7 @@ msgstr "Alertes par e-mail"
 msgid "Basic support"
 msgstr "Support de base"
 
-#: templates/plans.html:57 templates/plans.html:118 templates/plans.html:186
+#: templates/plans.html:57 templates/plans.html:118 templates/plans.html:192
 msgid "Current Plan"
 msgstr "Actuel"
 
@@ -275,14 +275,14 @@ msgid "Price history"
 msgstr "Historique des prix"
 
 #: templates/plans.html:106 templates/plans.html:162
-msgid "SMS alerts"
-msgstr "Alertes par SMS"
+msgid "Push alerts"
+msgstr "Alertes push"
 
-#: templates/plans.html:112 templates/plans.html:180
+#: templates/plans.html:112 templates/plans.html:186
 msgid "Priority support"
 msgstr "Support prioritaire"
 
-#: templates/plans.html:123 templates/plans.html:191
+#: templates/plans.html:123 templates/plans.html:197
 msgid "Coming soon"
 msgstr "Bientôt disponible"
 
@@ -294,23 +294,19 @@ msgstr "Professionnel"
 msgid "Watch unlimited pinballs"
 msgstr "Surveillez un nombre illimité de flippers"
 
-#: templates/plans.html:168
-msgid "WhatsApp alerts"
-msgstr "Alertes par WhatsApp"
-
-#: templates/plans.html:174
+#: templates/plans.html:180
 msgid "Alerts based on location and price thresholds"
 msgstr "Alertes basées sur le lieu et des seuils de prix"
 
-#: templates/plans.html:201
+#: templates/plans.html:207
 msgid "Frequently Asked Questions"
 msgstr "Questions fréquemment posées"
 
-#: templates/plans.html:207
+#: templates/plans.html:213
 msgid "Why should I choose a paid plan?"
 msgstr "Pourquoi choisir un abonnement payant ?"
 
-#: templates/plans.html:210
+#: templates/plans.html:216
 msgid ""
 "In addition to accessing premium features, you’ll be supporting the "
 "service, which requires a complex and costly infrastructure to operate."
@@ -319,11 +315,11 @@ msgstr ""
 "financement du service, qui requiert une infrastructure complete et "
 "couteuse pour fonctionner."
 
-#: templates/plans.html:216
+#: templates/plans.html:222
 msgid "How does billing work?"
 msgstr "Comment fonctionne la facturation ?"
 
-#: templates/plans.html:219
+#: templates/plans.html:225
 msgid ""
 "We charge monthly based on your selected plan. You can upgrade or "
 "downgrade at any time, and changes take effect immediately."
@@ -332,11 +328,11 @@ msgstr ""
 "passer à un abonnement supérieur ou inférieur à tout moment, et les "
 "changements prennent effet immédiatement."
 
-#: templates/plans.html:225
+#: templates/plans.html:231
 msgid "Can I change my plan anytime?"
 msgstr "Puis-je changer d'abonnement à tout moment ?"
 
-#: templates/plans.html:228
+#: templates/plans.html:234
 msgid ""
 "Yes! You can upgrade or downgrade your plan at any time from your account"
 " settings. Changes are prorated and take effect immediately."
@@ -345,11 +341,11 @@ msgstr ""
 "moment depuis les paramètres de votre compte. Les changements sont "
 "proratisés et prennent effet immédiatement."
 
-#: templates/plans.html:234
+#: templates/plans.html:240
 msgid "What types of alerts do you support?"
 msgstr "Quels types d'alertes proposez-vous ?"
 
-#: templates/plans.html:237
+#: templates/plans.html:243
 msgid ""
 "We support email alerts on all plans. Professional plans also include SMS"
 " and WhatsApp notifications for instant updates on your favorite pinball "
@@ -359,11 +355,11 @@ msgstr ""
 "Les abonnements professionnels incluent également les notifications SMS "
 "et WhatsApp pour des mises à jour instantanées sur vos flippers préférés."
 
-#: templates/plans.html:243
+#: templates/plans.html:249
 msgid "Is there a free trial?"
 msgstr "Y a-t-il un essai gratuit ?"
 
-#: templates/plans.html:246
+#: templates/plans.html:252
 msgid ""
 "Yes! Our Free plan allows you to watch up to 3 pinball machines with "
 "email alerts. You can start using Pincrawl immediately without any "
@@ -372,3 +368,10 @@ msgstr ""
 "Oui ! Notre abonnement Gratuit vous permet de surveiller jusqu'à 3 "
 "flippers avec des alertes par e-mail. Vous pouvez commencer à utiliser "
 "Pincrawl immédiatement sans aucune information de paiement."
+
+#~ msgid "SMS alerts"
+#~ msgstr "Alertes SMS"
+
+#~ msgid "WhatsApp alerts"
+#~ msgstr "Alertes par WhatsApp"
+

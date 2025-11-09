@@ -30,7 +30,7 @@
                                 <span class="text-white font-medium">{{ user.email }}</span>
                             </div>
                             <div class="flex items-center">
-                                <label for="language" class="text-gray-300 w-80">{{ _('Communication Language:') }}</label>
+                                <label for="language" class="text-gray-300 w-80">{{ _('Alert Language:') }}</label>
                                 <select id="language" name="language" class="bg-darker-grey border border-gray-600 text-white px-4 py-2 focus:outline-none focus:border-retro-cyan">
                                     <option value="en" {% if account and account.language == 'en' %}selected{% elif not account or not account.language %}selected{% endif %}>English</option>
                                     <option value="fr" {% if account and account.language == 'fr' %}selected{% endif %}>Français</option>
@@ -45,56 +45,6 @@
                     </form>
                 </div>
 
-                <script>
-                    // Enable save button on language change
-                    const languageSelect = document.getElementById('language');
-                    const saveButton = document.getElementById('saveButton');
-                    const form = document.getElementById('accountSettingsForm');
-                    const initialLanguage = languageSelect.value;
-
-                    languageSelect.addEventListener('change', function() {
-                        if (languageSelect.value !== initialLanguage) {
-                            saveButton.disabled = false;
-                            saveButton.classList.remove('bg-gray-600', 'text-gray-400', 'cursor-not-allowed');
-                            saveButton.classList.add('bg-retro-cyan', 'text-black', 'hover:bg-retro-pink', 'transition-colors', 'duration-200', 'cursor-pointer');
-                        } else {
-                            saveButton.disabled = true;
-                            saveButton.classList.add('bg-gray-600', 'text-gray-400', 'cursor-not-allowed');
-                            saveButton.classList.remove('bg-retro-cyan', 'text-black', 'hover:bg-retro-pink', 'transition-colors', 'duration-200', 'cursor-pointer');
-                        }
-                    });
-
-                    // Handle form submission
-                    form.addEventListener('submit', async function(e) {
-                        e.preventDefault();
-
-                        const language = languageSelect.value;
-
-                        try {
-                            const response = await fetch('/{{ locale }}/my-account', {
-                                method: 'PUT',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify({ language: language })
-                            });
-
-                            if (response.ok) {
-                                // Success - show feedback and reload
-                                saveButton.textContent = '{{ _('SAVED!') }}';
-                                setTimeout(() => {
-                                    window.location.reload();
-                                }, 1000);
-                            } else {
-                                // Error
-                                alert('{{ _('Failed to save preferences') }}');
-                            }
-                        } catch (error) {
-                            console.error('Error:', error);
-                            alert('{{ _('Failed to save preferences') }}');
-                        }
-                    });
-                </script>
                 <!-- Plan Section -->
                 <div class="bg-darker-grey border border-retro-white p-6">
 
@@ -215,4 +165,56 @@
     </div>
 
     {% include '_footer.html' %}
+
+<script>
+    // Enable save button on language change
+    const languageSelect = document.getElementById('language');
+    const saveButton = document.getElementById('saveButton');
+    const form = document.getElementById('accountSettingsForm');
+    const initialLanguage = languageSelect.value;
+
+    languageSelect.addEventListener('change', function() {
+        if (languageSelect.value !== initialLanguage) {
+            saveButton.disabled = false;
+            saveButton.classList.remove('bg-gray-600', 'text-gray-400', 'cursor-not-allowed');
+            saveButton.classList.add('bg-retro-cyan', 'text-black', 'hover:bg-retro-pink', 'transition-colors', 'duration-200', 'cursor-pointer');
+        } else {
+            saveButton.disabled = true;
+            saveButton.classList.add('bg-gray-600', 'text-gray-400', 'cursor-not-allowed');
+            saveButton.classList.remove('bg-retro-cyan', 'text-black', 'hover:bg-retro-pink', 'transition-colors', 'duration-200', 'cursor-pointer');
+        }
+    });
+
+    // Handle form submission
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const language = languageSelect.value;
+
+        try {
+            const response = await fetch('/{{ locale }}/my-account', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ language: language })
+            });
+
+            if (response.ok) {
+                // Success - show feedback and reload
+                saveButton.textContent = '{{ _('SAVED!') }}';
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                // Error
+                alert('{{ _('Failed to save preferences') }}');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('{{ _('Failed to save preferences') }}');
+        }
+    });
+</script>
+
 {% endblock %}

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Pincrawl 1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-11-09 14:59+0100\n"
+"POT-Creation-Date: 2025-11-09 20:32+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -128,7 +128,7 @@ msgid "Email:"
 msgstr ""
 
 #: templates/my-account.html:33
-msgid "Communication Language:"
+msgid "Alert Language:"
 msgstr ""
 
 #: templates/my-account.html:42
@@ -249,7 +249,7 @@ msgstr ""
 msgid "Basic support"
 msgstr ""
 
-#: templates/plans.html:57 templates/plans.html:118 templates/plans.html:186
+#: templates/plans.html:57 templates/plans.html:118 templates/plans.html:192
 msgid "Current Plan"
 msgstr ""
 
@@ -271,14 +271,14 @@ msgid "Price history"
 msgstr ""
 
 #: templates/plans.html:106 templates/plans.html:162
-msgid "SMS alerts"
+msgid "Push alerts"
 msgstr ""
 
-#: templates/plans.html:112 templates/plans.html:180
+#: templates/plans.html:112 templates/plans.html:186
 msgid "Priority support"
 msgstr ""
 
-#: templates/plans.html:123 templates/plans.html:191
+#: templates/plans.html:123 templates/plans.html:197
 msgid "Coming soon"
 msgstr ""
 
@@ -290,66 +290,69 @@ msgstr ""
 msgid "Watch unlimited pinballs"
 msgstr ""
 
-#: templates/plans.html:168
-msgid "WhatsApp alerts"
-msgstr ""
-
-#: templates/plans.html:174
+#: templates/plans.html:180
 msgid "Alerts based on location and price thresholds"
 msgstr ""
 
-#: templates/plans.html:201
+#: templates/plans.html:207
 msgid "Frequently Asked Questions"
 msgstr ""
 
-#: templates/plans.html:207
+#: templates/plans.html:213
 msgid "Why should I choose a paid plan?"
 msgstr ""
 
-#: templates/plans.html:210
+#: templates/plans.html:216
 msgid ""
 "In addition to accessing premium features, you’ll be supporting the "
 "service, which requires a complex and costly infrastructure to operate."
 msgstr ""
 
-#: templates/plans.html:216
+#: templates/plans.html:222
 msgid "How does billing work?"
 msgstr ""
 
-#: templates/plans.html:219
+#: templates/plans.html:225
 msgid ""
 "We charge monthly based on your selected plan. You can upgrade or "
 "downgrade at any time, and changes take effect immediately."
 msgstr ""
 
-#: templates/plans.html:225
+#: templates/plans.html:231
 msgid "Can I change my plan anytime?"
 msgstr ""
 
-#: templates/plans.html:228
+#: templates/plans.html:234
 msgid ""
 "Yes! You can upgrade or downgrade your plan at any time from your account"
 " settings. Changes are prorated and take effect immediately."
 msgstr ""
 
-#: templates/plans.html:234
+#: templates/plans.html:240
 msgid "What types of alerts do you support?"
 msgstr ""
 
-#: templates/plans.html:237
+#: templates/plans.html:243
 msgid ""
 "We support email alerts on all plans. Professional plans also include SMS"
 " and WhatsApp notifications for instant updates on your favorite pinball "
 "machines."
 msgstr ""
 
-#: templates/plans.html:243
+#: templates/plans.html:249
 msgid "Is there a free trial?"
 msgstr ""
 
-#: templates/plans.html:246
+#: templates/plans.html:252
 msgid ""
 "Yes! Our Free plan allows you to watch up to 3 pinball machines with "
 "email alerts. You can start using Pincrawl immediately without any "
 "payment information."
 msgstr ""
+
+#~ msgid "SMS alerts"
+#~ msgstr ""
+
+#~ msgid "WhatsApp alerts"
+#~ msgstr ""
+

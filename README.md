@@ -95,6 +95,10 @@ Translation files are located in:
 
 ## TODO
 
+- [ ] rework JS: one file, use a binding framework
+- [ ] accelerate cron merging all together
+- [ ] Web Push API
+- [ ] Install webapp on desktop
 - [ ] passer auth0 en mode prod
 - [ ] active menu item in header depending on current page
 - [ ] OPEN TO THE WORLD
@@ -113,6 +117,7 @@ Translation files are located in:
 - [ ] translate svg/png price graph files
 - [ ] créer une tâche d'envoie par destinaire pour pouvoir rejouer en cas de plantage
 - [ ] améliorer le moteur de recherche
+- [X] sauvegarder le vendeur
 - [X] CGU
 - [X] setup mailersend
 - [X] rename page /pricing to /plans
