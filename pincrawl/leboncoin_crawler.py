@@ -187,6 +187,7 @@ class LeboncoinCrawler:
         ad_record.currency = info.get('currency', None)
         ad_record.city = info.get('city', None)
         ad_record.zipcode = info.get('zipcode', None)
+        ad_record.seller = info.get('seller', None)
 
         product = result.get('product', None)
         if product:

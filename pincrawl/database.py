@@ -127,6 +127,7 @@ class Ad(Base):
     currency = Column(String, nullable=True)  # Currency code (EUR, USD, etc.)
     city = Column(String, nullable=True)  # City where the item is located
     zipcode = Column(String, nullable=True)  # Zipcode where the item is located
+    seller = Column(String, nullable=True)  # Seller name or identifier
     product = Column(String, nullable=True)
     manufacturer = Column(String, nullable=True)
     year = Column(String, nullable=True)
@@ -288,7 +289,7 @@ class Ad(Base):
             if existing:
                 # Update existing record
                 for attr in ['content', 'title', 'description', 'amount', 'currency',
-                            'city', 'zipcode', 'product', 'manufacturer', 'year',
+                            'city', 'zipcode', 'seller', 'product', 'manufacturer', 'year',
                             'opdb_id', 'scraped_at', 'identified_at', 'scrape_id',
                             'ignored']:
                     if hasattr(ad_record, attr):

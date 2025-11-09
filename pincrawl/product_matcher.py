@@ -428,6 +428,7 @@ Please analyze the ad text and:
 - description: The main description text of the ad (without title, price, location)
 - price: The asking price (extract amount and currency)
 - location: The location where the item is located (extract city and zipcode)
+- seller: The seller name(username)
 
 2. PRODUCT IDENTIFICATION: The pinball machine being sold:
 - Identify the specific pinball machine name
@@ -443,7 +444,8 @@ Return your response as a JSON object with this exact structure:
     "amount": "extracted price amount without currency as an integer or null if not found",
     "currency": "EUR",
     "city": "location city name or null",
-    "zipcode": "location zipcode as a string or null"
+    "zipcode": "location zipcode as a string or null",
+    "seller": "seller name or null"
 }},
 "product": {{
     "name": "exact product name (should match exactly a known product name)",
@@ -611,5 +613,3 @@ Only return valid JSON - no additional text or formatting (do not add fenced cod
             db_query = db_query.join(Watching, Product.opdb_id == Watching.opdb_id).filter(Watching.email == subscribed_only_user_email)
 
         return db_query
-
-    # ...existing code...
