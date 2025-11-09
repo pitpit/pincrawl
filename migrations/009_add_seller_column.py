@@ -14,12 +14,12 @@ def migrate():
         session.execute(text("""
             ALTER TABLE ads ADD COLUMN IF NOT EXISTS seller VARCHAR;
         """))
-        
+
         # Add index on seller column for search performance
         session.execute(text("""
             CREATE INDEX IF NOT EXISTS ix_ads_seller ON ads (seller);
         """))
-        
+
         session.commit()
         print("✓ Successfully added 'seller' column and index to ads table")
 
