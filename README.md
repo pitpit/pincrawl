@@ -95,7 +95,6 @@ Translation files are located in:
 
 ## TODO
 
-- [ ] setup mailersend
 - [ ] passer auth0 en mode prod
 - [ ] active menu item in header depending on current page
 - [ ] OPEN TO THE WORLD
@@ -109,12 +108,13 @@ Translation files are located in:
 - [ ] check opdb_id when creating a Watching
 - [ ] unwatch pinball from email
 - [ ] download image and visit archive (or do a screenshot)
-- [ ] CGU
 - [ ] better logo
 - [ ] setup stripe
 - [ ] translate svg/png price graph files
 - [ ] créer une tâche d'envoie par destinaire pour pouvoir rejouer en cas de plantage
 - [ ] améliorer le moteur de recherche
+- [X] CGU
+- [X] setup mailersend
 - [X] rename page /pricing to /plans
 - [X] add a bcc mailcatcher to all sent mails
 - [X] remove validate_locale everywhere
