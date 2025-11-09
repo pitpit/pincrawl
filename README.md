@@ -95,6 +95,8 @@ Translation files are located in:
 
 ## TODO
 
+- [ ] setup mailersend
+- [ ] passer auth0 en mode prod
 - [ ] active menu item in header depending on current page
 - [ ] OPEN TO THE WORLD
 - [ ] Enhance leboncoin search with typo (fliper, filpper)
@@ -110,7 +112,6 @@ Translation files are located in:
 - [ ] CGU
 - [ ] better logo
 - [ ] setup stripe
-- [ ] setup mailersend
 - [ ] translate svg/png price graph files
 - [ ] créer une tâche d'envoie par destinaire pour pouvoir rejouer en cas de plantage
 - [ ] améliorer le moteur de recherche

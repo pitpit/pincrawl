@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Pincrawl 1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-11-09 12:13+0100\n"
+"POT-Creation-Date: 2025-11-09 14:59+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -18,8 +18,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.10.3\n"
 
-#: templates/_footer.html:10 templates/legal-notice.html:3
-#: templates/legal-notice.html:27
+#: templates/_footer.html:10
+msgid "Terms of Use"
+msgstr ""
+
+#: templates/_footer.html:13
 msgid "Legal Notice"
 msgstr ""
 
@@ -102,142 +105,6 @@ msgstr ""
 
 #: templates/home.html:68
 msgid "Jump on the deal before anyone else."
-msgstr ""
-
-#: templates/legal-notice.html:33
-msgid "Site Publisher"
-msgstr ""
-
-#: templates/legal-notice.html:35
-msgid "Company Name"
-msgstr ""
-
-#: templates/legal-notice.html:36
-msgid "Legal Form"
-msgstr ""
-
-#: templates/legal-notice.html:37
-msgid "Registration Number"
-msgstr ""
-
-#: templates/legal-notice.html:38
-msgid "VAT Number"
-msgstr ""
-
-#: templates/legal-notice.html:39
-msgid "Registered Office"
-msgstr ""
-
-#: templates/legal-notice.html:40
-msgid "Email"
-msgstr "Email:"
-
-#: templates/legal-notice.html:46
-msgid "Web Hosting"
-msgstr ""
-
-#: templates/legal-notice.html:48
-msgid "Host Name"
-msgstr ""
-
-#: templates/legal-notice.html:49
-msgid "Address"
-msgstr ""
-
-#: templates/legal-notice.html:50
-msgid "Phone"
-msgstr ""
-
-#: templates/legal-notice.html:51
-msgid "Website"
-msgstr ""
-
-#: templates/legal-notice.html:57
-msgid "Intellectual Property"
-msgstr ""
-
-#: templates/legal-notice.html:58
-#, python-format
-msgid ""
-"The entire content of this site (texts, images, videos, logos, graphics, "
-"etc.) is protected by intellectual property rights and belongs to "
-"%(company_name)s or its partners. Any reproduction, representation, "
-"modification, publication, adaptation of all or part of the elements of "
-"the site, regardless of the means or process used, is prohibited without "
-"prior written authorization from %(company_name)s."
-msgstr ""
-
-#: templates/legal-notice.html:59
-msgid ""
-"Any unauthorized exploitation of the site or any of its elements will be "
-"considered as constituting an infringement and prosecuted in accordance "
-"with the provisions of articles L.335-2 and following of the Intellectual"
-" Property Code."
-msgstr ""
-
-#: templates/legal-notice.html:64
-msgid "Liability"
-msgstr ""
-
-#: templates/legal-notice.html:65
-#, python-format
-msgid ""
-"The information provided on this site is given for informational purposes"
-" only and is subject to change. %(company_name)s disclaims all "
-"responsibility for any direct or indirect damage that may result from "
-"access to or use of this site."
-msgstr ""
-
-#: templates/legal-notice.html:66
-#, python-format
-msgid ""
-"%(company_name)s cannot be held responsible for the unavailability of the"
-" service, external intrusions, or the presence of computer viruses."
-msgstr ""
-
-#: templates/legal-notice.html:71
-msgid "Personal Data"
-msgstr ""
-
-#: templates/legal-notice.html:72
-msgid ""
-"In accordance with the French Data Protection Act of January 6, 1978, "
-"modified by the law of August 6, 2004, and European Regulation 2016/679 "
-"of April 27, 2016 (GDPR), you have the right to access, rectify, delete, "
-"and port your personal data."
-msgstr ""
-
-#: templates/legal-notice.html:73
-#, python-format
-msgid "To exercise these rights, you can contact us at: %(contact_email)s"
-msgstr ""
-
-#: templates/legal-notice.html:74
-msgid ""
-"For more information about how we process your personal data, please "
-"consult our Privacy Policy."
-msgstr ""
-
-#: templates/legal-notice.html:79
-msgid "Cookies"
-msgstr ""
-
-#: templates/legal-notice.html:80
-msgid ""
-"This site uses cookies to improve user experience and analyze traffic. By"
-" continuing to browse this site, you accept the use of cookies in "
-"accordance with our Cookie Policy."
-msgstr ""
-
-#: templates/legal-notice.html:85
-msgid "Applicable Law"
-msgstr ""
-
-#: templates/legal-notice.html:86
-msgid ""
-"These legal notices are governed by French law. In case of dispute, and "
-"after seeking an amicable solution, the french courts shall have "
-"exclusive jurisdiction."
 msgstr ""
 
 #: templates/login.html:15
@@ -382,7 +249,7 @@ msgstr ""
 msgid "Basic support"
 msgstr ""
 
-#: templates/plans.html:57 templates/plans.html:118 templates/plans.html:192
+#: templates/plans.html:57 templates/plans.html:118 templates/plans.html:186
 msgid "Current Plan"
 msgstr ""
 
@@ -407,11 +274,11 @@ msgstr ""
 msgid "SMS alerts"
 msgstr ""
 
-#: templates/plans.html:112 templates/plans.html:186
+#: templates/plans.html:112 templates/plans.html:180
 msgid "Priority support"
 msgstr ""
 
-#: templates/plans.html:123 templates/plans.html:197
+#: templates/plans.html:123 templates/plans.html:191
 msgid "Coming soon"
 msgstr ""
 
@@ -427,63 +294,62 @@ msgstr ""
 msgid "WhatsApp alerts"
 msgstr ""
 
-#: templates/plans.html:180
+#: templates/plans.html:174
 msgid "Alerts based on location and price thresholds"
 msgstr ""
 
-#: templates/plans.html:207
+#: templates/plans.html:201
 msgid "Frequently Asked Questions"
 msgstr ""
 
-#: templates/plans.html:213
+#: templates/plans.html:207
 msgid "Why should I choose a paid plan?"
 msgstr ""
 
-#: templates/plans.html:216
+#: templates/plans.html:210
 msgid ""
 "In addition to accessing premium features, you’ll be supporting the "
 "service, which requires a complex and costly infrastructure to operate."
 msgstr ""
 
-#: templates/plans.html:222
+#: templates/plans.html:216
 msgid "How does billing work?"
 msgstr ""
 
-#: templates/plans.html:225
+#: templates/plans.html:219
 msgid ""
 "We charge monthly based on your selected plan. You can upgrade or "
 "downgrade at any time, and changes take effect immediately."
 msgstr ""
 
-#: templates/plans.html:231
+#: templates/plans.html:225
 msgid "Can I change my plan anytime?"
 msgstr ""
 
-#: templates/plans.html:234
+#: templates/plans.html:228
 msgid ""
 "Yes! You can upgrade or downgrade your plan at any time from your account"
 " settings. Changes are prorated and take effect immediately."
 msgstr ""
 
-#: templates/plans.html:240
+#: templates/plans.html:234
 msgid "What types of alerts do you support?"
 msgstr ""
 
-#: templates/plans.html:243
+#: templates/plans.html:237
 msgid ""
 "We support email alerts on all plans. Professional plans also include SMS"
 " and WhatsApp notifications for instant updates on your favorite pinball "
 "machines."
 msgstr ""
 
-#: templates/plans.html:249
+#: templates/plans.html:243
 msgid "Is there a free trial?"
 msgstr ""
 
-#: templates/plans.html:252
+#: templates/plans.html:246
 msgid ""
 "Yes! Our Free plan allows you to watch up to 3 pinball machines with "
 "email alerts. You can start using Pincrawl immediately without any "
 "payment information."
 msgstr ""
-

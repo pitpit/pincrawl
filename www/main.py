@@ -546,8 +546,27 @@ async def legal_notice(
 ):
     """Handle legal notice page"""
 
+    # Select template based on locale
+    template_name = f"legal-notice.{locale}.html"
+
     return templates.TemplateResponse(
-        "legal-notice.html",
+        template_name,
+        create_template_context(request, locale)
+    )
+
+
+@app.get("/{locale}/terms-of-use")
+async def terms_of_service(
+    request: Request,
+    locale: str = Path(..., pattern=i18n.get_supported_locales_pattern())
+):
+    """Handle terms of use page (CGU)"""
+
+    # Select template based on locale
+    template_name = f"terms-of-use.{locale}.html"
+
+    return templates.TemplateResponse(
+        template_name,
         create_template_context(request, locale)
     )
 
