@@ -159,12 +159,19 @@ def watching_send():
             task_manager.update_task_status(session, current_task, TaskStatus.SUCCESS)
             click.echo(f"✓ Task completed. Sent emails to {email_count} recipient(s)")
 
+
+
         except Exception as e:
             # Mark task as failed
             task_manager.update_task_status(session, current_task, TaskStatus.FAIL)
             raise
 
     finally:
+        # Clean up old tasks, keeping only the last 100
+        deleted_count = task_manager.cleanup_old_tasks(session)
+        if deleted_count > 0:
+            click.echo(f"✓ Cleaned up {deleted_count} old tasks")
+
         session.close()
 
 
