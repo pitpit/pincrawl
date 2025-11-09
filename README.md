@@ -95,6 +95,8 @@ Translation files are located in:
 
 ## TODO
 
+- [ ] active menu item in header depending on current page
+- [ ] OPEN TO THE WORLD
 - [ ] Enhance leboncoin search with typo (fliper, filpper)
 - [ ] Add other ads providers: ebay, ouest france
 - [ ] Price history only for Collector and Pro

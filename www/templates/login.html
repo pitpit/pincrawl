@@ -3,32 +3,29 @@
 {% block title %}{{ _('Login') }} - Pincrawl{% endblock %}
 
 {% block content %}
-<div class="min-h-screen flex items-center justify-center bg-dark-grey">
-    <div class="max-w-md w-full space-y-8 p-8">
-        <!-- Logo and Title -->
-        <div class="text-center">
-            <a href="/" class="inline-block">
-                <h1 class="text-4xl font-bold text-retro-cyan retro-glow mb-4 hover:text-retro-pink transition-colors duration-300">
-                    PINCRAWL<span class="text-gray-500 text-sm"> alpha</span>
-                </h1>
-            </a>
-        </div>
+<div class="min-h-screen flex flex-col bg-dark-grey">
+    {% include "_header.html" %}
 
-        <!-- Login Card -->
-        <div class="bg-darker-grey p-8 retro-border">
-            <div class="text-center mb-6">
-                <h2 class="text-xl font-bold text-retro-cyan retro-glow">
-                    {{ _('Authentication Required') }}
-                </h2>
-            </div>
+    <div class="flex-grow flex items-center justify-center">
+        <div class="max-w-md w-full space-y-8 p-8">
+            <!-- Login Card -->
+            <div class="bg-darker-grey p-8 retro-border">
+                <div class="text-center mb-6">
+                    <h2 class="text-xl font-bold text-retro-cyan retro-glow">
+                        {{ _('Authentication Required') }}
+                    </h2>
+                </div>
 
-            <!-- Login Button -->
-            <div class="text-center">
-                <a href="/login" class="inline-block w-full px-6 py-3 bg-medium-grey text-retro-cyan font-bold border border-retro-cyan hover:bg-retro-cyan hover:text-black transition-all duration-300 retro-glow">
-                    {{ _('LOGIN') }}
-                </a>
+                <!-- Login Button -->
+                <div class="text-center">
+                    <a href="/login" class="inline-block w-full px-6 py-3 bg-medium-grey text-retro-cyan font-bold border border-retro-cyan hover:bg-retro-cyan hover:text-black transition-all duration-300 retro-glow">
+                        {{ _('LOGIN') }}
+                    </a>
+                </div>
             </div>
         </div>
     </div>
+
+    {% include "_footer.html" %}
 </div>
 {% endblock %}

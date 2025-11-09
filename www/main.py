@@ -278,7 +278,6 @@ async def get_graph(product_id: int, format: str):
 @app.get("/")
 async def root_redirect(
     request: Request,
-    user=Depends(get_authenticated_user)
 ):
     """Redirect root path to user's preferred locale based on browser language"""
     # Always use browser language for navigation
@@ -295,9 +294,10 @@ class LocaleName(str, Enum):
 async def homepage(
     request: Request,
     locale: str = Path(..., pattern=i18n.get_supported_locales_pattern()),
-    user=Depends(get_authenticated_user)
 ):
     """Protected homepage - only for authenticated users"""
+
+    user = get_user(request)
 
     return templates.TemplateResponse(
         "home.html",

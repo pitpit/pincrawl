@@ -1,4 +1,4 @@
-    <!-- Navigation Header -->
+<!-- Navigation Header -->
     <nav class="bg-darker-grey shadow-lg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
@@ -11,6 +11,7 @@
 
                 <!-- Desktop Navigation Menu -->
                 <div class="hidden md:flex items-center space-x-6">
+                    {% if user %}
                     <a href="/{{ locale }}/pinballs" class="text-retro-cyan px-3 py-2 text-sm font-medium transition-colors duration-200 border border-retro-cyan hover:bg-retro-cyan hover:border-retro-cyan hover:text-black">
                         {{ _('Pinballs') }}
                     </a>
@@ -23,9 +24,14 @@
                     <a href="/logout" class="text-retro-cyan px-3 py-2 text-sm font-medium transition-colors duration-200 border border-retro-cyan hover:bg-retro-cyan hover:text-black">
                         {{ _('Logout') }}
                     </a>
+                    {% else %}
+                    <a href="/login" class="text-retro-cyan px-3 py-2 text-sm font-medium transition-colors duration-200 border border-retro-cyan hover:bg-retro-cyan hover:text-black">
+                        {{ _('Login') }}
+                    </a>
+                    {% endif %}
 
                     <!-- Language switcher for desktop -->
-                    <div class="flex items-center space-x-1 ml-4 pl-4 border-l border-retro-cyan">
+                    <div class="flex items-center space-x-1 {% if user %}ml-4 pl-4 border-l border-retro-cyan{% endif %}">
                         {% for lang in supported_locales %}
                             {% if lang == locale %}
                                 <span class="text-retro-cyan font-bold px-2 py-1 border border-retro-cyan text-black">{{ lang.upper() }}</span>
@@ -50,6 +56,7 @@
             <!-- Mobile menu -->
             <div id="mobile-menu" class="md:hidden hidden">
                 <div class="px-2 pt-2 pb-3 space-y-1 bg-darker-grey ">
+                    {% if user %}
                     <a href="/{{ locale }}/pinballs" class="block text-retro-cyan px-3 py-2 text-sm font-medium transition-colors duration-200 border border-retro-cyan hover:bg-retro-cyan hover:border-retro-cyan hover:text-black">
                         {{ _('Pinballs') }}
                     </a>
@@ -62,9 +69,14 @@
                     <a href="/logout" class="block text-retro-cyan px-3 py-2 text-sm font-medium transition-colors duration-200 border border-retro-cyan hover:bg-retro-cyan hover:text-black">
                         {{ _('Logout') }}
                     </a>
+                    {% else %}
+                    <a href="/login" class="block text-retro-cyan px-3 py-2 text-sm font-medium transition-colors duration-200 border border-retro-cyan hover:bg-retro-cyan hover:text-black">
+                        {{ _('Login') }}
+                    </a>
+                    {% endif %}
 
                     <!-- Language switcher for mobile -->
-                    <div class="pt-2 mt-2">
+                    <div class="{% if user %}pt-2 mt-2{% endif %}">
                         <div class="flex space-x-1">
                             {% for lang in supported_locales %}
                                 {% if lang == locale %}
