@@ -115,14 +115,3 @@ class EmailNotificationService:
 
         # Send email with HTML
         self.smtp_client.send(from_email, to_email, subject, html_body, html=True, bcc=self.bcc_email)
-
-
-# Legacy function for backward compatibility
-def send_ad_notification_email(smtp_client, from_email, to_email, ads, locale=None):
-    """
-    Legacy function for backward compatibility.
-
-    Deprecated: Use EmailNotificationService.send_ad_notification_email() instead.
-    """
-    service = EmailNotificationService(smtp_client)
-    return service.send_ad_notification_email(from_email, to_email, ads, locale)
