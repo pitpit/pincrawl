@@ -13,3 +13,5 @@ pytest==8.4.2
 scrapingbee
 matplotlib
 jinja2
+pywebpush
+cryptography

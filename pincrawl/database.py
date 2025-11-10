@@ -666,6 +666,7 @@ class Account(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     email = Column(String, unique=True, index=True, nullable=False)
     language = Column(String(2), nullable=True, default=None)  # ISO 639-1 language code for communication (email, SMS, WhatsApp) - does not affect UI navigation
+    push_subscription = Column(JSON, nullable=True)  # Web Push subscription data
     created_at = Column(DateTime, default=datetime.now, nullable=False)
 
     # Relationship to account history
@@ -749,6 +750,15 @@ class Account(Base):
             AccountHistory.account_id == self.id,
             AccountHistory.end_date.is_(None)
         ).first()
+
+    def has_push_enabled(self) -> bool:
+        """
+        Check if push notifications are enabled for this account.
+
+        Returns:
+            bool: True if push notifications are enabled
+        """
+        return self.push_subscription is not None and bool(self.push_subscription)
 
 
 class AccountHistory(Base):

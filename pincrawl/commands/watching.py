@@ -9,8 +9,9 @@ from sqlalchemy import and_
 from pincrawl.database import Database, Watching, Ad, Task, TaskStatus, Product, Account
 from pincrawl.task_manager import TaskManager
 from pincrawl.smtp import Smtp
-from pincrawl.email_utils import send_ad_notification_email
+from pincrawl.email_notification_service import EmailNotificationService
 from pincrawl.graph_utils import generate_price_graph
+from pincrawl.push_notification_service import PushNotificationService
 import random
 
 # Global configuration
@@ -21,9 +22,24 @@ if not SMTP_URL:
 FROM_EMAIL = os.getenv("FROM_EMAIL", "noreply@localhost")
 PING_EMAIL = os.getenv("PING_EMAIL", None)
 
+# Push notification configuration
+VAPID_PRIVATE_KEY = os.getenv('VAPID_PRIVATE_KEY')
+if not VAPID_PRIVATE_KEY:
+    raise Exception("VAPID_PRIVATE_KEY environment variable not set")
+VAPID_CONTACT_EMAIL = os.getenv('VAPID_CONTACT_EMAIL', 'pincrawl@pitp.it')
+
 # Database and task manager instances
 database = Database()
 task_manager = TaskManager()
+
+def format_price(amount: int, currency: str) -> str:
+    """Format price for display."""
+    if currency == 'EUR':
+        return f"€{amount / 100:.2f}"
+    elif currency == 'USD':
+        return f"${amount / 100:.2f}"
+    else:
+        return f"{amount / 100:.2f} {currency}"
 
 @click.group()
 def watching():
@@ -60,10 +76,14 @@ def watching_list():
 
 @watching.command("send")
 def watching_send():
-    """Send email notifications to watchers about new ads matching their watching list."""
+    """Send email and push notifications to watchers about new ads matching their watching list."""
 
     # Initialize database connection
     session = database.get_db()
+
+    # Initialize services
+    vapid_claims = {'sub': f'mailto:{VAPID_CONTACT_EMAIL}'}
+    push_notification_service = PushNotificationService(VAPID_PRIVATE_KEY, vapid_claims)
 
     try:
         TASK_NAME = "watching-send"
@@ -71,11 +91,11 @@ def watching_send():
         last_task = task_manager.get_latest_task_by_name(session, TASK_NAME)
 
         if last_task and last_task.status == TaskStatus.IN_PROGRESS:
-            raise click.ClickException("✗ Previous task is still IN_PROGRESS. Exiting.")
+            raise click.ClickException("✗ Previous notification task is still IN_PROGRESS. Exiting.")
 
         # Create a new task
         current_task = task_manager.create_task(session, TASK_NAME, TaskStatus.IN_PROGRESS)
-        click.echo(f"✓ Created new task with ID {current_task.id}")
+        logging.info(f"Created new notification task with ID {current_task.id}")
 
         try:
             # Find all ads that have been identified with an opdb_id since the last task
@@ -94,72 +114,72 @@ def watching_send():
                 ).all()
 
             if not new_ads:
-                click.echo("✓ No new ads found since last task")
+                click.echo("✓ No new ads found since last notification task")
                 task_manager.update_task_status(session, current_task, TaskStatus.SUCCESS)
                 return
 
-            click.echo(f"✓ Found {len(new_ads)} new ads with opdb_id")
+            logging.info(f"Found {len(new_ads)} new ads with opdb_id")
 
-            # Group subscriptions by email
-            subscriptions_by_email = defaultdict(set)
+            # Group subscriptions by account
             # Get unique opdb_ids from new ads
             new_opdb_ids = {ad.opdb_id for ad in new_ads if ad.opdb_id}
             # Only get subscriptions that match the opdb_ids from new ads
             relevant_subscriptions = session.query(Watching).filter(Watching.opdb_id.in_(new_opdb_ids)).all()
 
-            for subscription in relevant_subscriptions:
-                account = Account.get_by_id(session, subscription.account_id)
-                if not account:
-                    continue
-                subscriptions_by_email[account.email].add(subscription.opdb_id)
-
-            if not subscriptions_by_email:
+            if not relevant_subscriptions:
                 click.echo("✓ No subscriptions found")
                 task_manager.update_task_status(session, current_task, TaskStatus.SUCCESS)
                 return
 
-            # Group ads by email based on subscriptions
-            email_to_ads = defaultdict(list)
+            # Group ads by account based on subscriptions
+            account_to_ads = defaultdict(list)
 
-            for ad in new_ads:
-                for email, opdb_ids in subscriptions_by_email.items():
-                    if ad.opdb_id in opdb_ids:
-                        email_to_ads[email].append(ad)
-
-            if not email_to_ads:
-                click.echo("✓ No matching ads found for current subscriptions")
-                task_manager.update_task_status(session, current_task, TaskStatus.SUCCESS)
-                return
+            for subscription in relevant_subscriptions:
+                for ad in new_ads:
+                    if ad.opdb_id == subscription.opdb_id:
+                        account_to_ads[subscription.account_id].append(ad)
 
             smtp_client = Smtp(SMTP_URL)
+            email_notification_service = EmailNotificationService(smtp_client)
 
             # mail control
             # if this fails, we want to know before sending user emails
             if PING_EMAIL:
                 smtp_client.send(FROM_EMAIL, PING_EMAIL, "pincrawl ping", "ping")
-                click.echo(f"✓ Sent email control")
+                logging.info("Sent email control")
 
             email_count = 0
-            for email, ads in email_to_ads.items():
-                try:
-                    # Get user's language preference from Account
-                    account = session.query(Account).filter_by(email=email).first()
+            push_count = 0
 
-                    # Send email with HTML - pass Ad objects directly with locale
-                    send_ad_notification_email(smtp_client, FROM_EMAIL, email, ads, locale=account.language)
-                    email_count += 1
-                    click.echo(f"✓ Sent email to {email} with {len(ads)} ads (locale: {account.language})")
-
-                except Exception as e:
-                    click.echo(f"❌ Failed to send email to {email}: {str(e)}")
-                    logging.exception(f"Email error for {email}")
+            for account_id, ads in account_to_ads.items():
+                # Get account details
+                account = Account.get_by_id(session, account_id)
+                if not account:
+                    logging.warning(f"Account ID {account_id} not found. Skipping.")
                     continue
+
+                # Send email notification
+                try:
+                    email_notification_service.send_ad_notification_email(FROM_EMAIL, account.email, ads, locale=account.language)
+                    email_count += 1
+                    logging.info(f"Sent email to {account.email} with {len(ads)} ads (locale: {account.language})")
+                except Exception as e:
+                    logging.exception(f"Failed to send email to {account.email}")
+
+                # Send push notifications if enabled and service is available
+                if account.has_push_enabled():
+                    try:
+                        notifications_sent = push_notification_service.send_ad_notification_push(account, ads)
+                        push_count += notifications_sent
+                        logging.info(f"Sent {notifications_sent} push notifications to account {account.email}")
+                    except Exception as e:
+                        logging.exception(f"Failed to send push notifications to account {account.email}")
+                else:
+                    logging.info(f"Push notifications disabled for account {account.email}")
 
             # Mark task as successful
             task_manager.update_task_status(session, current_task, TaskStatus.SUCCESS)
-            click.echo(f"✓ Task completed. Sent emails to {email_count} recipient(s)")
-
-
+            click.echo(f"✓ Notification task completed. Sent {email_count} emails and {push_count} push notifications")
 
         except Exception as e:
             # Mark task as failed
@@ -187,6 +207,7 @@ def test_email(to, locale):
     """
 
     smtp_client = Smtp(SMTP_URL)
+    email_notification_service = EmailNotificationService(smtp_client)
 
     # Get base URL from environment variable
     PINCRAWL_BASE_URL = os.getenv('PINCRAWL_BASE_URL')
@@ -246,7 +267,7 @@ def test_email(to, locale):
         }
     ]
 
-    send_ad_notification_email(smtp_client, FROM_EMAIL, to, fake_ads_data, locale=locale)
+    email_notification_service.send_ad_notification_email(FROM_EMAIL, to, fake_ads_data, locale=locale)
 
     click.echo(f"✓ Test email sent successfully to {to} (locale: {locale})")
 

@@ -17,6 +17,12 @@ cp .env.dist .env
 # Edit .env and add your API keys (Firecrawl, OpenAI, Pinecone)
 ```
 
+Generate VAPID keys for Web Push notifications:
+```bash
+npx web-push generate-vapid-keys
+```
+And copy the env vars into your .env file.
+
 Start the console:
 ```bash
 docker-compose run --rm console bash
@@ -48,6 +54,33 @@ Display and save statistics:
 pincrawl ads stats --save
 ```
 
+Send email notifications to watchers:
+```bash
+pincrawl watching send-email
+```
+
+Send push notifications to watchers:
+```bash
+pincrawl watching send-push
+```
+
+Send both email and push notifications:
+```bash
+pincrawl watching send
+```
+
+## Testing Push Notifications
+
+To test push notifications for a logged-in user, you can use the test endpoint:
+
+```bash
+# Replace 'en' with your locale and ensure you're authenticated in the browser first
+curl -X POST "http://localhost:8000/test-push-notification" \
+  -H "Content-Type: application/json" \
+  -H "Cookie: session=your_session_cookie_here"
+```
+
+Note: You need to be logged in and have push notifications enabled in your account settings for this to work.
 
 ## Cronjobs
 
@@ -95,9 +128,19 @@ Translation files are located in:
 
 ## TODO
 
+- [] rework graph_utils.py to make a class GraphService
+- [X] Web Push API
+- [ ] maintenir la persistence? Add periodic background sync
+
+
+- [ ] Accelerate cron running everything in one time merging all together with a global command invoking scrape, crawl, send: pincrawl run
+- [ ] Ad images in push notification
+- [ ] Ad images in email
+- [ ] ad a parameter --since to send everything from a date (debug) when running `pincrawl watching send`
+- [ ] rework send_ad_notification_email() to not build a ad_data dictionnary and directly pass "ads" var
+- [ ] cdn.tailwindcss.com should not be used in production
+- [ ] main:watch(), main:update_my_account() shoud respond a JsonResponse
 - [ ] rework JS: one file, use a binding framework
-- [ ] accelerate cron merging all together
-- [ ] Web Push API
 - [ ] Install webapp on desktop
 - [ ] passer auth0 en mode prod
 - [ ] active menu item in header depending on current page
@@ -109,6 +152,16 @@ Translation files are located in:
 - [ ] pink dot for current ad price in graph (in email notification)
 - [ ] manual fix / product check for ads
 - [ ] use internal id of product as a foreign key in Watching instead of opdb_id
+
+will allow to remove
+```
+                    if ad.opdb_id:
+                        product = session.query(Product).filter_by(opdb_id=ad.opdb_id).first()
+                        if product:
+                            # Use the dynamic graph endpoint with product_id (PNG for better email client support)
+                            ad_info['graph_url'] = f"{self.base_url}/graphs/{product.id}.png"
+```
+
 - [ ] check opdb_id when creating a Watching
 - [ ] unwatch pinball from email
 - [ ] download image and visit archive (or do a screenshot)

@@ -36,6 +36,18 @@
                                     <option value="fr" {% if account and account.language == 'fr' %}selected{% endif %}>Français</option>
                                 </select>
                             </div>
+                            <div class="flex items-center">
+                                <label class="text-gray-300 w-80">{{ _('Push Notifications:') }}</label>
+                                <div class="flex items-center space-x-4">
+                                    <button type="button" id="pushButton" class="{% if account and account.push_subscription %}border border-retro-pink text-retro-pink{% else %}border border-retro-cyan bg-retro-cyan text-black{% endif %} px-4 py-2 text-sm font-bold hover:bg-retro-pink hover:border-retro-pink hover:text-black transition-colors duration-200">
+                                        {% if account and account.push_subscription %}
+                                            {{ _('DISABLE') }}
+                                        {% else %}
+                                            {{ _('ENABLE') }}
+                                        {% endif %}
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                         <div class="mt-6">
                             <button type="submit" id="saveButton" disabled class="bg-gray-600 text-gray-400 px-8 py-3 text-lg font-bold cursor-not-allowed disabled:opacity-50">
@@ -185,6 +197,131 @@
         }
     });
 
+    // Push notification handling
+    const pushButton = document.getElementById('pushButton');
+    let pushEnabled = {% if account and account.push_subscription %}true{% else %}false{% endif %};
+
+    // VAPID public key from server (already converted to Uint8Array)
+    const vapidPublicKey = {{ vapid_public_key_bytes|tojson }};
+
+    async function subscribeToPush() {
+        if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+            alert('{{ _('Push notifications are not supported in this browser') }}');
+            return false;
+        }
+
+        if (!vapidPublicKey) {
+            alert('{{ _('Push notifications configuration error') }}');
+            return false;
+        }
+
+        try {
+            const registration = await navigator.serviceWorker.register('/sw.js');
+            await navigator.serviceWorker.ready;
+
+            if (!registration.pushManager) {
+                throw new Error('Push manager unavailable');
+            }
+
+            try {
+                const permissionState = await registration.pushManager.permissionState({
+                    userVisibleOnly: true
+                });
+            } catch (e) {
+                // Normal for some browsers
+            }
+
+            // Convert the array back to Uint8Array
+            const subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: new Uint8Array(vapidPublicKey)
+            });
+
+            const response = await fetch('{{ "/push-subscription" }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(subscription.toJSON())
+            });
+
+            if (response.ok) {
+                pushEnabled = true;
+                updatePushUI();
+                return true;
+            } else {
+                const errorText = await response.text();
+                throw new Error('Failed to save subscription: ' + errorText);
+            }
+        } catch (error) {
+            alert('{{ _('Failed to enable push notifications') }}: ' + error.message);
+            return false;
+        }
+    }
+
+    async function unsubscribeFromPush() {
+        try {
+            const registration = await navigator.serviceWorker.getRegistration();
+            if (registration) {
+                const subscription = await registration.pushManager.getSubscription();
+                if (subscription) {
+                    await subscription.unsubscribe();
+                }
+                // Unregister the service worker
+                await registration.unregister();
+            }
+
+            const response = await fetch('{{ "/push-subscription" }}', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            if (response.ok) {
+                pushEnabled = false;
+                updatePushUI();
+                return true;
+            } else {
+                const errorText = await response.text();
+                throw new Error('Failed to remove subscription: ' + errorText);
+            }
+        } catch (error) {
+            alert('{{ _('Failed to disable push notifications') }}: ' + error.message);
+            return false;
+        }
+    }
+
+    function updatePushUI() {
+        if (pushEnabled) {
+            pushButton.textContent = '{{ _('DISABLE') }}';
+            pushButton.classList.add('border-retro-pink', 'text-retro-pink');
+            pushButton.classList.remove('border-retro-cyan', 'bg-retro-cyan', 'text-black');
+        } else {
+            pushButton.textContent = '{{ _('ENABLE') }}';
+            pushButton.classList.remove('border-retro-pink', 'text-retro-pink');
+            pushButton.classList.add('border-retro-cyan', 'bg-retro-cyan', 'text-black');
+
+        }
+    }
+
+    pushButton.addEventListener('click', async function() {
+        pushButton.disabled = true;
+        pushButton.textContent = '{{ _('LOADING...') }}';
+
+        try {
+            if (pushEnabled) {
+                await unsubscribeFromPush();
+            } else {
+                await subscribeToPush();
+            }
+        } catch (error) {
+            // Error already handled in the functions above
+        } finally {
+            pushButton.disabled = false;
+        }
+    });
+
     // Handle form submission
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
@@ -192,7 +329,7 @@
         const language = languageSelect.value;
 
         try {
-            const response = await fetch('/{{ locale }}/my-account', {
+            const response = await fetch('{{ "/" + locale + "/my-account" }}', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -211,7 +348,6 @@
                 alert('{{ _('Failed to save preferences') }}');
             }
         } catch (error) {
-            console.error('Error:', error);
             alert('{{ _('Failed to save preferences') }}');
         }
     });

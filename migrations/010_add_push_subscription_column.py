@@ -1,0 +1,30 @@
+#!/usr/bin/env python3
+"""Migration to add push_subscription column to accounts table."""
+
+from sqlalchemy import text
+from pincrawl.database import Database
+
+def migrate():
+    """Add push_subscription column to accounts table."""
+    db = Database()
+    session = db.get_db()
+
+    try:
+        # Add push_subscription column to accounts table (JSON type for PostgreSQL)
+        session.execute(text("""
+            ALTER TABLE accounts ADD COLUMN IF NOT EXISTS push_subscription JSON;
+        """))
+
+        session.commit()
+        print("✓ Successfully added 'push_subscription' column to accounts table")
+
+    except Exception as e:
+        session.rollback()
+        print(f"❌ Migration failed: {str(e)}")
+        raise
+    finally:
+        session.close()
+        db.close_db()
+
+if __name__ == "__main__":
+    migrate()

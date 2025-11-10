@@ -3,6 +3,7 @@
 import os
 import json
 import sys
+import base64
 # import sys
 import logging
 from urllib.parse import quote_plus, urlencode, quote, urlparse
@@ -11,7 +12,7 @@ from urllib.request import urlopen
 
 from fastapi import FastAPI, Request, HTTPException, Depends, Path, Query
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
@@ -45,6 +46,16 @@ app = FastAPI(title="Pincrawl")
 SESSION_SECRET_KEY = os.getenv("SESSION_SECRET_KEY")
 if not SESSION_SECRET_KEY:
     raise ValueError("SESSION_SECRET_KEY environment variable is required")
+
+VAPID_PUBLIC_KEY = os.getenv('VAPID_PUBLIC_KEY')
+if not VAPID_PUBLIC_KEY:
+    raise ValueError("VAPID_PUBLIC_KEY environment variable is required")
+
+VAPID_PRIVATE_KEY = os.getenv('VAPID_PRIVATE_KEY')
+if not VAPID_PRIVATE_KEY:
+    raise Exception("VAPID_PRIVATE_KEY environment variable not set")
+VAPID_CONTACT_EMAIL = os.getenv('VAPID_CONTACT_EMAIL', 'pincrawl@pitp.it')
+
 
 # Add session middleware
 app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET_KEY)
@@ -170,6 +181,35 @@ def get_authenticated_user(request: Request):
         raise HTTPException(status_code=401, detail="Not authenticated")
     return user
 
+
+def url_base64_to_bytes(base64_string):
+    """Convert base64url string to bytes array for JavaScript"""
+    if not base64_string:
+        raise ValueError("Base64 string is empty or null")
+
+    # Add padding if needed
+    padding = '=' * ((4 - len(base64_string) % 4) % 4)
+    base64_with_padding = base64_string + padding
+
+    # Convert base64url to standard base64
+    standard_base64 = base64_with_padding.replace('-', '+').replace('_', '/')
+
+    try:
+        # Decode to bytes
+        raw_bytes = base64.b64decode(standard_base64)
+        # Convert to list of integers for JSON serialization
+        return list(raw_bytes)
+    except Exception as e:
+        raise ValueError(f"Failed to decode base64 string: {str(e)}")
+
+
+# Add this route before the other routes, after the static files mount
+@app.get("/sw.js")
+async def service_worker():
+    """Serve the service worker with Service-Worker-Allowed header for root scope"""
+    response = FileResponse("sw.js", media_type="application/javascript")
+    response.headers["Service-Worker-Allowed"] = "/"
+    return response
 
 # Public endpoint for graph generation
 @app.get("/graphs/{product_id}.{format}")
@@ -597,6 +637,9 @@ async def my_account(
         finally:
             session.close()
 
+    # Convert VAPID key server-side
+    vapid_public_key_bytes = url_base64_to_bytes(VAPID_PUBLIC_KEY)
+
     return templates.TemplateResponse(
         "my-account.html",
         create_template_context(
@@ -604,7 +647,8 @@ async def my_account(
             locale,
             user=user,
             account=account,
-            current_plan=current_plan
+            current_plan=current_plan,
+            vapid_public_key_bytes=vapid_public_key_bytes
         )
     )
 
@@ -724,3 +768,73 @@ async def watch(
     session.close()
 
     return HTMLResponse(status_code=status, content="")
+
+
+@app.post("/push-subscription")
+async def manage_push_subscription(
+    request: Request,
+    user=Depends(get_authenticated_user)
+):
+    """Subscribe or sync user push notifications."""
+    user_email = user.get('email')
+
+    try:
+        subscription_data = await request.json()
+        if not subscription_data:
+            raise HTTPException(status_code=400, detail="Invalid subscription data")
+
+        session = db.get_db()
+
+        try:
+            account = Account.get_by_email(session, user_email)
+            if not account:
+                raise HTTPException(status_code=404, detail="Account not found")
+
+            account.push_subscription = subscription_data
+            session.commit()
+
+            return JSONResponse(content={
+                'success': True
+            })
+
+        finally:
+            session.close()
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Error managing push subscription for user {user_email}: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.delete("/push-subscription")
+async def unsubscribe_push(
+    request: Request,
+    user=Depends(get_authenticated_user)
+):
+    """Unsubscribe user from push notifications."""
+    user_email = user.get('email')
+
+    try:
+        session = db.get_db()
+
+        try:
+            account = Account.get_by_email(session, user_email)
+            if not account:
+                raise HTTPException(status_code=404, detail="Account not found")
+
+            account.push_subscription = None
+            session.commit()
+            logger.info(f"✓ Removed push subscription for user {user_email}")
+
+            return JSONResponse(content={'success': True})
+
+        finally:
+            session.close()
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Error unsubscribing from push notifications for user {user_email}: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
