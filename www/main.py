@@ -785,6 +785,10 @@ async def manage_push_subscription(
             if not account:
                 raise HTTPException(status_code=404, detail="Account not found")
 
+            current_plan = account.get_current_plan(session)
+            if (not current_plan or not current_plan.is_granted_for_push()):
+                raise HTTPException(status_code=402, detail="Your plan does not include push notifications")
+
             account.push_subscription = subscription_data
             session.commit()
 

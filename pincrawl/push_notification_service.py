@@ -74,8 +74,6 @@ class PushNotificationService:
         Raises:
             Exception: If account doesn't have push enabled or subscription data is invalid
         """
-        if not account.has_push_enabled():
-            raise Exception(f"Push notifications not enabled for account {account.email}")
 
         title = "New pinball machine found!"
         body = f"{ad.product}"

@@ -849,3 +849,19 @@ class AccountHistory(Base):
         session.commit()
 
         return new_plan_entry
+
+
+    def is_granted_for_push(self) -> bool:
+        """
+        Check if the account's current plan allows push notifications.
+
+        Args:
+            session: Database session
+        Returns:
+            bool: True if push notifications are allowed
+        """
+        # Check if user has PRO plan
+        if (self.plan != PlanType.PRO):
+            return False
+
+        return True

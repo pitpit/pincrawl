@@ -39,13 +39,18 @@
                             <div class="flex items-center">
                                 <label class="text-gray-300 w-80">{{ _('Push Notifications:') }}</label>
                                 <div class="flex items-center space-x-4">
+                                    {% if current_plan and current_plan.is_granted_for_push() %}
                                     <button type="button" id="pushButton" class="{% if account and account.push_subscription %}border border-retro-pink text-retro-pink{% else %}border border-retro-cyan bg-retro-cyan text-black{% endif %} px-4 py-2 text-sm font-bold hover:bg-retro-pink hover:border-retro-pink hover:text-black transition-colors duration-200">
-                                        {% if account and account.push_subscription %}
-                                            {{ _('DISABLE') }}
-                                        {% else %}
-                                            {{ _('ENABLE') }}
-                                        {% endif %}
+
+                                            {% if account and account.push_subscription %}
+                                                {{ _('DISABLE') }}
+                                            {% else %}
+                                                {{ _('ENABLE') }}
+                                            {% endif %}
                                     </button>
+                                    {% else %}
+                                        {{ _('Not included in your plan') }}
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>

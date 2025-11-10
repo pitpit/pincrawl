@@ -168,13 +168,17 @@ def watching_send():
 
                 # Send push notifications if enabled and service is available
                 if account.has_push_enabled():
-                    try:
-                        for ad in ads:
-                            push_notification_service.send_ad_notification_push(account, ad)
-                            push_count += 1
-                        logging.info(f"Sent 1 push notification to account {account.email}")
-                    except Exception as e:
-                        logging.exception(f"Failed to send 1 push notification to account {account.email}")
+                    current_plan = account.get_current_plan(session)
+                    if (current_plan and current_plan.is_granted_for_push()):
+                        try:
+                            for ad in ads:
+                                push_notification_service.send_ad_notification_push(account, ad)
+                                push_count += 1
+                            logging.info(f"Sent 1 push notification to account {account.email}")
+                        except Exception as e:
+                            logging.exception(f"Failed to send 1 push notification to account {account.email}")
+                    else:
+                        logging.info(f"Push notifications not allowed for account {account.email} due to plan restrictions")
                 else:
                     logging.info(f"Push notification disabled for account {account.email}")
 
@@ -241,6 +245,10 @@ def test_push(email):
 
     if not account.has_push_enabled():
         raise click.ClickException(f"Push notifications not enabled for account {email}")
+
+    current_plan = account.get_current_plan(session)
+    if not current_plan or not current_plan.is_granted_for_push():
+        raise click.ClickException(f"Push notifications not allowed for account {email} due to plan restrictions")
 
     # Initialize push notification service
     vapid_claims = {'sub': f'mailto:{VAPID_CONTACT_EMAIL}'}

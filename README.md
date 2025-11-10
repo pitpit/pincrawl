@@ -129,14 +129,13 @@ Translation files are located in:
 ## TODO
 
 - [] rework graph_utils.py to make a class GraphService
-- [X] Web Push API
-- [ ] maintenir la persistence? Add periodic background sync
-
-
-- [ ] Accelerate cron running everything in one time merging all together with a global command invoking scrape, crawl, send: pincrawl run
+- [X] Web Push API POC
+- [ ] push: maintenir la persistence? Add periodic background sync
 - [ ] push: Ad images in push notification
 - [ ] push: Ad images in email
 - [ ] push: add cache for images
+- [ ] upgrade link on "Not included in your plan" on my-account.html
+- [ ] Accelerate cron running everything in one time merging all together with a global command invoking scrape, crawl, send: pincrawl run
 - [ ] push: make it works when browser is offline
 - [ ] ad a parameter --since to send everything from a date (debug) when running `pincrawl watching send`
 - [ ] rework send_ad_notification_email() to not build a ad_data dictionnary and directly pass "ads" var
