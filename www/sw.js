@@ -54,20 +54,6 @@ self.addEventListener('notificationclick', function(event) {
     );
 });
 
-// Installs the service worker and caches essential resources
-self.addEventListener('install', function(event) {
-    self.skipWaiting();
-    event.waitUntil(
-        caches.open('pincrawl-v1').then(cache =>
-            cache.addAll([
-                '/static/favicon.ico',
-                '/static/img/external-link-icon.png',
-                '/static/img/cancel-icon.png'
-            ])
-        )
-    );
-});
-
 // Activates the service worker and takes control of all clients
 self.addEventListener('activate', function(event) {
     event.waitUntil(self.clients.claim());

@@ -4,6 +4,7 @@ import json
 import logging
 from typing import Optional, Dict, Any
 from pywebpush import webpush, WebPushException
+from pincrawl.database import Ad, Account
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +22,7 @@ class PushNotificationService:
         self.vapid_private_key = vapid_private_key
         self.vapid_claims = vapid_claims
 
-    def send_notification(self, subscription: Dict[str, Any], title: str, body: str, url: str) -> bool:
+    def send_notification(self, subscription: Dict[str, Any], title: str, body: str, url: str):
         """
         Send a push notification to a subscriber.
 
@@ -55,14 +56,11 @@ class PushNotificationService:
             if e.response and e.response.status_code == 410:
                 # Subscription is no longer valid
                 logger.warning(f"Push subscription expired: {subscription.get('endpoint', 'unknown')}")
-            else:
-                logger.error(f"Failed to send push notification: {e}")
-            return False
+            raise
         except Exception as e:
-            logger.error(f"Unexpected error sending push notification: {e}")
-            return False
+            raise
 
-    def send_ad_notification_push(self, account, ads):
+    def send_ad_notification_push(self, account: Account, ad: Ad):
         """
         Send push notifications for new ads to a user account.
 
@@ -79,39 +77,23 @@ class PushNotificationService:
         if not account.has_push_enabled():
             raise Exception(f"Push notifications not enabled for account {account.email}")
 
-        push_count = 0
+        title = "New pinball machine found!"
+        body = f"{ad.product}"
+        if ad.manufacturer:
+            body += f", {ad.manufacturer}"
+        if ad.year:
+            body += f", {ad.year}"
+        if ad.amount and ad.currency:
+            body += f"\nPrice: {ad.amount} {ad.currency}"
+        if ad.city:
+            body += f"\nLocation: {ad.city}"
+            if ad.zipcode:
+                body += f", {ad.zipcode}"
 
-        try:
-            for ad in ads:
-                title = "New pinball machine found!"
-                body = f"{ad.product}"
-                if ad.manufacturer:
-                    body += f", {ad.manufacturer}"
-                if ad.year:
-                    body += f", {ad.year}"
-                if ad.amount and ad.currency:
-                    body += f"\nPrice: {ad.amount} {ad.currency}"
-                if ad.city:
-                    body += f"\nLocation: {ad.city}"
-                    if ad.zipcode:
-                        body += f", {ad.zipcode}"
-
-                # Send push notification
-                success = self.send_notification(
-                    subscription=account.push_subscription,
-                    title=title,
-                    body=body,
-                    url=ad.url
-                )
-
-                if success:
-                    push_count += 1
-                    logger.info(f"Sent push notification to account {account.email} for ad {ad.url}")
-                else:
-                    logger.error(f"Failed to send push notification to account {account.email} for ad {ad.url}")
-
-        except Exception as e:
-            logger.error(f"Error sending push notifications to account {account.email}: {e}")
-            raise
-
-        return push_count
+        # Send push notification
+        self.send_notification(
+            subscription=account.push_subscription,
+            title=title,
+            body=body,
+            url=ad.url
+        )

@@ -134,8 +134,10 @@ Translation files are located in:
 
 
 - [ ] Accelerate cron running everything in one time merging all together with a global command invoking scrape, crawl, send: pincrawl run
-- [ ] Ad images in push notification
-- [ ] Ad images in email
+- [ ] push: Ad images in push notification
+- [ ] push: Ad images in email
+- [ ] push: add cache for images
+- [ ] push: make it works when browser is offline
 - [ ] ad a parameter --since to send everything from a date (debug) when running `pincrawl watching send`
 - [ ] rework send_ad_notification_email() to not build a ad_data dictionnary and directly pass "ads" var
 - [ ] cdn.tailwindcss.com should not be used in production
@@ -151,17 +153,7 @@ Translation files are located in:
 - [ ] thumbnails for pinball
 - [ ] pink dot for current ad price in graph (in email notification)
 - [ ] manual fix / product check for ads
-- [ ] use internal id of product as a foreign key in Watching instead of opdb_id
-
-will allow to remove
-```
-                    if ad.opdb_id:
-                        product = session.query(Product).filter_by(opdb_id=ad.opdb_id).first()
-                        if product:
-                            # Use the dynamic graph endpoint with product_id (PNG for better email client support)
-                            ad_info['graph_url'] = f"{self.base_url}/graphs/{product.id}.png"
-```
-
+- [ ] use internal id of product as a foreign key in Watching instead of opdb_id. will allow to have graph with graphs/[internal-product-id}.svg instead of graphs/GrqL6-MLy7l.svg
 - [ ] check opdb_id when creating a Watching
 - [ ] unwatch pinball from email
 - [ ] download image and visit archive (or do a screenshot)

@@ -146,17 +146,18 @@
                         <div class="border-t border-gray-600 pt-3 mt-3">
                             <div class="flex flex-wrap gap-4 text-sm">
                                 <div class="text-retro-white w-full">
-                                    <img src="{{ product.price_graph_url }}" alt="{{ _('Price timeline for %s') % product.name }}" width="338" height="130">
+                                    {% set price_graph_url = product.price_graph_url('svg') %}
+                                    <img src="{{ price_graph_url }}" alt="{{ _('Price timeline for %s') % product.name }}" width="338" height="130">
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="mt-4 md:mt-0 md:ml-6 flex-shrink-0">
                         <button
-                            class="w-full md:w-auto px-6 py-2 {% if product.is_watching %}text-retro-pink border-retro-pink hover:text-black hover:bg-retro-pink hover:border-retro-pink{% else %}text-retro-cyan border-retro-cyan hover:bg-retro-cyan hover:text-black hover:border-retro-cyan{% endif %} font-bold transition-all duration-300 border "
+                            class="w-full md:w-auto px-6 py-2 {% if product.opdb_id in user_watching %}text-retro-pink border-retro-pink hover:text-black hover:bg-retro-pink hover:border-retro-pink{% else %}text-retro-cyan border-retro-cyan hover:bg-retro-cyan hover:text-black hover:border-retro-cyan{% endif %} font-bold transition-all duration-300 border "
                             onclick="toggleWatch(this, '{{ product.id }}')"
                         >
-                            {% if product.is_watching %}{{ _('WATCHING') }}{% else %}{{ _('WATCH') }}{% endif %}
+                            {% if product.opdb_id in user_watching %}{{ _('WATCHING') }}{% else %}{{ _('WATCH') }}{% endif %}
                         </button>
                     </div>
                 </div>

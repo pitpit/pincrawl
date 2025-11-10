@@ -160,7 +160,7 @@ def watching_send():
 
                 # Send email notification
                 try:
-                    email_notification_service.send_ad_notification_email(FROM_EMAIL, account.email, ads, locale=account.language)
+                    email_notification_service.send_ad_notification_email(FROM_EMAIL, account, ads, locale=account.language)
                     email_count += 1
                     logging.info(f"Sent email to {account.email} with {len(ads)} ads (locale: {account.language})")
                 except Exception as e:
@@ -169,13 +169,14 @@ def watching_send():
                 # Send push notifications if enabled and service is available
                 if account.has_push_enabled():
                     try:
-                        notifications_sent = push_notification_service.send_ad_notification_push(account, ads)
-                        push_count += notifications_sent
-                        logging.info(f"Sent {notifications_sent} push notifications to account {account.email}")
+                        for ad in ads:
+                            push_notification_service.send_ad_notification_push(account, ad)
+                            push_count += 1
+                        logging.info(f"Sent 1 push notification to account {account.email}")
                     except Exception as e:
-                        logging.exception(f"Failed to send push notifications to account {account.email}")
+                        logging.exception(f"Failed to send 1 push notification to account {account.email}")
                 else:
-                    logging.info(f"Push notifications disabled for account {account.email}")
+                    logging.info(f"Push notification disabled for account {account.email}")
 
             # Mark task as successful
             task_manager.update_task_status(session, current_task, TaskStatus.SUCCESS)
@@ -196,82 +197,95 @@ def watching_send():
 
 
 @watching.command("test-email")
-@click.argument("to")
+@click.argument("email")
 @click.option("--locale", default="en", help="Language locale (en or fr)")
-def test_email(to, locale):
+def test_email(email, locale):
     """Send a test email to verify SMTP configuration.
 
     Args:
-        to: Email address to send the test email to
+        email: Email address to send the test email to
         locale: Language locale for the email (default: en)
     """
+
+    session = database.get_db()
+
+    account = session.query(Account).filter(Account.email == email).first()
+    if not account:
+        raise click.ClickException(f"Account with email {email} not found")
 
     smtp_client = Smtp(SMTP_URL)
     email_notification_service = EmailNotificationService(smtp_client)
 
-    # Get base URL from environment variable
-    PINCRAWL_BASE_URL = os.getenv('PINCRAWL_BASE_URL')
-    if not PINCRAWL_BASE_URL:
-        raise Exception("PINCRAWL_BASE_URL environment variable not set")
+    fake_ads = get_fake_ads()
 
-    # Generate a fake graph for testing
+    email_notification_service.send_ad_notification_email(FROM_EMAIL, account, fake_ads, locale=locale)
+
+    click.echo(f"✓ Test email sent successfully to {email} (locale: {locale})")
 
 
-    # Generate fake data for the last year (12 months)
-    current_date = datetime.now()
-    dates = [current_date - timedelta(days=365-i*30) for i in range(12)]
-    base_price = 8000
-    variation = 1500
-    prices = [base_price + random.randint(-variation//2, variation) for _ in range(12)]
+@watching.command("test-push")
+@click.argument("email")
+def test_push(email):
+    """Send a test push notification to verify push configuration.
 
-    # Generate and save the graph (SVG format)
-    graph_filepath = 'var/graphs/fake_data.png'
-    generate_price_graph(dates, prices, f'www/{graph_filepath}', format='png')
-    graph_url = f"{PINCRAWL_BASE_URL}/{graph_filepath}"
+    Args:
+        email: Email address of the account to send the test notification to
+    """
 
-    graph_filepath = 'var/graphs/nodata.png'
-    generate_price_graph(dates, prices, f'www/{graph_filepath}', format='png')
-    nodata_graph_url = f"{PINCRAWL_BASE_URL}/{graph_filepath}"
+    session = database.get_db()
 
-    # Create fake ad data for testing
-    fake_ads_data = [
-        {
-            'product': '[Fake] Medieval Madness',
-            'manufacturer': 'Williams',
-            'year': '1997',
-            'url': 'https://example.com/ad/123',
-            'price': 8500,
-            'currency': 'EUR',
-            'location': 'Paris, 75001',
-            'graph_url': graph_url
-        },
-        {
-            'product': '[Fake] Attack from Mars',
-            'manufacturer': 'Bally',
-            'year': '1995',
-            'url': 'https://example.com/ad/456',
-            'price': 7200,
-            'currency': 'EUR',
-            'location': 'Lyon, 69001',
-            'graph_url': nodata_graph_url
-        },
-        {
-            'product': '[Fake] The Addams Family',
-            'manufacturer': 'Bally',
-            'year': '1992',
-            'url': 'https://example.com/ad/789',
-            'price': 6500,
-            'currency': 'EUR',
-            'location': 'Marseille, 13001',
-            'graph_url': nodata_graph_url
-        }
+    # Find account by email
+    account = session.query(Account).filter(Account.email == email).first()
+    if not account:
+        raise click.ClickException(f"Account with email {email} not found")
+
+    if not account.has_push_enabled():
+        raise click.ClickException(f"Push notifications not enabled for account {email}")
+
+    # Initialize push notification service
+    vapid_claims = {'sub': f'mailto:{VAPID_CONTACT_EMAIL}'}
+    push_notification_service = PushNotificationService(VAPID_PRIVATE_KEY, vapid_claims)
+
+    # Create fake ad data for testing using real Ad entities
+    fake_ads = get_fake_ads()
+
+    # Send test push notifications
+    push_count = 0
+    for ad in fake_ads:
+        push_notification_service.send_ad_notification_push(account, ad)
+        push_count += 1
+
+    click.echo(f"✓ {push_count} notifications sent successfully to {email}")
+
+
+def get_fake_ads():
+
+    # Create fake ad data for testing using real Ad entities
+    fake_ads = [
+        Ad(
+            product="[Fake] Medieval Madness",
+            manufacturer="Williams",
+            opdb_id="G5pe4-MePZv",
+            year="1997",
+            amount=8500,
+            currency="EUR",
+            city="Paris",
+            zipcode="75001",
+            url="https://example.com/test-ad/123"
+        ),
+        Ad(
+            product="[Fake] Attack from Mars",
+            manufacturer="Bally",
+            opdb_id="G4do5-MDlN7",
+            year="1995",
+            amount=7200,
+            currency="EUR",
+            city="Lyon",
+            zipcode="69001",
+            url="https://example.com/test-ad/456"
+        )
     ]
-
-    email_notification_service.send_ad_notification_email(FROM_EMAIL, to, fake_ads_data, locale=locale)
-
-    click.echo(f"✓ Test email sent successfully to {to} (locale: {locale})")
-
-
+    return fake_ads
 
 
 

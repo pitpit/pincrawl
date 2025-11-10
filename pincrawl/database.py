@@ -308,6 +308,21 @@ class Ad(Base):
 
         return ad_record
 
+    def price_graph_url(self, format: str = 'svg') -> str:
+        """
+        Generate graph URL for this ad based on its opdb_id.
+
+        Returns:
+            str: Graph URL if opdb_id exists and PINCRAWL_BASE_URL is set, None otherwise
+        """
+        if not self.opdb_id:
+            return ""
+
+        if format not in ['svg', 'png']:
+            format = 'svg'  # Default to svg for invalid formats
+
+        return f"/graphs/{self.opdb_id}.{format}"
+
 
 class Watching(Base):
     """SQLAlchemy model for watching table."""
@@ -657,6 +672,19 @@ class Product(Base):
             'saved_to_db': False
         }
 
+    def price_graph_url(self, format: str = 'svg') -> str:
+        """
+        Generate price graph URL for this product.
+
+        Args:
+            format: Output format ('svg' or 'png'), defaults to 'svg'
+
+        Returns:
+            str: Graph URL for this product
+        """
+        if format not in ['svg', 'png']:
+            format = 'svg'  # Default to svg for invalid formats
+        return f"/graphs/{self.opdb_id}.{format}"
 
 class Account(Base):
     """SQLAlchemy model for accounts table."""

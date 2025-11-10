@@ -212,15 +212,15 @@ async def service_worker():
     return response
 
 # Public endpoint for graph generation
-@app.get("/graphs/{product_id}.{format}")
-async def get_graph(product_id: int, format: str):
+@app.get("/graphs/{product_opdb_id}.{format}")
+async def get_graph(product_opdb_id: str, format: str):
     """Generate and serve price graph for a pinball machine.
 
     Generates the graph on-demand and caches it. If the cached graph is from
     a previous day, it will be regenerated.
 
     Args:
-        product_id: The ID of the product
+        product_opdb_id: The OPDB ID of the product
         format: The output format ('svg' or 'png')
     """
     # Validate format
@@ -233,7 +233,7 @@ async def get_graph(product_id: int, format: str):
     graph_dir = "var/graphs"
     os.makedirs(graph_dir, exist_ok=True)
 
-    graph_path = os.path.join(graph_dir, f"{product_id}.{format}")
+    graph_path = os.path.join(graph_dir, f"{product_opdb_id}.{format}")
     nodata_graph_path = os.path.join(graph_dir, f"nodata.{format}")
 
     # Check if we need to regenerate the graph
@@ -248,12 +248,12 @@ async def get_graph(product_id: int, format: str):
             should_regenerate = False
 
     if should_regenerate:
-        logger.info(f"Generating graph for product_id={product_id}")
+        logger.info(f"Generating graph for product_opdb_id={product_opdb_id}")
 
         session = db.get_db()
         try:
             # Verify product exists
-            product = session.query(Product).filter_by(id=product_id).first()
+            product = session.query(Product).filter_by(opdb_id=product_opdb_id).first()
             if not product:
                 # Product not found, return 404
                 session.close()
@@ -279,7 +279,7 @@ async def get_graph(product_id: int, format: str):
 
                 # Generate the graph
                 generate_price_graph(dates, prices, graph_path, format=format)
-                logger.info(f"✓ Generated graph for product_id={product_id} ({product.opdb_id}) with {len(ads)} data points")
+                logger.info(f"✓ Generated graph for opdb_id={product_opdb_id} with {len(ads)} data points")
             else:
                 # No data available, generate "no data" graph
                         # Check if nodata graph needs regeneration (once per day)
@@ -299,7 +299,7 @@ async def get_graph(product_id: int, format: str):
         except HTTPException:
             raise
         except Exception as e:
-            logger.error(f"❌ Error generating graph for product_id={product_id}: {str(e)}")
+            logger.error(f"❌ Error generating graph for opdb_id={product_opdb_id}: {str(e)}")
             session.close()
             raise HTTPException(status_code=500, detail="Failed to generate graph")
         finally:
@@ -498,12 +498,6 @@ async def pinballs(
             if account:
                 user_watching = Watching.get_user_watching(session, account.id)
 
-        # Set graph URL to the dynamic endpoint and subscription status
-        for product in products:
-            product.is_watching = product.opdb_id in user_watching
-            # Use the dynamic graph endpoint instead of static files
-            product.price_graph_url = f"/graphs/{product.id}.svg"
-
         # Get list of all manufacturers for dropdown
         manufacturers = Product.get_manufacturers(session)
 
@@ -538,7 +532,8 @@ async def pinballs(
             has_prev=page > 1,
             has_next=page < total_pages,
             prev_page=page - 1 if page > 1 else None,
-            next_page=page + 1 if page < total_pages else None
+            next_page=page + 1 if page < total_pages else None,
+            user_watching=user_watching
         )
     )
 

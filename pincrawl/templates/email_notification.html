@@ -110,29 +110,30 @@
     <div class="content">
         <div class="intro">
             <p>{{ _('Hello,') }}</p>
-            <p>{{ (_('We found <strong>%s</strong> new pinball machine(s) matching your subscriptions:') % ads_count)|safe }}</p>
+            <p>{{ (_('We found <strong>%s</strong> new pinball machine(s) matching your subscriptions:') % ads|length)|safe }}</p>
         </div>
 
-        {% for ad_data in ads %}
+        {% for ad in ads %}
         <div class="ad-item">
-            <div class="ad-title">{{ ad_data.product }}{{ ', ' + ad_data.manufacturer if ad_data.manufacturer }}{{ ', ' + ad_data.year if ad_data.year }}</div>
+            <div class="ad-title">{{ ad.product }}{{ ', ' + ad.manufacturer if ad.manufacturer }}{{ ', ' + ad.year if ad.year }}</div>
 
-            {% if ad_data.price %}
-            <div class="ad-detail">{{ (_('Price: <strong>%s %s</strong>') % (ad_data.price, ad_data.currency))|safe }}</div>
+            {% if ad.amount and ad.currency %}
+            <div class="ad-detail">{{ (_('Price: <strong>%s %s</strong>') % (ad.amount, ad.currency))|safe }}</div>
             {% endif %}
 
-            {% if ad_data.location %}
-            <div class="ad-detail">{{ (_('Location: <strong>%s</strong>') % ad_data.location)|safe }}</div>
+            {% if ad.city %}
+            <div class="ad-detail">{{ (_('Location: <strong>%s, %s</strong>') % (ad.city, ad.zipcode if ad.zipcode else '--'))|safe }}</div>
             {% endif %}
 
-            {% if ad_data.graph_url %}
+            {% set price_graph_url = ad.price_graph_url('png') %}
+            {% if price_graph_url %}
             <div style="margin: 15px 0;">
-                <img src="{{ ad_data.graph_url }}" alt="{{ _('Price timeline for %s') % ad_data.product }}" class="price-graph" width="320" height="120">
+                <img src="{{base_url}}/{{ price_graph_url }}" alt="{{ _('Price timeline for %s') % ad.product }}" class="price-graph" width="320" height="120">
             </div>
             {% endif %}
 
             <div class="ad-detail" style="margin-top: 15px;">
-                <a href="{{ ad_data.url }}" class="button" style="color: #00FFFF; text-decoration: none;">{{ _('View Ad') }}</a>
+                <a href="{{ ad.url }}" class="button" style="color: #00FFFF; text-decoration: none;">{{ _('View Ad') }}</a>
             </div>
         </div>
         {% endfor %}
