@@ -24,6 +24,9 @@ from pincrawl.database import Database, Watching, Product, Account, PLAN_WATCHIN
 from pincrawl.graph_utils import generate_price_graph, generate_nodata_graph
 from pincrawl.i18n import I18n
 from fastapi.exceptions import RequestValidationError
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
+# from fastapi.middleware.trustedhost import TrustedHostMiddleware
+
 
 # Load environment variables
 load_dotenv()
@@ -59,6 +62,8 @@ VAPID_CONTACT_EMAIL = os.getenv('VAPID_CONTACT_EMAIL', 'pincrawl@pitp.it')
 
 # Add session middleware
 app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET_KEY)
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=["*"])
+# app.add_middleware(TrustedHostMiddleware, allowed_hosts=["localhost", "192-168-0-11.nip.io"])
 
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -648,13 +653,12 @@ async def my_account(
     )
 
 
-@app.put("/{locale}/my-account")
+@app.put("/api/my-account")
 async def update_my_account(
     request: Request,
-    locale: str = Path(..., pattern=i18n.get_supported_locales_pattern()),
     user=Depends(get_authenticated_user)
 ):
-    """Update account preferences"""
+    """Update account preferences, push subscriptions, and email preferences"""
     user_email = user.get('email')
 
     data = await request.json()
@@ -674,25 +678,49 @@ async def update_my_account(
             account.language = language
             logger.info(f"✓ Updated language for user {user_email} to {language}")
 
-        # Future: Add more preference updates here
-        # if 'other_preference' in data:
-        #     account.other_preference = data.get('other_preference')
+        # Update email preference if provided
+        if 'push_emails' in data:
+            push_emails = data.get('push_emails')
+            if not isinstance(push_emails, bool):
+                raise HTTPException(status_code=400, detail="Invalid push_emails value")
+            account.push_emails = push_emails
+            logger.info(f"✓ Updated push_emails for user {user_email} to {push_emails}")
+
+        # Handle push subscription (subscribe or unsubscribe)
+        if 'push_subscription' in data:
+            push_subscription_data = data.get('push_subscription')
+
+            if push_subscription_data is None:
+                # Unsubscribe from push notifications
+                account.push_subscription = None
+                logger.info(f"✓ Removed push subscription for user {user_email}")
+            else:
+                # Subscribe to push notifications
+                current_plan = account.get_current_plan(session)
+                if not current_plan or not current_plan.is_granted_for_push():
+                    raise HTTPException(status_code=402, detail="Your plan does not include push notifications")
+
+                if not push_subscription_data:
+                    raise HTTPException(status_code=400, detail="Invalid subscription data")
+
+                account.push_subscription = push_subscription_data
+                logger.info(f"✓ Updated push subscription for user {user_email}")
 
         session.commit()
 
-        return HTMLResponse(status_code=200, content="")
+        return JSONResponse(content={'success': True})
+
     except HTTPException:
-        session.close()
+        session.rollback()
         raise
     except Exception as e:
-        session.close()
-        logger.error(f"❌ Error updating account preferences for user {user_email}: {str(e)}")
+        session.rollback()
+        logger.error(f"❌ Error updating account for user {user_email}: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
     finally:
         session.close()
 
-
-@app.post("/watch")
+@app.post("/api/watch")
 async def watch(
     request: Request,
     user=Depends(get_authenticated_user)
@@ -763,77 +791,4 @@ async def watch(
     session.close()
 
     return HTMLResponse(status_code=status, content="")
-
-
-@app.post("/push-subscription")
-async def manage_push_subscription(
-    request: Request,
-    user=Depends(get_authenticated_user)
-):
-    """Subscribe or sync user push notifications."""
-    user_email = user.get('email')
-
-    try:
-        subscription_data = await request.json()
-        if not subscription_data:
-            raise HTTPException(status_code=400, detail="Invalid subscription data")
-
-        session = db.get_db()
-
-        try:
-            account = Account.get_by_email(session, user_email)
-            if not account:
-                raise HTTPException(status_code=404, detail="Account not found")
-
-            current_plan = account.get_current_plan(session)
-            if (not current_plan or not current_plan.is_granted_for_push()):
-                raise HTTPException(status_code=402, detail="Your plan does not include push notifications")
-
-            account.push_subscription = subscription_data
-            session.commit()
-
-            return JSONResponse(content={
-                'success': True
-            })
-
-        finally:
-            session.close()
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"❌ Error managing push subscription for user {user_email}: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.delete("/push-subscription")
-async def unsubscribe_push(
-    request: Request,
-    user=Depends(get_authenticated_user)
-):
-    """Unsubscribe user from push notifications."""
-    user_email = user.get('email')
-
-    try:
-        session = db.get_db()
-
-        try:
-            account = Account.get_by_email(session, user_email)
-            if not account:
-                raise HTTPException(status_code=404, detail="Account not found")
-
-            account.push_subscription = None
-            session.commit()
-            logger.info(f"✓ Removed push subscription for user {user_email}")
-
-            return JSONResponse(content={'success': True})
-
-        finally:
-            session.close()
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"❌ Error unsubscribing from push notifications for user {user_email}: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
 

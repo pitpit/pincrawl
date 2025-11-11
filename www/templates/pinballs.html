@@ -231,7 +231,7 @@
 function toggleWatch(element, id) {
     const button = element;
 
-    fetch('/watch', {
+    fetch('/api/watch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: id })

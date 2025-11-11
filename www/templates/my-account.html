@@ -23,7 +23,7 @@
                 <!-- Your Account Section -->
                 <div class="bg-darker-grey border border-retro-white p-6">
                     <h2 class="text-2xl font-bold text-retro-white mb-4">{{ _('Account Settings') }}</h2>
-                    <form id="accountSettingsForm">
+                    <div id="accountSettings">
                         <div class="space-y-4">
                             <div class="flex items-center">
                                 <span class="text-gray-300 w-80">{{ _('Email:') }}</span>
@@ -35,6 +35,18 @@
                                     <option value="en" {% if account and account.language == 'en' %}selected{% elif not account or not account.language %}selected{% endif %}>English</option>
                                     <option value="fr" {% if account and account.language == 'fr' %}selected{% endif %}>Français</option>
                                 </select>
+                            </div>
+                            <div class="flex items-center">
+                                <label class="text-gray-300 w-80">{{ _('Push Emails:') }}</label>
+                                <div class="flex items-center space-x-4">
+                                    <button type="button" id="emailButton" class="{% if account and account.push_emails %}border border-retro-pink text-retro-pink{% else %}border border-retro-cyan bg-retro-cyan text-black{% endif %} px-4 py-2 text-sm font-bold hover:bg-retro-pink hover:border-retro-pink hover:text-black transition-colors duration-200">
+                                        {% if account and account.push_emails %}
+                                            {{ _('DISABLE') }}
+                                        {% else %}
+                                            {{ _('ENABLE') }}
+                                        {% endif %}
+                                    </button>
+                                </div>
                             </div>
                             <div class="flex items-center">
                                 <label class="text-gray-300 w-80">{{ _('Push Notifications:') }}</label>
@@ -54,12 +66,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="mt-6">
-                            <button type="submit" id="saveButton" disabled class="bg-gray-600 text-gray-400 px-8 py-3 text-lg font-bold cursor-not-allowed disabled:opacity-50">
-                                {{ _('SAVE') }}
-                            </button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
 
                 <!-- Plan Section -->
@@ -184,27 +191,48 @@
     {% include '_footer.html' %}
 
 <script>
-    // Enable save button on language change
+    // Language handling with immediate save
     const languageSelect = document.getElementById('language');
-    const saveButton = document.getElementById('saveButton');
-    const form = document.getElementById('accountSettingsForm');
     const initialLanguage = languageSelect.value;
 
-    languageSelect.addEventListener('change', function() {
+    languageSelect.addEventListener('change', async function() {
         if (languageSelect.value !== initialLanguage) {
-            saveButton.disabled = false;
-            saveButton.classList.remove('bg-gray-600', 'text-gray-400', 'cursor-not-allowed');
-            saveButton.classList.add('bg-retro-cyan', 'text-black', 'hover:bg-retro-pink', 'transition-colors', 'duration-200', 'cursor-pointer');
-        } else {
-            saveButton.disabled = true;
-            saveButton.classList.add('bg-gray-600', 'text-gray-400', 'cursor-not-allowed');
-            saveButton.classList.remove('bg-retro-cyan', 'text-black', 'hover:bg-retro-pink', 'transition-colors', 'duration-200', 'cursor-pointer');
+            languageSelect.disabled = true;
+
+            try {
+                const response = await fetch('{{ "/api/my-account" }}', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        language: languageSelect.value
+                    })
+                });
+
+                if (response.ok) {
+                    // Success - show confirmation without reload
+                    // You could add a toast notification here if desired
+                    console.log('Language preference saved successfully');
+                } else {
+                    throw new Error('Failed to save language preference');
+                }
+            } catch (error) {
+                alert('{{ _('Failed to save language preference') }}');
+                languageSelect.value = initialLanguage; // Revert
+            } finally {
+                languageSelect.disabled = false;
+            }
         }
     });
 
     // Push notification handling
     const pushButton = document.getElementById('pushButton');
     let pushEnabled = {% if account and account.push_subscription %}true{% else %}false{% endif %};
+
+    // Push email handling
+    const emailButton = document.getElementById('emailButton');
+    let emailEnabled = {% if account and account.push_emails %}true{% else %}false{% endif %};
 
     // VAPID public key from server (already converted to Uint8Array)
     const vapidPublicKey = {{ vapid_public_key_bytes|tojson }};
@@ -242,12 +270,14 @@
                 applicationServerKey: new Uint8Array(vapidPublicKey)
             });
 
-            const response = await fetch('{{ "/push-subscription" }}', {
-                method: 'POST',
+            const response = await fetch('{{ "/api/my-account" }}', {
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(subscription.toJSON())
+                body: JSON.stringify({
+                    push_subscription: subscription.toJSON()
+                })
             });
 
             if (response.ok) {
@@ -276,11 +306,14 @@
                 await registration.unregister();
             }
 
-            const response = await fetch('{{ "/push-subscription" }}', {
-                method: 'DELETE',
+            const response = await fetch('{{ "/api/my-account" }}', {
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                }
+                },
+                body: JSON.stringify({
+                    push_subscription: null
+                })
             });
 
             if (response.ok) {
@@ -298,15 +331,53 @@
     }
 
     function updatePushUI() {
-        if (pushEnabled) {
-            pushButton.textContent = '{{ _('DISABLE') }}';
-            pushButton.classList.add('border-retro-pink', 'text-retro-pink');
-            pushButton.classList.remove('border-retro-cyan', 'bg-retro-cyan', 'text-black');
-        } else {
-            pushButton.textContent = '{{ _('ENABLE') }}';
-            pushButton.classList.remove('border-retro-pink', 'text-retro-pink');
-            pushButton.classList.add('border-retro-cyan', 'bg-retro-cyan', 'text-black');
+        if (pushButton) {  // Check if button exists
+            if (pushEnabled) {
+                pushButton.textContent = '{{ _('DISABLE') }}';
+                pushButton.classList.add('border-retro-pink', 'text-retro-pink');
+                pushButton.classList.remove('border-retro-cyan', 'bg-retro-cyan', 'text-black');
+            } else {
+                pushButton.textContent = '{{ _('ENABLE') }}';
+                pushButton.classList.remove('border-retro-pink', 'text-retro-pink');
+                pushButton.classList.add('border-retro-cyan', 'bg-retro-cyan', 'text-black');
+            }
+        }
+    }
 
+    function updateEmailUI() {
+        if (emailEnabled) {
+            emailButton.textContent = '{{ _('DISABLE') }}';
+            emailButton.classList.add('border-retro-pink', 'text-retro-pink');
+            emailButton.classList.remove('border-retro-cyan', 'bg-retro-cyan', 'text-black');
+        } else {
+            emailButton.textContent = '{{ _('ENABLE') }}';
+            emailButton.classList.remove('border-retro-pink', 'text-retro-pink');
+            emailButton.classList.add('border-retro-cyan', 'bg-retro-cyan', 'text-black');
+        }
+    }
+
+    async function toggleEmailPreference() {
+        try {
+            const response = await fetch('{{ "/api/my-account" }}', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    push_emails: emailEnabled
+                })
+            });
+
+            if (response.ok) {
+                updateEmailUI();
+                return true;
+            } else {
+                const errorText = await response.text();
+                throw new Error('Failed to update email preference: ' + errorText);
+            }
+        } catch (error) {
+            alert('{{ _('Failed to update email preference') }}: ' + error.message);
+            return false;
         }
     }
 
@@ -327,33 +398,20 @@
         }
     });
 
-    // Handle form submission
-    form.addEventListener('submit', async function(e) {
-        e.preventDefault();
-
-        const language = languageSelect.value;
+    emailButton.addEventListener('click', async function() {
+        emailButton.disabled = true;
+        const originalText = emailButton.textContent;
+        emailButton.textContent = '{{ _('LOADING...') }}';
 
         try {
-            const response = await fetch('{{ "/" + locale + "/my-account" }}', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ language: language })
-            });
-
-            if (response.ok) {
-                // Success - show feedback and reload
-                saveButton.textContent = '{{ _('SAVED!') }}';
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
-            } else {
-                // Error
-                alert('{{ _('Failed to save preferences') }}');
-            }
+            emailEnabled = !emailEnabled;
+            await toggleEmailPreference();
         } catch (error) {
-            alert('{{ _('Failed to save preferences') }}');
+            // Revert on error
+            emailEnabled = !emailEnabled;
+            emailButton.textContent = originalText;
+        } finally {
+            emailButton.disabled = false;
         }
     });
 </script>

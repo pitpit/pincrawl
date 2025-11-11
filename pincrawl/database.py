@@ -695,6 +695,7 @@ class Account(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     language = Column(String(2), nullable=True, default=None)  # ISO 639-1 language code for communication (email, SMS, WhatsApp) - does not affect UI navigation
     push_subscription = Column(JSON, nullable=True)  # Web Push subscription data
+    push_emails = Column(Boolean, nullable=True, default=True)  # Email notifications preference
     created_at = Column(DateTime, default=datetime.now, nullable=False)
 
     # Relationship to account history
@@ -779,7 +780,8 @@ class Account(Base):
             AccountHistory.end_date.is_(None)
         ).first()
 
-    def has_push_enabled(self) -> bool:
+    @property
+    def push_notifications(self) -> bool:
         """
         Check if push notifications are enabled for this account.
 
@@ -787,7 +789,6 @@ class Account(Base):
             bool: True if push notifications are enabled
         """
         return self.push_subscription is not None and bool(self.push_subscription)
-
 
 class AccountHistory(Base):
     """SQLAlchemy model for account_history table."""

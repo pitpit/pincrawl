@@ -159,15 +159,18 @@ def watching_send():
                     continue
 
                 # Send email notification
-                try:
-                    email_notification_service.send_ad_notification_email(FROM_EMAIL, account, ads, locale=account.language)
-                    email_count += 1
-                    logging.info(f"Sent email to {account.email} with {len(ads)} ads (locale: {account.language})")
-                except Exception as e:
-                    logging.exception(f"Failed to send email to {account.email}")
+                if account.push_emails:
+                    try:
+                        email_notification_service.send_ad_notification_email(FROM_EMAIL, account, ads, locale=account.language)
+                        email_count += 1
+                        logging.info(f"Sent email to {account.email} with {len(ads)} ads (locale: {account.language})")
+                    except Exception as e:
+                        logging.exception(f"Failed to send email to {account.email}")
+                else:
+                    logging.info(f"Email notifications disabled for account {account.email}")
 
                 # Send push notifications if enabled and service is available
-                if account.has_push_enabled():
+                if account.push_notifications:
                     current_plan = account.get_current_plan(session)
                     if (current_plan and current_plan.is_granted_for_push()):
                         try:
@@ -180,7 +183,7 @@ def watching_send():
                     else:
                         logging.info(f"Push notifications not allowed for account {account.email} due to plan restrictions")
                 else:
-                    logging.info(f"Push notification disabled for account {account.email}")
+                    logging.info(f"Push notifications disabled for account {account.email}")
 
             # Mark task as successful
             task_manager.update_task_status(session, current_task, TaskStatus.SUCCESS)
@@ -217,6 +220,9 @@ def test_email(email, locale):
     if not account:
         raise click.ClickException(f"Account with email {email} not found")
 
+    if not account.push_emails:
+        raise click.ClickException(f"Email notifications not enabled for account {email}")
+
     smtp_client = Smtp(SMTP_URL)
     email_notification_service = EmailNotificationService(smtp_client)
 
@@ -243,7 +249,7 @@ def test_push(email):
     if not account:
         raise click.ClickException(f"Account with email {email} not found")
 
-    if not account.has_push_enabled():
+    if not account.push_notifications:
         raise click.ClickException(f"Push notifications not enabled for account {email}")
 
     current_plan = account.get_current_plan(session)

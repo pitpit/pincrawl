@@ -126,10 +126,30 @@ Translation files are located in:
 - `translations/en/LC_MESSAGES/messages.po` (English)
 - `translations/fr/LC_MESSAGES/messages.po` (French)
 
+## local https server to test on phone
+
+```
+# Install localtunnel globally
+sudo npm install -g localtunnel
+
+# Expose your FastAPI app running in Docker
+lt --port 8080 --subdomain pincrawl
+```
+
+## Notification on Android
+
+For best notification experience on Android Chrome:
+1. Enable notifications for this site in Chrome
+2. Go to Android Settings → Apps → Chrome → Notifications
+3. Enable "Pop on screen" or "Show notifications"
+4. Make sure "Do Not Disturb" is not blocking notifications
+
 ## TODO
 
 - [] rework graph_utils.py to make a class GraphService
 - [X] Web Push API POC
+- [ ] push: make notifications works with more than 1 notification
+- [ ] what happen if I subscribe on a browser and I need notification on another browser. Do we need a second button?
 - [ ] push: maintenir la persistence? Add periodic background sync
 - [ ] push: Ad images in push notification
 - [ ] push: Ad images in email

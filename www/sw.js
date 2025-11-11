@@ -19,6 +19,11 @@ self.addEventListener('push', function(event) {
         data: { url: data.url },
         requireInteraction: true,
         tag: 'pincrawl-notification',
+
+        vibrate: [200, 100, 200], // Vibration pattern
+        silent: false, // Don't make it silent
+        renotify: true, // Show even if same tag exists
+        timestamp: Date.now(),
         actions: [
             {
                 action: 'view',
