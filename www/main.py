@@ -60,6 +60,10 @@ if not VAPID_PRIVATE_KEY:
     raise Exception("VAPID_PRIVATE_KEY environment variable not set")
 VAPID_CONTACT_EMAIL = os.getenv('VAPID_CONTACT_EMAIL', 'pincrawl@pitp.it')
 
+PINCRAWL_BASE_URL = os.getenv('PINCRAWL_BASE_URL')
+if not PINCRAWL_BASE_URL:
+    raise Exception("PINCRAWL_BASE_URL environment variable not set")
+PINCRAWL_BASE_URL = PINCRAWL_BASE_URL.rstrip('/') # Remove trailing slash if it exists
 
 # Add session middleware
 app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET_KEY)
@@ -754,10 +758,6 @@ async def test_push_notification(
         push_notification_service = PushNotificationService(VAPID_PRIVATE_KEY, vapid_claims, i18n)
 
         i18n_context = i18n.create_context(account.language)
-
-        PINCRAWL_BASE_URL = os.getenv('PINCRAWL_BASE_URL')
-        if not PINCRAWL_BASE_URL:
-            raise Exception("PINCRAWL_BASE_URL environment variable not set")
 
         push_notification_service.send_notification(
             subscription=account.push_subscription,

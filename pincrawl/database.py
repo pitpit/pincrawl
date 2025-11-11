@@ -313,7 +313,7 @@ class Ad(Base):
         Generate graph URL for this ad based on its opdb_id.
 
         Returns:
-            str: Graph URL if opdb_id exists and PINCRAWL_BASE_URL is set, None otherwise
+            str: Graph URL
         """
         if not self.opdb_id:
             return ""

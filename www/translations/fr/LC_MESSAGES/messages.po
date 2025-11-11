@@ -127,7 +127,7 @@ msgstr "SE CONNECTER"
 
 #: templates/my-account.html:17
 msgid "Manage your account settings"
-msgstr "Modifier votre compte"
+msgstr "Modifier vos paramètres de compte"
 
 #: templates/my-account.html:25
 msgid "Account Settings"

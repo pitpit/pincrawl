@@ -16,6 +16,8 @@ from importlib.resources import files
 PINCRAWL_BASE_URL = os.getenv('PINCRAWL_BASE_URL')
 if not PINCRAWL_BASE_URL:
     raise Exception("PINCRAWL_BASE_URL environment variable not set")
+PINCRAWL_BASE_URL = PINCRAWL_BASE_URL.rstrip('/') # Remove trailing slash if it exists
+
 
 logger = logging.getLogger(__name__)
 
