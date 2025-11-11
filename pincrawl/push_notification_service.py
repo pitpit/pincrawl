@@ -5,13 +5,14 @@ import logging
 from typing import Optional, Dict, Any
 from pywebpush import webpush, WebPushException
 from pincrawl.database import Ad, Account
+from pincrawl.i18n import I18n
 
 logger = logging.getLogger(__name__)
 
 class PushNotificationService:
     """Service for sending Web Push notifications."""
 
-    def __init__(self, vapid_private_key: str, vapid_claims: Dict[str, str]):
+    def __init__(self, vapid_private_key: str, vapid_claims: Dict[str, str], i18n: I18n):
         """
         Initialize push notification service.
 
@@ -21,6 +22,7 @@ class PushNotificationService:
         """
         self.vapid_private_key = vapid_private_key
         self.vapid_claims = vapid_claims
+        self.i18n = i18n
 
     def send_notification(self, subscription: Dict[str, Any], title: str, body: str, url: str):
         """
@@ -75,16 +77,18 @@ class PushNotificationService:
             Exception: If account doesn't have push enabled or subscription data is invalid
         """
 
-        title = "New pinball machine found!"
+        i18n_context = self.i18n.create_context(account.language)
+
+        title = i18n_context._("New pinball machine found!")
         body = f"{ad.product}"
         if ad.manufacturer:
             body += f", {ad.manufacturer}"
         if ad.year:
             body += f", {ad.year}"
         if ad.amount and ad.currency:
-            body += f"\nPrice: {ad.amount} {ad.currency}"
+            body += "\n" + i18n_context._('Price: %s %s') % (ad.amount, ad.currency)
         if ad.city:
-            body += f"\nLocation: {ad.city}"
+            body += "\n" + i18n_context._('Location: %s') % (ad.city)
             if ad.zipcode:
                 body += f", {ad.zipcode}"
 

@@ -13,6 +13,8 @@ from pincrawl.email_notification_service import EmailNotificationService
 from pincrawl.graph_utils import generate_price_graph
 from pincrawl.push_notification_service import PushNotificationService
 import random
+from pincrawl.i18n import I18n
+from importlib.resources import files
 
 # Global configuration
 SMTP_URL = os.getenv("SMTP_URL")
@@ -81,9 +83,6 @@ def watching_send():
     # Initialize database connection
     session = database.get_db()
 
-    # Initialize services
-    vapid_claims = {'sub': f'mailto:{VAPID_CONTACT_EMAIL}'}
-    push_notification_service = PushNotificationService(VAPID_PRIVATE_KEY, vapid_claims)
 
     try:
         TASK_NAME = "watching-send"
@@ -139,8 +138,14 @@ def watching_send():
                     if ad.opdb_id == subscription.opdb_id:
                         account_to_ads[subscription.account_id].append(ad)
 
+            # Initialize services
+            i18n = I18n(files('pincrawl').joinpath('translations'))
+
             smtp_client = Smtp(SMTP_URL)
-            email_notification_service = EmailNotificationService(smtp_client)
+            email_notification_service = EmailNotificationService(smtp_client, i18n)
+
+            vapid_claims = {'sub': f'mailto:{VAPID_CONTACT_EMAIL}'}
+            push_notification_service = PushNotificationService(VAPID_PRIVATE_KEY, vapid_claims, i18n)
 
             # mail control
             # if this fails, we want to know before sending user emails
@@ -161,9 +166,9 @@ def watching_send():
                 # Send email notification
                 if account.email_notifications:
                     try:
-                        email_notification_service.send_ad_notification_email(FROM_EMAIL, account, ads, locale=account.language)
+                        email_notification_service.send_ad_notification_email(FROM_EMAIL, account, ads)
                         email_count += 1
-                        logging.info(f"Sent email to {account.email} with {len(ads)} ads (locale: {account.language})")
+                        logging.info(f"Sent email to {account.email} with {len(ads)} ads")
                     except Exception as e:
                         logging.exception(f"Failed to send email to {account.email}")
                 else:
@@ -205,13 +210,11 @@ def watching_send():
 
 @watching.command("test-email")
 @click.argument("email")
-@click.option("--locale", default="en", help="Language locale (en or fr)")
-def test_email(email, locale):
+def test_email(email):
     """Send a test email to verify SMTP configuration.
 
     Args:
         email: Email address to send the test email to
-        locale: Language locale for the email (default: en)
     """
 
     session = database.get_db()
@@ -223,14 +226,16 @@ def test_email(email, locale):
     if not account.email_notifications:
         raise click.ClickException(f"Email notifications not enabled for account {email}")
 
+    # Initialize services
+    i18n = I18n(files('pincrawl').joinpath('translations'))
     smtp_client = Smtp(SMTP_URL)
-    email_notification_service = EmailNotificationService(smtp_client)
+    email_notification_service = EmailNotificationService(smtp_client, i18n)
 
     fake_ads = get_fake_ads()
 
-    email_notification_service.send_ad_notification_email(FROM_EMAIL, account, fake_ads, locale=locale)
+    email_notification_service.send_ad_notification_email(FROM_EMAIL, account, fake_ads)
 
-    click.echo(f"✓ Test email sent successfully to {email} (locale: {locale})")
+    click.echo(f"✓ Test email sent successfully to {email}")
 
 
 @watching.command("test-push")
@@ -256,9 +261,11 @@ def test_push(email):
     if not current_plan or not current_plan.is_granted_for_push():
         raise click.ClickException(f"Push notifications not allowed for account {email} due to plan restrictions")
 
-    # Initialize push notification service
+    # Initialize services
+    i18n = I18n(files('pincrawl').joinpath('translations'))
+    smtp_client = Smtp(SMTP_URL)
     vapid_claims = {'sub': f'mailto:{VAPID_CONTACT_EMAIL}'}
-    push_notification_service = PushNotificationService(VAPID_PRIVATE_KEY, vapid_claims)
+    push_notification_service = PushNotificationService(VAPID_PRIVATE_KEY, vapid_claims, i18n)
 
     # Create fake ad data for testing using real Ad entities
     fake_ads = get_fake_ads()

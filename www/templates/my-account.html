@@ -57,7 +57,7 @@
                                             {% if account and account.push_subscription %}
                                                 {{ _('DISABLE') }}
                                             {% else %}
-                                                {{ _('ENABLE') }}
+                                                {{ _('ENABLE ON THIS DEVICE') }}
                                             {% endif %}
                                     </button>
                                     {% else %}
@@ -65,6 +65,11 @@
                                     {% endif %}
                                 </div>
                             </div>
+                            {% if current_plan and current_plan.is_granted_for_push() %}
+                            <div class="sm:ml-80 mt-1 px-2 sm:px-0">
+                                <p id="pushHint" class="text-xs sm:text-sm text-gray-400"></p>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -283,13 +288,17 @@
             if (response.ok) {
                 pushEnabled = true;
                 updatePushUI();
+                updatePushHint();
                 return true;
             } else {
                 const errorText = await response.text();
                 throw new Error('Failed to save subscription: ' + errorText);
+                updatePushUI();
             }
         } catch (error) {
             alert('{{ _('Failed to enable push notifications') }}: ' + error.message);
+
+            updatePushUI();
             return false;
         }
     }
@@ -319,6 +328,7 @@
             if (response.ok) {
                 pushEnabled = false;
                 updatePushUI();
+                updatePushHint();
                 return true;
             } else {
                 const errorText = await response.text();
@@ -330,6 +340,32 @@
         }
     }
 
+    async function updatePushHint() {
+        const pushHint = document.getElementById('pushHint');
+        if (!pushHint) return;
+
+        try {
+            const registration = await navigator.serviceWorker.getRegistration();
+            const hasServiceWorker = !!registration;
+            const subscription = registration ? await registration.pushManager.getSubscription() : null;
+            const hasActiveSubscription = !!subscription;
+
+            if (pushEnabled && hasActiveSubscription) {
+                pushHint.textContent = '{{ _('Active on this browser and device') }}';
+                pushHint.className = 'text-sm text-retro-green';
+            } else if (pushEnabled && !hasActiveSubscription) {
+                pushHint.textContent = '{{ _('Active on another browser or device') }}';
+                pushHint.className = 'text-sm text-retro-gold';
+            } else {
+                pushHint.textContent = '';
+                pushHint.className = '';
+            }
+        } catch (error) {
+            pushHint.textContent = '';
+            pushHint.className = '';
+        }
+    }
+
     function updatePushUI() {
         if (pushButton) {  // Check if button exists
             if (pushEnabled) {
@@ -337,7 +373,7 @@
                 pushButton.classList.add('border-retro-pink', 'text-retro-pink');
                 pushButton.classList.remove('border-retro-cyan', 'bg-retro-cyan', 'text-black');
             } else {
-                pushButton.textContent = '{{ _('ENABLE') }}';
+                pushButton.textContent = '{{ _('ENABLE ON THIS DEVICE') }}';
                 pushButton.classList.remove('border-retro-pink', 'text-retro-pink');
                 pushButton.classList.add('border-retro-cyan', 'bg-retro-cyan', 'text-black');
             }
@@ -398,6 +434,9 @@
                 pushButton.disabled = false;
             }
         });
+
+        // Initialize push hint on page load
+        updatePushHint();
     }
 
     emailButton.addEventListener('click', async function() {

@@ -7,10 +7,10 @@ from pathlib import Path
 from jinja2 import Template
 from pincrawl.database import Database, Product
 from pincrawl.i18n import I18n
-from importlib.resources import files
 from pincrawl.database import Ad, Account
 from typing import List
-
+from pincrawl.smtp import Smtp
+from importlib.resources import files
 
 # Get base URL from environment variable
 PINCRAWL_BASE_URL = os.getenv('PINCRAWL_BASE_URL')
@@ -22,12 +22,10 @@ logger = logging.getLogger(__name__)
 class EmailNotificationService:
     """Service for sending email notifications with ad data."""
 
-    def __init__(self, smtp_client):
+    def __init__(self, smtp_client: Smtp, i18n: I18n):
         """Initialize email notification service."""
         self.smtp_client = smtp_client
-
-        # Create i18n instance
-        self.i18n = I18n(files('pincrawl').joinpath('translations'))
+        self.i18n = i18n
 
         # Get BCC recipient from environment variable
         self.bcc_email = os.getenv('BCC_EMAIL', None)
@@ -35,7 +33,7 @@ class EmailNotificationService:
         # Initialize database connection
         self.db = Database()
 
-    def send_ad_notification_email(self, from_email, account: Account, ads: List[Ad], locale=None):
+    def send_ad_notification_email(self, from_email, account: Account, ads: List[Ad]):
         """
         Send an email notification with ad data using HTML template.
 
@@ -56,7 +54,7 @@ class EmailNotificationService:
         template_file = files('pincrawl').joinpath('templates', 'email_notification.html')
         template_content = template_file.read_text()
 
-        i18n_context = self.i18n.create_context(locale)
+        i18n_context = self.i18n.create_context(account.language)
 
         template = Template(template_content)
         html_body = template.render(

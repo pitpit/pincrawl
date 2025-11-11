@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Pincrawl 1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-11-11 02:15+0100\n"
+"POT-Creation-Date: 2025-11-11 11:55+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -136,12 +136,11 @@ msgid "Email Notifications:"
 msgstr ""
 
 #: templates/my-account.html:44 templates/my-account.html:58
-#: templates/my-account.html:336 templates/my-account.html:349
+#: templates/my-account.html:372 templates/my-account.html:385
 msgid "DISABLE"
 msgstr ""
 
-#: templates/my-account.html:46 templates/my-account.html:60
-#: templates/my-account.html:340 templates/my-account.html:353
+#: templates/my-account.html:46 templates/my-account.html:389
 msgid "ENABLE"
 msgstr ""
 
@@ -149,55 +148,67 @@ msgstr ""
 msgid "Push Notifications:"
 msgstr ""
 
+#: templates/my-account.html:60 templates/my-account.html:376
+msgid "ENABLE ON THIS DEVICE"
+msgstr ""
+
 #: templates/my-account.html:64
 msgid "Not included in your plan"
 msgstr ""
 
-#: templates/my-account.html:76
+#: templates/my-account.html:81
 msgid "Current Plan:"
 msgstr ""
 
-#: templates/my-account.html:79 templates/plans.html:27
+#: templates/my-account.html:84 templates/plans.html:27
 msgid "Free"
 msgstr ""
 
-#: templates/my-account.html:81
+#: templates/my-account.html:86
 msgid "Alpha"
 msgstr ""
 
-#: templates/my-account.html:83 templates/plans.html:76
+#: templates/my-account.html:88 templates/plans.html:76
 msgid "Collector"
 msgstr ""
 
-#: templates/my-account.html:85
+#: templates/my-account.html:90
 msgid "Pro"
 msgstr ""
 
-#: templates/my-account.html:221
+#: templates/my-account.html:226
 msgid "Failed to save language preference"
 msgstr ""
 
-#: templates/my-account.html:242
+#: templates/my-account.html:247
 msgid "Push notifications are not supported in this browser"
 msgstr ""
 
-#: templates/my-account.html:247
+#: templates/my-account.html:252
 msgid "Push notifications configuration error"
 msgstr ""
 
-#: templates/my-account.html:292
+#: templates/my-account.html:299
 msgid "Failed to enable push notifications"
 msgstr ""
 
-#: templates/my-account.html:328
+#: templates/my-account.html:338
 msgid "Failed to disable push notifications"
 msgstr ""
 
-#: templates/my-account.html:379
+#: templates/my-account.html:354
+msgid "Active on this browser and device"
+msgstr ""
+
+#: templates/my-account.html:357
+msgid "Active on another browser or device"
+msgstr ""
+
+#: templates/my-account.html:415
 msgid "Failed to update email preference"
 msgstr ""
 
-#: templates/my-account.html:387 templates/my-account.html:406
+#: templates/my-account.html:423 templates/my-account.html:445
 msgid "LOADING..."
 msgstr ""
 
@@ -387,22 +398,3 @@ msgid ""
 "email alerts. You can start using Pincrawl immediately without any "
 "payment information."
 msgstr ""
-
-#~ msgid "SMS alerts"
-#~ msgstr ""
-
-#~ msgid "WhatsApp alerts"
-#~ msgstr ""
-
-#~ msgid "SAVE"
-#~ msgstr ""
-
-#~ msgid "SAVED!"
-#~ msgstr ""
-
-#~ msgid "Failed to save preferences"
-#~ msgstr ""
-
-#~ msgid "Push Emails:"
-#~ msgstr ""
-
