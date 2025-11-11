@@ -18,24 +18,12 @@ self.addEventListener('push', function(event) {
         badge: '/static/favicon.ico',
         data: { url: data.url },
         requireInteraction: true,
-        tag: 'pincrawl-notification',
+        tag: `pincrawl-notification-${Date.now()}`,
 
         vibrate: [200, 100, 200], // Vibration pattern
         silent: false, // Don't make it silent
         renotify: true, // Show even if same tag exists
-        timestamp: Date.now(),
-        actions: [
-            {
-                action: 'view',
-                title: 'View Ad',
-                icon: '/static/img/external-link-icon.png'
-            },
-            {
-                action: 'dismiss',
-                title: 'Dismiss',
-                icon: '/static/img/cancel-icon.png'
-            }
-        ]
+        timestamp: Date.now()
     };
 
     event.waitUntil(
