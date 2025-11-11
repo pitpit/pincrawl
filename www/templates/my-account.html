@@ -25,20 +25,20 @@
                     <h2 class="text-2xl font-bold text-retro-white mb-4">{{ _('Account Settings') }}</h2>
                     <div id="accountSettings">
                         <div class="space-y-4">
-                            <div class="flex items-center">
-                                <span class="text-gray-300 w-80">{{ _('Email:') }}</span>
-                                <span class="text-white font-medium">{{ user.email }}</span>
+                            <div class="flex flex-col sm:flex-row sm:items-center">
+                                <span class="text-gray-300 sm:w-80 mb-2 sm:mb-0">{{ _('Email:') }}</span>
+                                <span class="text-white font-medium text-right sm:text-left">{{ user.email }}</span>
                             </div>
-                            <div class="flex items-center">
-                                <label for="language" class="text-gray-300 w-80">{{ _('Alert Language:') }}</label>
-                                <select id="language" name="language" class="bg-darker-grey border border-gray-600 text-white px-4 py-2 focus:outline-none focus:border-retro-cyan">
+                            <div class="flex flex-col sm:flex-row sm:items-center">
+                                <label for="language" class="text-gray-300 sm:w-80 mb-2 sm:mb-0">{{ _('Alert Language:') }}</label>
+                                <select id="language" name="language" class="bg-darker-grey border border-gray-600 text-white px-4 py-2 focus:outline-none focus:border-retro-cyan self-end sm:self-auto">
                                     <option value="en" {% if account and account.language == 'en' %}selected{% elif not account or not account.language %}selected{% endif %}>English</option>
                                     <option value="fr" {% if account and account.language == 'fr' %}selected{% endif %}>Français</option>
                                 </select>
                             </div>
-                            <div class="flex items-center">
-                                <label class="text-gray-300 w-80">{{ _('Email Notifications:') }}</label>
-                                <div class="flex items-center space-x-4">
+                            <div class="flex flex-col sm:flex-row sm:items-center">
+                                <label class="text-gray-300 sm:w-80 mb-2 sm:mb-0">{{ _('Email Notifications:') }}</label>
+                                <div class="flex items-center justify-end sm:justify-start space-x-4">
                                     <button type="button" id="emailButton" class="{% if account and account.email_notifications %}border border-retro-pink text-retro-pink{% else %}border border-retro-cyan bg-retro-cyan text-black{% endif %} px-4 py-2 text-sm font-bold hover:bg-retro-pink hover:border-retro-pink hover:text-black transition-colors duration-200">
                                         {% if account and account.email_notifications %}
                                             {{ _('DISABLE') }}
@@ -48,9 +48,9 @@
                                     </button>
                                 </div>
                             </div>
-                            <div class="flex items-center">
-                                <label class="text-gray-300 w-80">{{ _('Push Notifications:') }}</label>
-                                <div class="flex items-center space-x-4">
+                            <div class="flex flex-col sm:flex-row sm:items-center">
+                                <label class="text-gray-300 sm:w-80 mb-2 sm:mb-0">{{ _('Push Notifications:') }}</label>
+                                <div class="flex items-center justify-end sm:justify-start flex-wrap gap-4">
                                     {% if current_plan and current_plan.is_granted_for_push() %}
                                     <button type="button" id="pushButton" class="{% if account and account.push_subscription %}border border-retro-pink text-retro-pink{% else %}border border-retro-cyan bg-retro-cyan text-black{% endif %} px-4 py-2 text-sm font-bold hover:bg-retro-pink hover:border-retro-pink hover:text-black transition-colors duration-200">
                                             {% if account and account.push_subscription %}
@@ -69,7 +69,7 @@
                             </div>
                             {% if current_plan and current_plan.is_granted_for_push() %}
                             <div class="sm:ml-80 mt-1 px-2 sm:px-0">
-                                <p id="pushHint" class="text-xs sm:text-sm text-gray-400"></p>
+                                <p id="pushHint" class="text-xs sm:text-sm text-gray-400 text-right sm:text-left"></p>
                             </div>
                             {% endif %}
                         </div>
