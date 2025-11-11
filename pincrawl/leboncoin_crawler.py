@@ -58,7 +58,7 @@ class LeboncoinCrawler:
         for attempt in range(CRAWL_MAX_RETRIES):
             try:
                 result = self.scraper.get_links(
-                    "https://www.leboncoin.fr/recherche?text=flipper+-pincab+-scooter&shippable=1&price=1000-12000&owner_type=all&sort=time&order=desc"
+                    "https://www.leboncoin.fr/recherche?text=flipper+-pincab+-scooter+-bonzini&shippable=1&price=1000-12000&owner_type=all&sort=time&order=desc"
                 )
 
                 credits_used += result.credits_used
