@@ -149,6 +149,7 @@ For best notification experience on Android Chrome:
 ### Must
 
 - [ ] push: make it works when browser is offline. maintenir la persistence? Add periodic background sync ?
+- [ ] pincrawl ads: Accelerate cron running everything in one time merging all together with a global command
 - [ ] my-account: add a link to /plans on "Not included in your plan" on my-account.html
 - [ ] auth0: passer en mode prod
 - [ ] OPEN TO THE WORLD
@@ -158,14 +159,13 @@ For best notification experience on Android Chrome:
 
 ### Should
 
-- [ ] push: add cache for images
-- [ ] pincrawl ads: Accelerate cron running everything in one time merging all together with a global command invoking scrape, crawl, send: pincrawl run
+- [ ] push: add cache for imagesinvoking scrape, crawl, send: pincrawl run
 - [ ] base.html: cdn.tailwindcss.com should not be used in production
 - [ ] leboncoin_crawler: Enhance leboncoin search with typo (fliper, filpper)
 - [ ] pinballs.html: Price history only for Collector and Pro
 - [ ] pinballs.html: thumbnails for pinball
 - [ ] translate svg/png price graph files
-- [ ] créer une tâche d'envoie par destinaire pour pouvoir rejouer en cas de plantage
+- [ ] créer une tâche d'envoi par destinaire pour pouvoir rejouer en cas de plantage
 
 ### Could
 

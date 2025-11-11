@@ -1,0 +1,30 @@
+{
+    "name": "PINCRAWL",
+    "short_name": "PINCRAWL",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#0D1117",
+    "theme_color": "#0D1117",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/static/favicon.ico",
+            "sizes": "16x16",
+            "type": "image/x-icon",
+            "purpose": "any"
+        },
+        {
+            "src": "/static/img/logo-32x32.png",
+            "sizes": "32x32",
+            "type": "image/png",
+            "purpose": "maskable any"
+        },
+        {
+            "src": "/static/img/logo-64x64.png",
+            "sizes": "64x64",
+            "type": "image/png",
+            "purpose": "maskable any"
+        }
+    ],
+    "categories": ["productivity", "utilities"]
+}

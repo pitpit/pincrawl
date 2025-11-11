@@ -1,4 +1,36 @@
-// Service Worker for handling push notifications
+// Service Worker for handling push notifications and PWA caching
+
+const CACHE_NAME = 'pincrawl-v1';
+const urlsToCache = [
+    '/',
+    '/static/css/main.css',
+    '/static/favicon.ico',
+    '/static/manifest.json',
+    '/static/img/logo-32x32.png',
+    '/static/img/logo-64x64.png',
+];
+
+// Install event - cache resources
+self.addEventListener('install', (event) => {
+    event.waitUntil(
+        caches.open(CACHE_NAME)
+            .then((cache) => {
+                return cache.addAll(urlsToCache);
+            })
+    );
+});
+
+// Fetch event - serve from cache or network
+self.addEventListener('fetch', (event) => {
+    event.respondWith(
+        caches.match(event.request)
+            .then((response) => {
+                // Return cached version or fetch from network
+                return response || fetch(event.request);
+            }
+        )
+    );
+});
 
 // Handles incoming push notifications and displays them to the user
 self.addEventListener('push', function(event) {
@@ -15,7 +47,7 @@ self.addEventListener('push', function(event) {
     const options = {
         body: data.body,
         icon: '/static/favicon.ico',
-        badge: '/static/favicon.ico',
+        badge: '/static/img/logo-64x64.png',
         data: { url: data.url },
         requireInteraction: true,
         tag: `pincrawl-notification-${Date.now()}`,
@@ -49,5 +81,19 @@ self.addEventListener('notificationclick', function(event) {
 
 // Activates the service worker and takes control of all clients
 self.addEventListener('activate', function(event) {
-    event.waitUntil(self.clients.claim());
+    event.waitUntil(
+        Promise.all([
+            self.clients.claim(),
+            // Clean up old caches
+            caches.keys().then((cacheNames) => {
+                return Promise.all(
+                    cacheNames.map((cacheName) => {
+                        if (cacheName !== CACHE_NAME) {
+                            return caches.delete(cacheName);
+                        }
+                    })
+                );
+            })
+        ])
+    );
 });

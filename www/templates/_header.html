@@ -92,6 +92,30 @@
         </div>
     </nav>
 
+    <!-- PWA Install Banner (only for logged-in users) -->
+    {% if user %}
+    <div id="pwa-banner" class="hidden border border-retro-cyan text-retro-cyan px-4 py-3 shadow-lg">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+                <span class="font-medium">{{ _('Use PINCRAWL app for a better experience!') }}</span>
+            </div>
+            <div class="flex items-center space-x-2">
+                <button id="pwa-install-btn" class="bg-retro-pink text-retro-white px-4 py-2 text-sm font-medium border border-retro-pink hover:bg-retro-cyan hover:border-retro-cyan hover:text-black transition-colors duration-200">
+                    {{ _('Install') }}
+                </button>
+                <button id="pwa-dismiss-btn" class="text-retro-cyan hover:text-retro-pink transition-colors duration-200 ml-2">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- JavaScript for mobile menu toggle -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -108,5 +132,66 @@
                     mobileMenu.classList.add('hidden');
                 }
             });
+
+            // PWA Install Banner Logic (only for logged-in users)
+            let deferredPrompt;
+            const pwaBanner = document.getElementById('pwa-banner');
+            if (pwaBanner) {
+                const pwaInstallBtn = document.getElementById('pwa-install-btn');
+                const pwaDismissBtn = document.getElementById('pwa-dismiss-btn');
+
+                // Check if banner was dismissed and if enough time has passed
+                function shouldShowBanner() {
+                    const dismissedTime = localStorage.getItem('pwa-banner-dismissed-time');
+
+                    // If never dismissed, always show
+                    if (!dismissedTime) {
+                        return true;
+                    }
+
+                    // If dismissed, check if 24 hours have passed
+                    const now = new Date().getTime();
+                    const oneDay = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+
+                    return (now - parseInt(dismissedTime)) > oneDay;
+                }
+
+                // Show banner if conditions are met
+                function showBannerIfNeeded() {
+                    console.log('Checking if PWA banner should be shown');
+                    // Show banner if user is in browser (not already installed as PWA) and should show
+                    if (shouldShowBanner() && !window.matchMedia('(display-mode: standalone)').matches) {
+                        pwaBanner.classList.remove('hidden');
+                    }
+                }
+
+                // Show banner immediately on page load
+                showBannerIfNeeded();
+
+                // Listen for the beforeinstallprompt event to enable install functionality
+                window.addEventListener('beforeinstallprompt', (e) => {
+                    e.preventDefault();
+                    deferredPrompt = e;
+                });
+
+                // Handle install button click
+                pwaInstallBtn.addEventListener('click', async () => {
+                    if (deferredPrompt) {
+                        deferredPrompt.prompt();
+                        const { outcome } = await deferredPrompt.userChoice;
+                        if (outcome === 'accepted') {
+                            console.log('PWA installed');
+                        }
+                        deferredPrompt = null;
+                    }
+                    localStorage.setItem('pwa-banner-dismissed-time', new Date().getTime().toString());
+                });
+
+                // Handle dismiss button click
+                pwaDismissBtn.addEventListener('click', () => {
+                    pwaBanner.classList.add('hidden');
+                    localStorage.setItem('pwa-banner-dismissed-time', new Date().getTime().toString());
+                });
+            }
         });
     </script>
