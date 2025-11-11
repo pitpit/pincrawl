@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Pincrawl 1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-11-09 20:32+0100\n"
+"POT-Creation-Date: 2025-11-11 02:15+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -131,36 +131,74 @@ msgstr ""
 msgid "Alert Language:"
 msgstr ""
 
-#: templates/my-account.html:42
-msgid "SAVE"
+#: templates/my-account.html:40
+msgid "Email Notifications:"
 msgstr ""
 
-#: templates/my-account.html:84
-msgid "SAVED!"
+#: templates/my-account.html:44 templates/my-account.html:58
+#: templates/my-account.html:336 templates/my-account.html:349
+msgid "DISABLE"
 msgstr ""
 
-#: templates/my-account.html:90 templates/my-account.html:94
-msgid "Failed to save preferences"
+#: templates/my-account.html:46 templates/my-account.html:60
+#: templates/my-account.html:340 templates/my-account.html:353
+msgid "ENABLE"
 msgstr ""
 
-#: templates/my-account.html:102
+#: templates/my-account.html:52
+msgid "Push Notifications:"
+msgstr ""
+
+#: templates/my-account.html:64
+msgid "Not included in your plan"
+msgstr ""
+
+#: templates/my-account.html:76
 msgid "Current Plan:"
 msgstr ""
 
-#: templates/my-account.html:105 templates/plans.html:27
+#: templates/my-account.html:79 templates/plans.html:27
 msgid "Free"
 msgstr ""
 
-#: templates/my-account.html:107
+#: templates/my-account.html:81
 msgid "Alpha"
 msgstr ""
 
-#: templates/my-account.html:109 templates/plans.html:76
+#: templates/my-account.html:83 templates/plans.html:76
 msgid "Collector"
 msgstr ""
 
-#: templates/my-account.html:111
+#: templates/my-account.html:85
 msgid "Pro"
+msgstr ""
+
+#: templates/my-account.html:221
+msgid "Failed to save language preference"
+msgstr ""
+
+#: templates/my-account.html:242
+msgid "Push notifications are not supported in this browser"
+msgstr ""
+
+#: templates/my-account.html:247
+msgid "Push notifications configuration error"
+msgstr ""
+
+#: templates/my-account.html:292
+msgid "Failed to enable push notifications"
+msgstr ""
+
+#: templates/my-account.html:328
+msgid "Failed to disable push notifications"
+msgstr ""
+
+#: templates/my-account.html:379
+msgid "Failed to update email preference"
+msgstr ""
+
+#: templates/my-account.html:387 templates/my-account.html:406
+msgid "LOADING..."
 msgstr ""
 
 #: templates/pinballs.html:15
@@ -187,36 +225,36 @@ msgstr ""
 msgid "[Clear filters]"
 msgstr ""
 
-#: templates/pinballs.html:149
+#: templates/pinballs.html:150
 #, python-format
 msgid "Price timeline for %s"
 msgstr ""
 
-#: templates/pinballs.html:159 templates/pinballs.html:240
+#: templates/pinballs.html:160 templates/pinballs.html:241
 msgid "WATCHING"
 msgstr ""
 
-#: templates/pinballs.html:159 templates/pinballs.html:244
+#: templates/pinballs.html:160 templates/pinballs.html:245
 msgid "WATCH"
 msgstr ""
 
-#: templates/pinballs.html:173
+#: templates/pinballs.html:174
 msgid "No pinball machines found"
 msgstr ""
 
-#: templates/pinballs.html:174
+#: templates/pinballs.html:175
 msgid "Try adjusting your search terms or browse all machines."
 msgstr ""
 
-#: templates/pinballs.html:202
+#: templates/pinballs.html:203
 msgid "Watching Limit Reached"
 msgstr ""
 
-#: templates/pinballs.html:207
+#: templates/pinballs.html:208
 msgid "You have reached the maximum number of pinballs you can watch for now."
 msgstr ""
 
-#: templates/pinballs.html:217
+#: templates/pinballs.html:218
 msgid "Cancel"
 msgstr ""
 
@@ -354,5 +392,17 @@ msgstr ""
 #~ msgstr ""
 
 #~ msgid "WhatsApp alerts"
+#~ msgstr ""
+
+#~ msgid "SAVE"
+#~ msgstr ""
+
+#~ msgid "SAVED!"
+#~ msgstr ""
+
+#~ msgid "Failed to save preferences"
+#~ msgstr ""
+
+#~ msgid "Push Emails:"
 #~ msgstr ""
 

@@ -695,7 +695,7 @@ class Account(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     language = Column(String(2), nullable=True, default=None)  # ISO 639-1 language code for communication (email, SMS, WhatsApp) - does not affect UI navigation
     push_subscription = Column(JSON, nullable=True)  # Web Push subscription data
-    push_emails = Column(Boolean, nullable=True, default=True)  # Email notifications preference
+    email_notifications = Column(Boolean, nullable=True, default=True)  # Email notifications preference
     created_at = Column(DateTime, default=datetime.now, nullable=False)
 
     # Relationship to account history

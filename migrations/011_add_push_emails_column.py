@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
-"""Migration to add push_emails column to accounts table."""
+"""Migration to add email_notifications column to accounts table."""
 
 from sqlalchemy import text
 from pincrawl.database import Database
 
 def migrate():
-    """Add push_emails column to accounts table."""
+    """Add email column to accounts table."""
     db = Database()
     session = db.get_db()
 
     try:
-        # Add push_emails column to accounts table (Boolean type with default TRUE)
+        # Add email_notifications column to accounts table (Boolean type with default TRUE)
         session.execute(text("""
-            ALTER TABLE accounts ADD COLUMN IF NOT EXISTS push_emails BOOLEAN DEFAULT TRUE;
+            ALTER TABLE accounts ADD COLUMN IF NOT EXISTS email_notifications BOOLEAN DEFAULT TRUE;
         """))
 
         session.commit()
-        print("✓ Successfully added 'push_emails' column to accounts table")
+        print("✓ Successfully added 'email_notifications' column to accounts table")
 
     except Exception as e:
         session.rollback()

@@ -37,10 +37,10 @@
                                 </select>
                             </div>
                             <div class="flex items-center">
-                                <label class="text-gray-300 w-80">{{ _('Push Emails:') }}</label>
+                                <label class="text-gray-300 w-80">{{ _('Email Notifications:') }}</label>
                                 <div class="flex items-center space-x-4">
-                                    <button type="button" id="emailButton" class="{% if account and account.push_emails %}border border-retro-pink text-retro-pink{% else %}border border-retro-cyan bg-retro-cyan text-black{% endif %} px-4 py-2 text-sm font-bold hover:bg-retro-pink hover:border-retro-pink hover:text-black transition-colors duration-200">
-                                        {% if account and account.push_emails %}
+                                    <button type="button" id="emailButton" class="{% if account and account.email_notifications %}border border-retro-pink text-retro-pink{% else %}border border-retro-cyan bg-retro-cyan text-black{% endif %} px-4 py-2 text-sm font-bold hover:bg-retro-pink hover:border-retro-pink hover:text-black transition-colors duration-200">
+                                        {% if account and account.email_notifications %}
                                             {{ _('DISABLE') }}
                                         {% else %}
                                             {{ _('ENABLE') }}
@@ -232,7 +232,7 @@
 
     // Push email handling
     const emailButton = document.getElementById('emailButton');
-    let emailEnabled = {% if account and account.push_emails %}true{% else %}false{% endif %};
+    let emailEnabled = {% if account and account.email_notifications %}true{% else %}false{% endif %};
 
     // VAPID public key from server (already converted to Uint8Array)
     const vapidPublicKey = {{ vapid_public_key_bytes|tojson }};
@@ -364,7 +364,7 @@
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    push_emails: emailEnabled
+                    email_notifications: emailEnabled
                 })
             });
 
@@ -381,22 +381,24 @@
         }
     }
 
-    pushButton.addEventListener('click', async function() {
-        pushButton.disabled = true;
-        pushButton.textContent = '{{ _('LOADING...') }}';
+    if (pushButton) {
+        pushButton.addEventListener('click', async function() {
+            pushButton.disabled = true;
+            pushButton.textContent = '{{ _('LOADING...') }}';
 
-        try {
-            if (pushEnabled) {
-                await unsubscribeFromPush();
-            } else {
-                await subscribeToPush();
+            try {
+                if (pushEnabled) {
+                    await unsubscribeFromPush();
+                } else {
+                    await subscribeToPush();
+                }
+            } catch (error) {
+                // Error already handled in the functions above
+            } finally {
+                pushButton.disabled = false;
             }
-        } catch (error) {
-            // Error already handled in the functions above
-        } finally {
-            pushButton.disabled = false;
-        }
-    });
+        });
+    }
 
     emailButton.addEventListener('click', async function() {
         emailButton.disabled = true;

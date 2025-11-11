@@ -679,12 +679,12 @@ async def update_my_account(
             logger.info(f"✓ Updated language for user {user_email} to {language}")
 
         # Update email preference if provided
-        if 'push_emails' in data:
-            push_emails = data.get('push_emails')
-            if not isinstance(push_emails, bool):
-                raise HTTPException(status_code=400, detail="Invalid push_emails value")
-            account.push_emails = push_emails
-            logger.info(f"✓ Updated push_emails for user {user_email} to {push_emails}")
+        if 'email_notifications' in data:
+            email_notifications = data.get('email_notifications')
+            if not isinstance(email_notifications, bool):
+                raise HTTPException(status_code=400, detail="Invalid email_notifications value")
+            account.email_notifications = email_notifications
+            logger.info(f"✓ Updated email_notifications for user {user_email} to {email_notifications}")
 
         # Handle push subscription (subscribe or unsubscribe)
         if 'push_subscription' in data:

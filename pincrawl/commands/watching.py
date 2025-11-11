@@ -159,7 +159,7 @@ def watching_send():
                     continue
 
                 # Send email notification
-                if account.push_emails:
+                if account.email_notifications:
                     try:
                         email_notification_service.send_ad_notification_email(FROM_EMAIL, account, ads, locale=account.language)
                         email_count += 1
@@ -220,7 +220,7 @@ def test_email(email, locale):
     if not account:
         raise click.ClickException(f"Account with email {email} not found")
 
-    if not account.push_emails:
+    if not account.email_notifications:
         raise click.ClickException(f"Email notifications not enabled for account {email}")
 
     smtp_client = Smtp(SMTP_URL)
