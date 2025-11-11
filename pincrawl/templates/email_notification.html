@@ -128,7 +128,7 @@
             {% set price_graph_url = ad.price_graph_url('png') %}
             {% if price_graph_url %}
             <div style="margin: 15px 0;">
-                <img src="{{base_url}}/{{ price_graph_url }}" alt="{{ _('Price timeline for %s') % ad.product }}" class="price-graph" width="320" height="120">
+                <img src="{{base_url}}{{ price_graph_url }}" alt="{{ _('Price timeline for %s') % ad.product }}" class="price-graph" width="320" height="120">
             </div>
             {% endif %}
 
