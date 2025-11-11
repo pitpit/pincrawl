@@ -158,7 +158,6 @@
 
                 // Show banner if conditions are met
                 function showBannerIfNeeded() {
-                    console.log('Checking if PWA banner should be shown');
                     // Show banner if user is in browser (not already installed as PWA) and should show
                     if (shouldShowBanner() && !window.matchMedia('(display-mode: standalone)').matches) {
                         pwaBanner.classList.remove('hidden');
