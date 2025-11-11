@@ -118,79 +118,77 @@
 
     <!-- JavaScript for mobile menu toggle -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const mobileMenuButton = document.getElementById('mobile-menu-button');
-            const mobileMenu = document.getElementById('mobile-menu');
 
-            mobileMenuButton.addEventListener('click', function() {
-                mobileMenu.classList.toggle('hidden');
-            });
+    // PWA Install Banner Logic (only for logged-in users)
+    let deferredPrompt;
+    // Listen for the beforeinstallprompt event to enable install functionality
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+    });
 
-            // Close mobile menu when clicking outside
-            document.addEventListener('click', function(event) {
-                if (!mobileMenuButton.contains(event.target) && !mobileMenu.contains(event.target)) {
-                    mobileMenu.classList.add('hidden');
-                }
-            });
+    document.addEventListener('DOMContentLoaded', function() {
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
 
-            // PWA Install Banner Logic (only for logged-in users)
-            let deferredPrompt;
-            const pwaBanner = document.getElementById('pwa-banner');
-            if (pwaBanner) {
-                const pwaInstallBtn = document.getElementById('pwa-install-btn');
-                const pwaDismissBtn = document.getElementById('pwa-dismiss-btn');
+        mobileMenuButton.addEventListener('click', function() {
+            mobileMenu.classList.toggle('hidden');
+        });
 
-                // Check if banner was dismissed and if enough time has passed
-                function shouldShowBanner() {
-                    const dismissedTime = localStorage.getItem('pwa-banner-dismissed-time');
-
-                    // If never dismissed, always show
-                    if (!dismissedTime) {
-                        return true;
-                    }
-
-                    // If dismissed, check if 24 hours have passed
-                    const now = new Date().getTime();
-                    const oneDay = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-
-                    return (now - parseInt(dismissedTime)) > oneDay;
-                }
-
-                // Show banner if conditions are met
-                function showBannerIfNeeded() {
-                    // Show banner if user is in browser (not already installed as PWA) and should show
-                    if (shouldShowBanner() && !window.matchMedia('(display-mode: standalone)').matches) {
-                        pwaBanner.classList.remove('hidden');
-                    }
-                }
-
-                // Show banner immediately on page load
-                showBannerIfNeeded();
-
-                // Listen for the beforeinstallprompt event to enable install functionality
-                window.addEventListener('beforeinstallprompt', (e) => {
-                    e.preventDefault();
-                    deferredPrompt = e;
-                });
-
-                // Handle install button click
-                pwaInstallBtn.addEventListener('click', async () => {
-                    if (deferredPrompt) {
-                        deferredPrompt.prompt();
-                        const { outcome } = await deferredPrompt.userChoice;
-                        if (outcome === 'accepted') {
-                            console.log('PWA installed');
-                        }
-                        deferredPrompt = null;
-                    }
-                    localStorage.setItem('pwa-banner-dismissed-time', new Date().getTime().toString());
-                });
-
-                // Handle dismiss button click
-                pwaDismissBtn.addEventListener('click', () => {
-                    pwaBanner.classList.add('hidden');
-                    localStorage.setItem('pwa-banner-dismissed-time', new Date().getTime().toString());
-                });
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!mobileMenuButton.contains(event.target) && !mobileMenu.contains(event.target)) {
+                mobileMenu.classList.add('hidden');
             }
         });
+
+        const pwaBanner = document.getElementById('pwa-banner');
+        if (pwaBanner) {
+            const pwaInstallBtn = document.getElementById('pwa-install-btn');
+            const pwaDismissBtn = document.getElementById('pwa-dismiss-btn');
+
+            // Check if banner was dismissed and if enough time has passed
+            function shouldShowBanner() {
+                const dismissedTime = localStorage.getItem('pwa-banner-dismissed-time');
+
+                // If never dismissed, always show
+                if (!dismissedTime) {
+                    return true;
+                }
+
+                // If dismissed, check if 24 hours have passed
+                const now = new Date().getTime();
+                const oneDay = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+
+                return (now - parseInt(dismissedTime)) > oneDay;
+            }
+
+            // Show banner if conditions are met
+            function showBannerIfNeeded() {
+                // Show banner if user is in browser (not already installed as PWA) and should show
+                if (shouldShowBanner() && !window.matchMedia('(display-mode: standalone)').matches) {
+                    pwaBanner.classList.remove('hidden');
+                }
+            }
+
+            // Show banner immediately on page load
+            showBannerIfNeeded();
+
+            // Handle install button click
+            pwaInstallBtn.addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    deferredPrompt = null;
+                }
+            });
+
+            // Handle dismiss button click
+            pwaDismissBtn.addEventListener('click', () => {
+                pwaBanner.classList.add('hidden');
+                localStorage.setItem('pwa-banner-dismissed-time', new Date().getTime().toString());
+            });
+        }
+
+    });
     </script>

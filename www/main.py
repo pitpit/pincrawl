@@ -335,11 +335,6 @@ async def root_redirect(
 
     return RedirectResponse(url=f"/{locale}/")
 
-class LocaleName(str, Enum):
-    fr = "fr"
-    en = "en"
-
-
 @app.get("/{locale}/", response_class=HTMLResponse)
 async def homepage(
     request: Request,

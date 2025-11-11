@@ -217,11 +217,7 @@
                     })
                 });
 
-                if (response.ok) {
-                    // Success - show confirmation without reload
-                    // You could add a toast notification here if desired
-                    console.log('Language preference saved successfully');
-                } else {
+                if (!response.ok) {
                     throw new Error('Failed to save language preference');
                 }
             } catch (error) {
