@@ -34,15 +34,6 @@ VAPID_CONTACT_EMAIL = os.getenv('VAPID_CONTACT_EMAIL', 'pincrawl@pitp.it')
 database = Database()
 task_manager = TaskManager()
 
-def format_price(amount: int, currency: str) -> str:
-    """Format price for display."""
-    if currency == 'EUR':
-        return f"€{amount / 100:.2f}"
-    elif currency == 'USD':
-        return f"${amount / 100:.2f}"
-    else:
-        return f"{amount / 100:.2f} {currency}"
-
 @click.group()
 def watching():
     """Manage user watching list for pinball machines."""

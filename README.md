@@ -146,41 +146,53 @@ For best notification experience on Android Chrome:
 
 ## TODO
 
-- [] rework graph_utils.py to make a class GraphService
-- [X] Web Push API POC
-- [ ] push: make notifications works with more than 1 notification
-- [ ] what happen if I subscribe on a browser and I need notification on another browser. Do we need a second button?
-- [ ] push: maintenir la persistence? Add periodic background sync
+### Must
+
+- [ ] push: make it works when browser is offline. maintenir la persistence? Add periodic background sync ?
+- [ ] my-account: add a link to /plans on "Not included in your plan" on my-account.html
+- [ ] auth0: passer en mode prod
+- [ ] OPEN TO THE WORLD
+- [ ] main:watch(): check opdb_id when creating a Watching
+- [ ] setup stripe
+- [ ] améliorer le moteur de recherche (typo, ...)
+
+### Should
+
+- [ ] push: add cache for images
+- [ ] pincrawl ads: Accelerate cron running everything in one time merging all together with a global command invoking scrape, crawl, send: pincrawl run
+- [ ] base.html: cdn.tailwindcss.com should not be used in production
+- [ ] leboncoin_crawler: Enhance leboncoin search with typo (fliper, filpper)
+- [ ] pinballs.html: Price history only for Collector and Pro
+- [ ] pinballs.html: thumbnails for pinball
+- [ ] translate svg/png price graph files
+- [ ] créer une tâche d'envoie par destinaire pour pouvoir rejouer en cas de plantage
+
+### Could
+
+- [ ] use internal id of product as a foreign key in Watching instead of opdb_id. will allow to have graph with graphs/[internal-product-id}.svg instead of graphs/GrqL6-MLy7l.svg
+- [ ] manual fix / product check page for admins
+- [ ] email_notification.html: pink dot for current ad price in graph
+- [ ] graph_utils.py: rework to make a class GraphService
 - [ ] push: Ad images in push notification
 - [ ] push: Ad images in email
-- [ ] push: add cache for images
-- [ ] upgrade link on "Not included in your plan" on my-account.html
-- [ ] Accelerate cron running everything in one time merging all together with a global command invoking scrape, crawl, send: pincrawl run
-- [ ] push: make it works when browser is offline
-- [ ] ad a parameter --since to send everything from a date (debug) when running `pincrawl watching send`
-- [ ] rework send_ad_notification_email() to not build a ad_data dictionnary and directly pass "ads" var
-- [ ] cdn.tailwindcss.com should not be used in production
-- [ ] main:watch(), main:update_my_account() shoud respond a JsonResponse
-- [ ] rework JS: one file, use a binding framework
-- [ ] Install webapp on desktop
-- [ ] passer auth0 en mode prod
-- [ ] active menu item in header depending on current page
-- [ ] OPEN TO THE WORLD
-- [ ] Enhance leboncoin search with typo (fliper, filpper)
+- [ ] pincrawl watching send: add a parameter --since to send everything from a date (debug)
+- [ ] main:watch() shoud respond a JsonResponse
+- [ ] base.html: one file + use a binding framework
+- [ ] Install the webapp on desktop
+- [ ] _header: active menu item in header depending on current page
+- [ ] base.html: rename base.html to _base.html?
 - [ ] Add other ads providers: ebay, ouest france
-- [ ] Price history only for Collector and Pro
-- [ ] thumbnails for pinball
-- [ ] pink dot for current ad price in graph (in email notification)
-- [ ] manual fix / product check for ads
-- [ ] use internal id of product as a foreign key in Watching instead of opdb_id. will allow to have graph with graphs/[internal-product-id}.svg instead of graphs/GrqL6-MLy7l.svg
-- [ ] check opdb_id when creating a Watching
 - [ ] unwatch pinball from email
 - [ ] download image and visit archive (or do a screenshot)
 - [ ] better logo
-- [ ] setup stripe
-- [ ] translate svg/png price graph files
-- [ ] créer une tâche d'envoie par destinaire pour pouvoir rejouer en cas de plantage
-- [ ] améliorer le moteur de recherche
+
+### Done
+
+- [X] Web Push API POC
+- [X] push: make notifications works with more than 1 notification
+- [X] what happen if I subscribe on a browser and I need notification on another browser => Info message
+- [X] rework send_ad_notification_email() to not build a ad_data dictionnary and directly pass "ads" var
+- [X] main:update_my_account() shoud respond a JsonResponse
 - [X] sauvegarder le vendeur
 - [X] CGU
 - [X] setup mailersend

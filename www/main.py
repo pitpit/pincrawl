@@ -27,6 +27,7 @@ from fastapi.exceptions import RequestValidationError
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 # from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
+from pincrawl.push_notification_service import PushNotificationService
 
 # Load environment variables
 load_dotenv()
@@ -717,6 +718,63 @@ async def update_my_account(
         session.rollback()
         logger.error(f"❌ Error updating account for user {user_email}: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
+    finally:
+        session.close()
+
+@app.post("/api/test-push-notification")
+async def test_push_notification(
+    request: Request,
+    user=Depends(get_authenticated_user)
+):
+    """Send a test push notification to the authenticated user"""
+
+    user_email = user.get('email')
+
+    session = db.get_db()
+
+    try:
+        # Find account by email
+        account = Account.get_by_email(session, user_email)
+        if not account:
+            raise HTTPException(status_code=400, detail="Account not found")
+
+        if not account.push_notifications:
+            raise HTTPException(status_code=400, detail="Push notifications not enabled for this account")
+
+        current_plan = account.get_current_plan(session)
+        if not current_plan or not current_plan.is_granted_for_push():
+            raise HTTPException(status_code=402, detail="Push notifications not allowed for this account due to plan restrictions")
+
+        if not account.push_subscription:
+            raise HTTPException(status_code=400, detail="No push subscription found for this account")
+
+        # Initialize push notification service
+
+        vapid_claims = {'sub': f'mailto:{VAPID_CONTACT_EMAIL}'}
+        push_notification_service = PushNotificationService(VAPID_PRIVATE_KEY, vapid_claims, i18n)
+
+        i18n_context = i18n.create_context(account.language)
+
+        PINCRAWL_BASE_URL = os.getenv('PINCRAWL_BASE_URL')
+        if not PINCRAWL_BASE_URL:
+            raise Exception("PINCRAWL_BASE_URL environment variable not set")
+
+        push_notification_service.send_notification(
+            subscription=account.push_subscription,
+            title=i18n_context._("Test notification from PINCRAWL"),
+            body=i18n_context._("This is a test push notification to verify it is working correctly."),
+            url=PINCRAWL_BASE_URL
+        )
+
+        logger.info(f"✓ Test push notification sent successfully to {user_email}")
+
+        return JSONResponse(content={'success': True})
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Error sending test push notification to {user_email}: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to send test notification")
     finally:
         session.close()
 

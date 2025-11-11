@@ -53,12 +53,14 @@
                                 <div class="flex items-center space-x-4">
                                     {% if current_plan and current_plan.is_granted_for_push() %}
                                     <button type="button" id="pushButton" class="{% if account and account.push_subscription %}border border-retro-pink text-retro-pink{% else %}border border-retro-cyan bg-retro-cyan text-black{% endif %} px-4 py-2 text-sm font-bold hover:bg-retro-pink hover:border-retro-pink hover:text-black transition-colors duration-200">
-
                                             {% if account and account.push_subscription %}
                                                 {{ _('DISABLE') }}
                                             {% else %}
                                                 {{ _('ENABLE ON THIS DEVICE') }}
                                             {% endif %}
+                                    </button>
+                                    <button type="button" id="testPushButton" class="border {% if account and account.push_subscription %}border-retro-cyan text-retro-cyan hover:bg-retro-cyan hover:text-black{% else %}border-gray-600 text-gray-600{% endif %} px-4 py-2 text-sm font-bold transition-colors duration-200" {% if not account and not account.push_subscription %}disabled{% endif %}>
+                                        {{ _('TEST') }}
                                     </button>
                                     {% else %}
                                         {{ _('Not included in your plan') }}
@@ -233,6 +235,7 @@
 
     // Push notification handling
     const pushButton = document.getElementById('pushButton');
+    const testPushButton = document.getElementById('testPushButton');
     let pushEnabled = {% if account and account.push_subscription %}true{% else %}false{% endif %};
 
     // Push email handling
@@ -378,6 +381,19 @@
                 pushButton.classList.add('border-retro-cyan', 'bg-retro-cyan', 'text-black');
             }
         }
+
+        // Update test button state
+        if (testPushButton) {
+            if (pushEnabled) {
+                testPushButton.disabled = false;
+                testPushButton.classList.remove('border-gray-600', 'text-gray-600');
+                testPushButton.classList.add('border-retro-cyan', 'text-retro-cyan',  'hover:bg-retro-cyan', 'hover:text-black');
+            } else {
+                testPushButton.disabled = true;
+                testPushButton.classList.add('border-gray-600', 'text-gray-600');
+                testPushButton.classList.remove('border-retro-cyan', 'text-retro-cyan',  'hover:bg-retro-cyan', 'hover:text-black');
+            }
+        }
     }
 
     function updateEmailUI() {
@@ -437,6 +453,43 @@
 
         // Initialize push hint on page load
         updatePushHint();
+    }
+
+    // Test push notification handler
+    if (testPushButton) {
+        testPushButton.addEventListener('click', async function() {
+            if (!pushEnabled) return;
+
+            testPushButton.disabled = true;
+            const originalText = testPushButton.textContent;
+            testPushButton.textContent = '{{ _('SENDING...') }}';
+
+            try {
+                const response = await fetch('{{ "/api/test-push-notification" }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (response.ok) {
+                    testPushButton.textContent = '{{ _('SENT!') }}';
+                    setTimeout(() => {
+                        testPushButton.textContent = originalText;
+                        testPushButton.disabled = false;
+                    }, 2000);
+                } else {
+                    const errorText = await response.text();
+                    alert('{{ _('Failed to send test notification') }}: ' + errorText);
+                    testPushButton.textContent = originalText;
+                    testPushButton.disabled = false;
+                }
+            } catch (error) {
+                alert('{{ _('Failed to send test notification') }}: ' + error.message);
+                testPushButton.textContent = originalText;
+                testPushButton.disabled = false;
+            }
+        });
     }
 
     emailButton.addEventListener('click', async function() {
