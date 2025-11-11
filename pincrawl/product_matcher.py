@@ -408,7 +408,7 @@ class ProductMatcher:
 
         Returns:
             dict: Product information with opdb_id, ipdb_id, name, manufacturer, year,
-                  plus extracted ad info (title, description, price amount and currency, location city and zipcode)
+                  plus extracted ad info (title, description, price amount and currency, location city and zipcode, seller and seller_url)
         """
 
         # Step 1: Get product suggestions from ChatGPT
@@ -428,7 +428,8 @@ Please analyze the ad text and:
 - description: The main description text of the ad (without title, price, location)
 - price: The asking price (extract amount and currency)
 - location: The location where the item is located (extract city and zipcode)
-- seller: The seller name(username)
+- seller: The seller name
+- seller_url: The seller's profile URL or seller's shop URL (link on the seller name if available)
 
 2. PRODUCT IDENTIFICATION: The pinball machine being sold:
 - Identify the specific pinball machine name
@@ -445,7 +446,8 @@ Return your response as a JSON object with this exact structure:
     "currency": "EUR",
     "city": "location city name or null",
     "zipcode": "location zipcode as a string or null",
-    "seller": "seller name or null"
+    "seller": "seller name or null",
+    "seller_url": "seller profile URL or seller's shop URL or null"
 }},
 "product": {{
     "name": "exact product name (should match exactly a known product name)",

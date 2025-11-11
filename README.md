@@ -188,6 +188,7 @@ For best notification experience on Android Chrome:
 
 ### Done
 
+- [X] track seller URL
 - [X] Web Push API POC
 - [X] push: make notifications works with more than 1 notification
 - [X] what happen if I subscribe on a browser and I need notification on another browser => Info message

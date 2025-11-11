@@ -179,6 +179,10 @@
                 if (deferredPrompt) {
                     deferredPrompt.prompt();
                     const { outcome } = await deferredPrompt.userChoice;
+                    if (outcome === 'accepted') {
+                        pwaBanner.classList.add('hidden');
+                        localStorage.setItem('pwa-banner-dismissed-time', new Date().getTime().toString());
+                    }
                     deferredPrompt = null;
                 }
             });
@@ -189,6 +193,5 @@
                 localStorage.setItem('pwa-banner-dismissed-time', new Date().getTime().toString());
             });
         }
-
     });
     </script>

@@ -188,6 +188,11 @@ class LeboncoinCrawler:
         ad_record.city = info.get('city', None)
         ad_record.zipcode = info.get('zipcode', None)
         ad_record.seller = info.get('seller', None)
+        ad_record.seller_url = info.get('seller_url', None)
+
+        # we only keep seller_url if it matches known patterns
+        if ad_record.seller_url and not ad_record.seller_url.startswith("https://www.leboncoin.fr/profile/") and not ad_record.seller_url.startswith("https://www.leboncoin.fr/boutique/"):
+            ad_record.seller_url = None
 
         product = result.get('product', None)
         if product:

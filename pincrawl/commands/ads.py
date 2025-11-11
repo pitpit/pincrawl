@@ -23,63 +23,6 @@ def ads():
     """Manage and view ads in the database."""
     pass
 
-@ads.command("list")
-@click.option("--scraped", type=click.Choice(['0', '1']), help="Filter by scraped status (0=not scraped, 1=scraped)")
-@click.option("--ignored", type=click.Choice(['0', '1']), help="Filter by ignored status (0=not ignored, 1=ignored)")
-@click.option("--identified", type=click.Choice(['0', '1']), help="Filter by identified status (0=not identified, 1=identified)")
-def ads_list(scraped, ignored, identified):
-    """Display ads from database with filtering options."""
-
-    # Convert string parameters to boolean/None for the fetch method
-    scraped_filter = None if scraped is None else (scraped == '1')
-    identified_filter = None if identified is None else (identified == '1')
-    ignored_filter = None if ignored is None else (ignored == '1')
-
-    session = database.get_db()
-
-    # Fetch ads using LeboncoinCrawler
-    ads = Ad.fetch(session, scraped=scraped_filter, identified=identified_filter, ignored=ignored_filter)
-
-    # Display results
-    if not ads:
-        raise click.ClickException("✗ No ads found matching the criteria.")
-
-    for ad in ads:
-        url = ad.url
-        scraped = "[scraped]" if ad.scraped_at else ""
-        identified = "[identified]" if ad.identified_at else ""
-        ignored = "[ignored]" if ad.ignored else ""
-
-        # Get product information if identified
-        product = ad.product
-        manufacturer = ad.manufacturer
-        year = ad.year
-
-        # Build product info string
-        product_text = ""
-        if product:
-            product_parts = [product]
-            if manufacturer:
-                product_parts.append(f"{manufacturer}")
-            if year:
-                product_parts.append(f"{year}")
-            product_text = f"{'/'.join(product_parts)}"
-
-        additionnal_parts = []
-        if ad.amount:
-            additionnal_parts.append(f"{ad.amount}{ad.currency}")
-        if ad.city:
-            additionnal_parts.append(ad.city)
-        if ad.zipcode:
-            additionnal_parts.append(ad.zipcode)
-        if ad.seller:
-            additionnal_parts.append(f"seller:{ad.seller}")
-        additional_text = f"{'/'.join(additionnal_parts)}"
-
-        click.echo(f"{url} {scraped}{identified}{ignored} {product_text} {additional_text}")
-
-    session.close()
-
 @ads.command("crawl")
 def ads_crawl():
     """Crawl and discover new ad links."""

@@ -128,6 +128,7 @@ class Ad(Base):
     city = Column(String, nullable=True)  # City where the item is located
     zipcode = Column(String, nullable=True)  # Zipcode where the item is located
     seller = Column(String, nullable=True)  # Seller name or identifier
+    seller_url = Column(String, nullable=True)  # Seller profile or contact URL
     product = Column(String, nullable=True)
     manufacturer = Column(String, nullable=True)
     year = Column(String, nullable=True)
@@ -161,6 +162,9 @@ class Ad(Base):
 
         # Index for seller searches
         Index('ix_ads_seller', 'seller'),
+
+        # Index for seller URL searches
+        Index('ix_ads_seller_url', 'seller_url'),
 
         # Composite index for workflow status tracking
         Index('ix_ads_workflow_status', 'scraped_at', 'identified_at', 'ignored'),
@@ -292,7 +296,7 @@ class Ad(Base):
             if existing:
                 # Update existing record
                 for attr in ['content', 'title', 'description', 'amount', 'currency',
-                            'city', 'zipcode', 'seller', 'product', 'manufacturer', 'year',
+                            'city', 'zipcode', 'seller', 'seller_url', 'product', 'manufacturer', 'year',
                             'opdb_id', 'scraped_at', 'identified_at', 'scrape_id',
                             'ignored']:
                     if hasattr(ad_record, attr):
