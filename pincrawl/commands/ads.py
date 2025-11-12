@@ -225,7 +225,7 @@ def ads_reidentify_seller(limit, force):
                 ad_record.seller_url = None
 
             if ad_record.seller:
-                logger.info(f"✓ Seller identified in {ad_record.url}: [{ad_record.seller}]({ad_record.seller_url if ad_record.seller_url else 'no URL'})")
+                logger.info(f"✓ Seller identified in {ad_record.url}: [{ad_record.seller}]({ad_record.seller_url if ad_record.seller_url else ''})")
                 identified_count += 1
 
             Ad.store(session, ad_record)
