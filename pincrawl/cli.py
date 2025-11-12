@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from pincrawl.commands.ads import ads
 from pincrawl.commands.products import products
 from pincrawl.commands.watching import watching
+from pincrawl.commands.cron import cron
 
 # Load environment variables
 load_dotenv()
@@ -40,6 +41,7 @@ def pincrawl(verbose):
 pincrawl.add_command(ads)
 pincrawl.add_command(products)
 pincrawl.add_command(watching)
+pincrawl.add_command(cron)
 
 
 def main():

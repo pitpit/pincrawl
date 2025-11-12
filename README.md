@@ -148,17 +148,18 @@ For best notification experience on Android Chrome:
 
 ### Must
 
-- [ ] push: make it works when browser is offline. maintenir la persistence? Add periodic background sync ?
-- [ ] pincrawl ads: Accelerate cron running everything in one time merging all together with a global command
+- [ ] push: make it works when browser is offline. maintenir la persistence? Add periodic background sync ?time merging all together with a global command
 - [ ] my-account: add a link to /plans on "Not included in your plan" on my-account.html
 - [ ] auth0: passer en mode prod
 - [ ] OPEN TO THE WORLD
 - [ ] main:watch(): check opdb_id when creating a Watching
 - [ ] setup stripe
 - [ ] améliorer le moteur de recherche (typo, ...)
+- [ ] declare an alert as invalid (will ask for a manual review)
 
 ### Should
 
+- [ ] find back previous seller & seller URL (from stored ads) and rework graph to see price tendance on one product
 - [ ] push: add cache for imagesinvoking scrape, crawl, send: pincrawl run
 - [ ] base.html: cdn.tailwindcss.com should not be used in production
 - [ ] leboncoin_crawler: Enhance leboncoin search with typo (fliper, filpper)
@@ -188,6 +189,7 @@ For best notification experience on Android Chrome:
 
 ### Done
 
+- [X] pincrawl ads: Accelerate cron running everything in one
 - [X] track seller URL
 - [X] Web Push API POC
 - [X] push: make notifications works with more than 1 notification
