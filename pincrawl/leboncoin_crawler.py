@@ -176,9 +176,8 @@ class LeboncoinCrawler:
         search_text = ad_record.content.strip()
 
         # Identify the product and extract ad info using ChatGPT + Pinecone
-        result = self.product_matcher.guess(search_text)
-
-        info = result.get('info', {})
+        info, product = self.product_matcher.extract(search_text)
+        product = self.product_matcher.match_product(product)
 
         # Update basic ad information
         ad_record.title = info.get('title', None)
@@ -192,9 +191,9 @@ class LeboncoinCrawler:
 
         # we only keep seller_url if it matches known patterns
         if ad_record.seller_url and not ad_record.seller_url.startswith("https://www.leboncoin.fr/profile/") and not ad_record.seller_url.startswith("https://www.leboncoin.fr/boutique/"):
+            logger.info(f"✓ Seller URL found for {ad_record.url}: {ad_record.seller_url}")
             ad_record.seller_url = None
 
-        product = result.get('product', None)
         if product:
             logger.info(f"✓ Product identified in {ad_record.url}: {str(product)}")
 

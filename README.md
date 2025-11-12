@@ -149,18 +149,22 @@ For best notification experience on Android Chrome:
 ### Must
 
 - [ ] push: make it works when browser is offline. maintenir la persistence? Add periodic background sync ?time merging all together with a global command
-- [ ] my-account: add a link to /plans on "Not included in your plan" on my-account.html
 - [ ] auth0: passer en mode prod
 - [ ] OPEN TO THE WORLD
 - [ ] main:watch(): check opdb_id when creating a Watching
 - [ ] setup stripe
 - [ ] améliorer le moteur de recherche (typo, ...)
-- [ ] declare an alert as invalid (will ask for a manual review)
+- [ ] my-account: add a link to /plans on "Not included in your plan" on my-account.html
 
 ### Should
 
-- [ ] find back previous seller & seller URL (from stored ads) and rework graph to see price tendance on one product
-- [ ] push: add cache for imagesinvoking scrape, crawl, send: pincrawl run
+- [ ] admin interface to see all scraped ads
+- [ ] declare an alert as invalid (will ask for a manual review)
+- [ ] EPIC: link ads finding back previous seller & seller URL (from stored ads) and rework graph to see price tendance on one product
+  - [X] track seller_url
+  - [X] complete seller and seller_url from stored ads
+
+- [ ] push: add cache for images
 - [ ] base.html: cdn.tailwindcss.com should not be used in production
 - [ ] leboncoin_crawler: Enhance leboncoin search with typo (fliper, filpper)
 - [ ] pinballs.html: Price history only for Collector and Pro
@@ -184,13 +188,12 @@ For best notification experience on Android Chrome:
 - [ ] base.html: rename base.html to _base.html?
 - [ ] Add other ads providers: ebay, ouest france
 - [ ] unwatch pinball from email
-- [ ] download image and visit archive (or do a screenshot)
+- [ ] pincrawl scrape: download images  and visit archive (or do a screenshot)
 - [ ] better logo
 
 ### Done
 
 - [X] pincrawl ads: Accelerate cron running everything in one
-- [X] track seller URL
 - [X] Web Push API POC
 - [X] push: make notifications works with more than 1 notification
 - [X] what happen if I subscribe on a browser and I need notification on another browser => Info message

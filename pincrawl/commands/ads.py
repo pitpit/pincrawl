@@ -23,6 +23,8 @@ def ads():
     """Manage and view ads in the database."""
     pass
 
+
+
 @ads.command("crawl")
 def ads_crawl():
     """Crawl and discover new ad links."""
@@ -65,10 +67,10 @@ def ads_scrape(limit, force):
     # Find ads that need to be scraped using fetch method
     if force:
         # If force is enabled, scrape all non-ignored ads
-        ads_to_scrape = Ad.fetch(session, ignored=False)
+        ads_to_scrape = Ad.fetch(session, is_ignored=False)
     else:
         # Normal behavior: only scrape ads that haven't been scraped yet
-        ads_to_scrape = Ad.fetch(session, scraped=False, ignored=False)
+        ads_to_scrape = Ad.fetch(session, is_scraped=False, is_ignored=False)
 
         if not ads_to_scrape:
             click.echo("✓ No ads found to scrape.")
@@ -172,3 +174,67 @@ def ads_stats(save):
         raise
     finally:
         session.close()
+
+
+@ads.group("reidentify")
+def reidentify():
+    """Re-identify various aspects of ads."""
+    pass
+
+@reidentify.command("seller")
+@click.option("--limit", "-l", type=int, help="Limit number of ads to scrape")
+@click.option("--force", "-f", is_flag=True, help="Force re-identify seller even if already identified")
+def ads_reidentify_seller(limit, force):
+    """Re-identify seller and seller_url where seller information is missing."""
+
+    logger.info("Starting seller re-identifying...")
+
+    session = database.get_db()
+
+    #  scrape all non-ignored ads
+    ads_to_scrape = Ad.fetch(session, is_ignored=False, is_scraped=True, is_identified=True, has_content=True, has_seller=None if force else False)
+
+    if not ads_to_scrape:
+        click.echo("✓ No ads found to re-identify.")
+        return
+
+    # Apply limit if specified
+    if limit:
+        ads_to_scrape = ads_to_scrape[:limit]
+
+    logger.info(f"Found {len(ads_to_scrape)} ads to re-identify")
+
+    # Scrape each ad using LeboncoinCrawler
+    identified_count = 0
+
+    for i, ad_record in enumerate(ads_to_scrape, 1):
+        try:
+            logger.info(f"Processing ad {i}/{len(ads_to_scrape)}: {ad_record.url}")
+
+            logger.debug(f"actual seller: {ad_record.seller}, seller_url: {ad_record.seller_url}")
+
+            search_text = ad_record.content.strip()
+            info, _ = matcher.extract(search_text)
+
+            # Update basic ad information
+            ad_record.seller = info.get('seller', None)
+            ad_record.seller_url = info.get('seller_url', None)
+
+            # we only keep seller_url if it matches known patterns
+            if ad_record.seller_url and not ad_record.seller_url.startswith("https://www.leboncoin.fr/profile/") and not ad_record.seller_url.startswith("https://www.leboncoin.fr/boutique/"):
+                ad_record.seller_url = None
+
+            if ad_record.seller:
+                logger.info(f"✓ Seller identified in {ad_record.url}: [{ad_record.seller}]({ad_record.seller_url if ad_record.seller_url else 'no URL'})")
+                identified_count += 1
+
+            Ad.store(session, ad_record)
+
+        except Exception as e:
+            logger.exception(f"✗ Exception when scraping {ad_record.url}: {str(e)}")
+
+            continue
+
+    session.close()
+
+    click.echo(f"✓ Seller re-identified in {identified_count} ads")

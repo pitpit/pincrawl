@@ -21,6 +21,3 @@ def cron():
 
     # Step 3: Send notifications
     ctx.invoke(watching_send)
-
-    click.echo("\n=== Cron workflow completed successfully ===")
-

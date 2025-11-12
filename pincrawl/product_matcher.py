@@ -399,9 +399,9 @@ class ProductMatcher:
             session.close()
             db.close_db()
 
-    def guess(self, text):
+    def extract(self, text):
         """
-        Search for products using the provided text.
+        Extract product identification and ad information from text using ChatGPT.
 
         Args:
             text: Text to analyze for product identification and information extraction
@@ -411,7 +411,6 @@ class ProductMatcher:
                   plus extracted ad info (title, description, price amount and currency, location city and zipcode, seller and seller_url)
         """
 
-        # Step 1: Get product suggestions from ChatGPT
         chatgpt_prompt = f"""
 You are an expert at analyzing pinball machine ads and extracting structured information.
 
@@ -485,18 +484,24 @@ Only return valid JSON - no additional text or formatting (do not add fenced cod
         # Extract product and ad information
         info = chatgpt_response.get('info', {})
         product = chatgpt_response.get('product')
+
+        return info, product
+
+    def match_product(self, product):
+        """
+        Match a product with OPDB using Pinecone vector search.
+        """
+
+        if product is None:
+            return None
+
         name = product.get('name', None) if product else None
         manufacturer = product.get('manufacturer', None) if product else None
         year = product.get('year', None) if product else None
 
         if name is None:
-            logger.info("No pinball machine identified by ChatGPT")
+            logger.info("No pinball machine to match")
 
-            return {
-                "info": info
-            }
-
-        # Step 2: Use the product info to search Pinecone for OPDB match
         if name and manufacturer:
 
             search_text = self._text_for_embedding(name, manufacturer, year)
@@ -539,10 +544,7 @@ Only return valid JSON - no additional text or formatting (do not add fenced cod
             else:
                 logger.warning("No OPDB match found")
 
-        return {
-            "info": info,
-            "product": product
-        }
+        return product
 
     def _text_for_embedding(self, name, manufacturer=None, year=None, shortname=None):
         """

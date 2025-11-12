@@ -170,94 +170,118 @@ class Ad(Base):
         Index('ix_ads_workflow_status', 'scraped_at', 'identified_at', 'ignored'),
     )
 
-
     @staticmethod
-    def fetch(session,
-              scraped: Optional[bool] = None,
-              identified: Optional[bool] = None,
-              ignored: Optional[bool] = None,
-              content: Optional[bool] = None) -> List["Ad"]:
+    def _fetch_query(session,
+              is_scraped: Optional[bool] = None,
+              is_identified: Optional[bool] = None,
+              is_ignored: Optional[bool] = None,
+              has_content: Optional[bool] = None,
+              has_seller: Optional[bool] = None) -> "Query":
         """
-        Fetch ads from database with optional filtering.
+        Get query to list ads from database with optional filtering.
 
         Args:
-            scraped: Filter by scraped status (None=no filter, True=scraped, False=not scraped)
-            identified: Filter by identified status (None=no filter, True=identified, False=not identified)
-            ignored: Filter by ignored status (None=no filter, True=ignored, False=not ignored)
-            content: Filter by content status (None=no filter, True=has content, False=no content)
+            is_scraped: Filter by scraped status (None=no filter, True=is scraped, False=is not scraped)
+            is_identified: Filter by identified status (None=no filter, True=is identified, False=is not identified)
+            is_ignored: Filter by ignored status (None=no filter, True=is ignored, False=is not ignored)
+            has_content: Filter by content (None=no filter, True=has content, False=no content)
+            has_seller: Filter by seller (None=no filter, True=has seller, False=has no seller)
 
         Returns:
-            List of Ad objects matching the criteria
-        """
-
-        query = session.query(Ad)
-
-        # Apply filters based on parameters
-        if scraped is not None:
-            if scraped:
-                query = query.filter(Ad.scraped_at.isnot(None))
-            else:
-                query = query.filter(Ad.scraped_at.is_(None))
-
-        if identified is not None:
-            if identified:
-                query = query.filter(Ad.product.isnot(None))
-            else:
-                query = query.filter(Ad.product.is_(None))
-
-        if ignored is not None:
-            query = query.filter(Ad.ignored == ignored)
-
-        if content is not None:
-            if content:
-                query = query.filter(Ad.content.isnot(None))
-            else:
-                query = query.filter(Ad.content.is_(None))
-
-        return query.all()
-
-    @staticmethod
-    def count(session,
-              scraped: Optional[bool] = None,
-              identified: Optional[bool] = None,
-              ignored: Optional[bool] = None,
-              content: Optional[bool] = None) -> int:
-        """
-        Count ads in database with optional filtering.
-
-        Args:
-            scraped: Filter by scraped status (None=no filter, True=scraped, False=not scraped)
-            identified: Filter by identified status (None=no filter, True=identified, False=not identified)
-            ignored: Filter by ignored status (None=no filter, True=ignored, False=not ignored)
-            content: Filter by content status (None=no filter, True=has content, False=no content)
-
-        Returns:
-            Count of Ad objects matching the criteria
+            Query object for the filtered ads
         """
 
         query = session.query(Ad)
 
         # Apply filters based on parameters (same logic as fetch method)
-        if scraped is not None:
-            if scraped:
+        if is_scraped is not None:
+            if is_scraped:
                 query = query.filter(Ad.scraped_at.isnot(None))
             else:
                 query = query.filter(Ad.scraped_at.is_(None))
 
-        if identified is not None:
-            if identified:
+        if is_identified is not None:
+            if is_identified:
                 query = query.filter(Ad.product.isnot(None))
             else:
                 query = query.filter(Ad.product.is_(None))
 
-        if ignored is not None:
-            query = query.filter(Ad.ignored == ignored)
+        if is_ignored is not None:
+            query = query.filter(Ad.ignored == is_ignored)
 
-        if content is not None:
-            if content:
+        if has_content is not None:
+            if has_content:
                 query = query.filter(Ad.content.isnot(None))
             else:
                 query = query.filter(Ad.content.is_(None))
+
+        if has_seller is not None:
+            if has_seller:
+                query = query.filter(Ad.seller.isnot(None))
+            else:
+                query = query.filter(Ad.seller.is_(None))
+
+        return query
+
+    @staticmethod
+    def fetch(session,
+              is_scraped: Optional[bool] = None,
+              is_identified: Optional[bool] = None,
+              is_ignored: Optional[bool] = None,
+              has_content: Optional[bool] = None,
+              has_seller: Optional[bool] = None) -> List["Ad"]:
+        """
+        Fetch ads from database with optional filtering.
+
+        Args:
+            is_scraped: Filter by scraped status (None=no filter, True=is scraped, False=is not scraped)
+            is_identified: Filter by identified status (None=no filter, True=is identified, False=is not identified)
+            is_ignored: Filter by ignored status (None=no filter, True=is ignored, False=is not ignored)
+            has_content: Filter by content (None=no filter, True=has content, False=no content)
+            has_seller: Filter by seller (None=no filter, True=has seller, False=has no seller)
+
+        Returns:
+            List of Ad objects matching the criteria
+        """
+
+        query = Ad._fetch_query(session,
+              is_scraped,
+              is_identified,
+              is_ignored,
+              has_content,
+              has_seller)
+
+        return query.all()
+
+    @staticmethod
+    def count(session,
+              is_scraped: Optional[bool] = None,
+              is_identified: Optional[bool] = None,
+              is_ignored: Optional[bool] = None,
+              has_content: Optional[bool] = None,
+              has_seller: Optional[bool] = None,
+            ) -> int:
+        """
+        Count ads in database with optional filtering.
+
+        Args:
+            is_scraped: Filter by scraped status (None=no filter, True=is scraped, False=is not scraped)
+            is_identified: Filter by identified status (None=no filter, True=is identified, False=is not identified)
+            is_ignored: Filter by ignored status (None=no filter, True=is ignored, False=is not ignored)
+            has_content: Filter by content (None=no filter, True=has content, False=no content)
+            has_seller: Filter by seller (None=no filter, True=has seller, False=has no seller)
+
+        Returns:
+            Count of Ad objects matching the criteria
+        """
+
+        query = Ad._fetch_query(session,
+              is_scraped,
+              is_identified,
+              is_ignored,
+              has_content,
+              has_seller)
+
 
         return query.count()
 
