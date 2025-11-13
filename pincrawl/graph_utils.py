@@ -10,7 +10,7 @@ import matplotlib.dates as mdates
 from matplotlib.ticker import FixedLocator
 
 
-def generate_price_graph(dates: List[datetime], prices: List[float], output_path: str, no_data: bool = False, format: str = 'svg') -> str:
+def generate_price_graph(dates: List[datetime], prices: List[float], output_path: str, no_data: bool = False, format: str = 'svg', ad_chains: List[Tuple[int, bool]] = None) -> str:
     """Generate a price timeline graph and save it to disk.
 
     Args:
@@ -19,6 +19,7 @@ def generate_price_graph(dates: List[datetime], prices: List[float], output_path
         output_path: Full path where the graph should be saved
         no_data: If True and no data, show "No data" text in center
         format: Output format ('svg' or 'png')
+        ad_chains: List of tuples (index, is_end_of_chain) indicating which ads are end of chain
 
     Raises:
         Exception: If graph generation fails
@@ -33,7 +34,22 @@ def generate_price_graph(dates: List[datetime], prices: List[float], output_path
 
     # Plot the data (markers only, no line) if data is provided
     if dates and prices:
-        ax.plot(dates, prices, marker='o', linestyle='', markersize=3, color='#00FFFF')
+        # Default: all cyan if no chain info provided
+        if ad_chains is None:
+            ad_chains = [(i, True) for i in range(len(dates))]
+
+        # Draw connecting lines for chained ads
+        for i in range(len(dates) - 1):
+            idx, is_end = ad_chains[i]
+            # If this ad is not the end of chain, draw line to next ad
+            if not is_end and i + 1 < len(dates):
+                ax.plot([dates[i], dates[i + 1]], [prices[i], prices[i + 1]],
+                       color='#006b6b', linestyle='-', linewidth=1, zorder=1)
+
+        # Plot dots with colors based on chain status
+        for i, (idx, is_end) in enumerate(ad_chains):
+            color = '#00FFFF' if is_end else '#006b6b'
+            ax.plot(dates[i], prices[i], marker='o', linestyle='', markersize=3, color=color, zorder=2)
 
     # Styling to match the retro theme
     fig.patch.set_facecolor('#1a1a1a')
@@ -68,7 +84,7 @@ def generate_price_graph(dates: List[datetime], prices: List[float], output_path
 
     # Add labels
     ax.set_ylabel('Price hist. (€)', color='#ffffff', fontsize=8)
-    ax.grid(True, alpha=0.2, color='#00FFFF')
+    ax.grid(True, alpha=0.2, color='#929292')
 
     # Add "No data" text if requested and no data provided
     if no_data and (not dates or not prices):

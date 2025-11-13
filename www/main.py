@@ -287,8 +287,12 @@ async def get_graph(product_opdb_id: str, format: str):
                 dates = [ad.created_at for ad in ads]
                 prices = [ad.amount for ad in ads]
 
+                # Build chain information: (index, is_end_of_chain)
+                # An ad is end of chain if ad.next is None
+                ad_chains = [(i, ad.next is None) for i, ad in enumerate(ads)]
+
                 # Generate the graph
-                generate_price_graph(dates, prices, graph_path, format=format)
+                generate_price_graph(dates, prices, graph_path, ad_chains=ad_chains, format=format)
                 logger.info(f"✓ Generated graph for opdb_id={product_opdb_id} with {len(ads)} data points")
             else:
                 # No data available, generate "no data" graph

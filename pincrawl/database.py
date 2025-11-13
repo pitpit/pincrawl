@@ -136,6 +136,11 @@ class Ad(Base):
     scraped_at = Column(DateTime, nullable=True)
     identified_at = Column(DateTime, nullable=True)
     scrape_id = Column(String, nullable=True)
+    previous_id = Column(Integer, ForeignKey('ads.id'), nullable=True, index=True)
+
+    # Relationship to previous ad
+    previous = relationship("Ad", remote_side=[id], back_populates="next")
+    next = relationship("Ad", back_populates="previous", uselist=False)
 
     # Define indexes for common query patterns
     __table_args__ = (

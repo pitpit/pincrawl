@@ -158,11 +158,9 @@ For best notification experience on Android Chrome:
 
 ### Should
 
+- [ ] tracker le dernier prix et la suppression d'une annonce
 - [ ] admin interface to see all scraped ads
 - [ ] declare an alert as invalid (will ask for a manual review)
-- [ ] EPIC: link ads finding back previous seller & seller URL (from stored ads) and rework graph to see price tendance on one product
-  - [X] track seller_url
-  - [X] complete seller and seller_url from stored ads
 
 - [ ] push: add cache for images
 - [ ] base.html: cdn.tailwindcss.com should not be used in production
@@ -174,6 +172,7 @@ For best notification experience on Android Chrome:
 
 ### Could
 
+- [ ] display stats on home page: number of ads scraped / month, number of alerts ?
 - [ ] use internal id of product as a foreign key in Watching instead of opdb_id. will allow to have graph with graphs/[internal-product-id}.svg instead of graphs/GrqL6-MLy7l.svg
 - [ ] manual fix / product check page for admins
 - [ ] email_notification.html: pink dot for current ad price in graph
@@ -193,6 +192,9 @@ For best notification experience on Android Chrome:
 
 ### Done
 
+- [X] EPIC: link ads finding back previous seller & seller URL (from stored ads) and rework graph to see price progress on one product
+  - [X] track seller_url
+  - [X] complete seller and seller_url from stored ads
 - [X] pincrawl ads: Accelerate cron running everything in one
 - [X] Web Push API POC
 - [X] push: make notifications works with more than 1 notification

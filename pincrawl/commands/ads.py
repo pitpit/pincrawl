@@ -110,6 +110,19 @@ def ads_scrape(limit, force):
                     logger.info(f"✓ Successfully confirmed product: {ad_record.url}")
                     confirmed_count += 1
 
+            # Set previous_id if we have a previous ad with same seller_url and opdb_id
+            if ad_record.seller_url and ad_record.opdb_id and not ad_record.previous_id:
+                previous_ad = session.query(Ad).filter(
+                    Ad.id != ad_record.id,
+                    Ad.seller_url == ad_record.seller_url,
+                    Ad.opdb_id == ad_record.opdb_id,
+                    Ad.created_at < ad_record.created_at
+                ).order_by(Ad.created_at.desc()).first()
+
+                if previous_ad:
+                    ad_record.previous_id = previous_ad.id
+                    logger.info(f"✓ Linked to previous ad: {previous_ad.url}")
+
             Ad.store(session, ad_record)
 
         except Exception as e:
