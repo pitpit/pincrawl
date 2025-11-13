@@ -21,7 +21,7 @@ from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from pincrawl.product_matcher import ProductMatcher
 from pincrawl.database import Database, Watching, Product, Account, PLAN_WATCHING_LIMITS, Ad
-from pincrawl.graph_utils import generate_price_graph, generate_nodata_graph
+from pincrawl.graph_utils import generate_price_graph
 from pincrawl.i18n import I18n
 from fastapi.exceptions import RequestValidationError
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
@@ -284,15 +284,16 @@ async def get_graph(product_opdb_id: str, format: str):
 
             if ads:
                 # Prepare data for plotting
-                dates = [ad.created_at for ad in ads]
-                prices = [ad.amount for ad in ads]
+                # Build dots list: List[Tuple[datetime, price, id, next_id, is_end]]
+                dots = [
+                    (ad.created_at, ad.amount, ad.id, ad.next.id if ad.next else None, ad.next is None)
+                    for ad in ads
+                ]
 
-                # Build chain information: (index, is_end_of_chain)
-                # An ad is end of chain if ad.next is None
-                ad_chains = [(i, ad.next is None) for i, ad in enumerate(ads)]
+                logger.info(f"Generated {len(dots)} data points for graph")
 
                 # Generate the graph
-                generate_price_graph(dates, prices, graph_path, ad_chains=ad_chains, format=format)
+                generate_price_graph(dots, graph_path, format=format)
                 logger.info(f"✓ Generated graph for opdb_id={product_opdb_id} with {len(ads)} data points")
             else:
                 # No data available, generate "no data" graph
@@ -307,7 +308,7 @@ async def get_graph(product_opdb_id: str, format: str):
                         should_regenerate_nodata = False
 
                 if should_regenerate_nodata:
-                    generate_nodata_graph(nodata_graph_path, format=format)
+                    generate_price_graph([],nodata_graph_path, format=format)
                     logger.info(f"✓ Generated/refreshed nodata graph ({format})")
 
         except HTTPException:

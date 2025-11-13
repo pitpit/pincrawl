@@ -10,7 +10,6 @@ from pincrawl.database import Database, Watching, Ad, Task, TaskStatus, Product,
 from pincrawl.task_manager import TaskManager
 from pincrawl.smtp import Smtp
 from pincrawl.email_notification_service import EmailNotificationService
-from pincrawl.graph_utils import generate_price_graph
 from pincrawl.push_notification_service import PushNotificationService
 import random
 from pincrawl.i18n import I18n
@@ -297,6 +296,20 @@ def get_fake_ads():
             url="https://example.com/test-ad/456"
         )
     ]
+
+    # Mock the previous field to return another Ad
+    fake_ads[0].previous = Ad(
+        product="[Fake] Medieval Madness",
+        manufacturer="Williams",
+        opdb_id="G5pe4-MePZv",
+        year="1997",
+        amount=7500,
+        currency="EUR",
+        city="Paris",
+        zipcode="75001",
+        url="https://example.com/test-ad/123"
+    )
+
     return fake_ads
 
 

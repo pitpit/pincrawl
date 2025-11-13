@@ -10,16 +10,19 @@ import matplotlib.dates as mdates
 from matplotlib.ticker import FixedLocator
 
 
-def generate_price_graph(dates: List[datetime], prices: List[float], output_path: str, no_data: bool = False, format: str = 'svg', ad_chains: List[Tuple[int, bool]] = None) -> str:
+def generate_price_graph(dots: List[Tuple[datetime, float, int, Optional[int], bool]], output_path: str, no_data: bool = False, format: str = 'svg') -> str:
     """Generate a price timeline graph and save it to disk.
 
     Args:
-        dates: List of datetime objects for the x-axis
-        prices: List of prices (in euros) for the y-axis
+        dots: List of tuples (datetime, price, id, next_id, is_end_of_chain) where:
+            - datetime: Date when ad was created
+            - price: Price in euros
+            - id: Ad ID
+            - next_id: ID of the next ad in the chain (None if this is the last)
+            - is_end_of_chain: Boolean indicating if this ad is the end of a chain
         output_path: Full path where the graph should be saved
         no_data: If True and no data, show "No data" text in center
         format: Output format ('svg' or 'png')
-        ad_chains: List of tuples (index, is_end_of_chain) indicating which ads are end of chain
 
     Raises:
         Exception: If graph generation fails
@@ -33,23 +36,35 @@ def generate_price_graph(dates: List[datetime], prices: List[float], output_path
     fig, ax = plt.subplots(figsize=(3.2, 1.2), dpi=100)
 
     # Plot the data (markers only, no line) if data is provided
-    if dates and prices:
-        # Default: all cyan if no chain info provided
-        if ad_chains is None:
-            ad_chains = [(i, True) for i in range(len(dates))]
-
-        # Draw connecting lines for chained ads
-        for i in range(len(dates) - 1):
-            idx, is_end = ad_chains[i]
-            # If this ad is not the end of chain, draw line to next ad
-            if not is_end and i + 1 < len(dates):
-                ax.plot([dates[i], dates[i + 1]], [prices[i], prices[i + 1]],
-                       color='#006b6b', linestyle='-', linewidth=1, zorder=1)
+    if dots:
+        # Draw connecting lines for chained ads based on next_id
+        for i, (date, price, ad_id, next_id, is_end) in enumerate(dots):
+            if next_id is not None:
+                # Find the next ad in the list by matching next_id
+                for j, (next_date, next_price, next_ad_id, _, _) in enumerate(dots):
+                    if next_ad_id == next_id:
+                        # Draw line from current ad to next ad
+                        ax.plot([date, next_date], [price, next_price],
+                               color='#006b6b', linestyle='-', linewidth=1, zorder=1)
+                        break
 
         # Plot dots with colors based on chain status
-        for i, (idx, is_end) in enumerate(ad_chains):
+        for date, price, ad_id, next_id, is_end in dots:
             color = '#00FFFF' if is_end else '#006b6b'
-            ax.plot(dates[i], prices[i], marker='o', linestyle='', markersize=3, color=color, zorder=2)
+            ax.plot(date, price, marker='o', linestyle='', markersize=3, color=color, zorder=2)
+    else:
+        # Add "No data" text
+        # Hide the y-axis tick labels when there's no data, but keep the label
+        ax.set_yticklabels([])
+        ax.tick_params(axis='y', length=0)
+
+        ax.text(0.5, 0.5, 'No data',
+                transform=ax.transAxes,
+                fontsize=12,
+                color='#666666',
+                ha='center',
+                va='center',
+                style='italic')
 
     # Styling to match the retro theme
     fig.patch.set_facecolor('#1a1a1a')
@@ -86,20 +101,6 @@ def generate_price_graph(dates: List[datetime], prices: List[float], output_path
     ax.set_ylabel('Price hist. (€)', color='#ffffff', fontsize=8)
     ax.grid(True, alpha=0.2, color='#929292')
 
-    # Add "No data" text if requested and no data provided
-    if no_data and (not dates or not prices):
-        # Hide the y-axis tick labels when there's no data, but keep the label
-        ax.set_yticklabels([])
-        ax.tick_params(axis='y', length=0)
-
-        ax.text(0.5, 0.5, 'No data',
-                transform=ax.transAxes,
-                fontsize=12,
-                color='#666666',
-                ha='center',
-                va='center',
-                style='italic')
-
     # Tight layout to maximize space usage and minimize left padding
     plt.tight_layout(pad=0.1)
     plt.subplots_adjust(left=0.01)
@@ -114,20 +115,3 @@ def generate_price_graph(dates: List[datetime], prices: List[float], output_path
 
     # Return the filename (basename)
     return os.path.basename(output_path)
-
-
-def generate_nodata_graph(output_path: str, format: str = 'svg') -> str:
-    """Generate an empty price timeline graph (no data) and save it to disk.
-
-    Args:
-        output_path: Full path where the graph should be saved
-        format: Output format ('svg' or 'png')
-
-    Returns:
-        str: The filename (basename) of the saved graph
-
-    Raises:
-        Exception: If graph generation fails
-    """
-    # Call generate_price_graph with no_data flag
-    return generate_price_graph([], [], output_path, no_data=True, format=format)

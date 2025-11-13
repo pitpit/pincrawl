@@ -115,10 +115,23 @@
 
         {% for ad in ads %}
         <div class="ad-item">
-            <div class="ad-title">{{ ad.product }}{{ ', ' + ad.manufacturer if ad.manufacturer }}{{ ', ' + ad.year if ad.year }}</div>
+            <div class="ad-title">
+                {{ ad.product }}{{ ', ' + ad.manufacturer if ad.manufacturer }}{{ ', ' + ad.year if ad.year }}
+                {% if ad.previous %}
+                <span style="color: #FF10F0; font-weight: bold; margin-left: 10px;">[REPOST]</span>
+                {% endif %}
+            </div>
 
             {% if ad.amount and ad.currency %}
-            <div class="ad-detail">{{ (_('Price: <strong>%s %s</strong>') % (ad.amount, ad.currency))|safe }}</div>
+            <div class="ad-detail">
+                {{ _('Price: ') }}
+                {% if ad.previous %}
+                <span style="text-decoration: line-through; color: #888888;">{{ ad.previous.amount }} {{ ad.previous.currency }}</span>
+                <strong>{{ ad.amount }} {{ ad.currency }}</strong>
+                {% else %}
+                <strong>{{ ad.amount }} {{ ad.currency }}</strong>
+                {% endif %}
+            </div>
             {% endif %}
 
             {% if ad.city %}
