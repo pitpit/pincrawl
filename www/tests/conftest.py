@@ -34,7 +34,7 @@ def client(anonymous_client):
     app.dependency_overrides.clear()
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def mock_session():
     """Mock database session"""
     session = MagicMock()
