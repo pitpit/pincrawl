@@ -1,8 +1,17 @@
 // Service Worker for handling push notifications
 
-// Install event - activate immediately
+const CACHE_NAME = 'pincrawl-v1';
+
+// Cache important assets for offline functionality
 self.addEventListener('install', (event) => {
-    self.skipWaiting(); // Activate new SW immediately
+    event.waitUntil(
+        caches.open(CACHE_NAME).then(cache => {
+            return cache.addAll([
+                '/static/favicon.ico',
+                '/static/img/logo-64x64.png'
+            ]).catch(err => console.log('Cache failed, continuing anyway:', err));
+        }).then(() => self.skipWaiting())
+    );
 });
 
 // Handles incoming push notifications and displays them to the user
@@ -54,5 +63,31 @@ self.addEventListener('notificationclick', function(event) {
 
 // Activates the service worker and takes control of all clients
 self.addEventListener('activate', (event) => {
-    event.waitUntil(self.clients.claim());
+    event.waitUntil(
+        Promise.all([
+            self.clients.claim(),
+            // Clean up old caches
+            caches.keys().then(cacheNames => {
+                return Promise.all(
+                    cacheNames.map(cacheName => {
+                        if (cacheName !== CACHE_NAME) {
+                            return caches.delete(cacheName);
+                        }
+                    })
+                );
+            })
+        ])
+    );
+});
+
+// Handle fetch events to keep SW active
+self.addEventListener('fetch', (event) => {
+    // Only cache GET requests for assets
+    if (event.request.method !== 'GET') return;
+
+    event.respondWith(
+        caches.match(event.request).then(response => {
+            return response || fetch(event.request);
+        })
+    );
 });
