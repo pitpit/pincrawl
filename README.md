@@ -144,17 +144,31 @@ For best notification experience on Android Chrome:
 3. Enable "Pop on screen" or "Show notifications"
 4. Make sure "Do Not Disturb" is not blocking notifications
 
+Désactiver l’optimisation de batterie pour Chrome / ton navigateur
+Sur Android :
+
+Paramètres > Applications > Chrome > Batterie > Utilisation en arrière-plan = Autoriser
+et
+Paramètres > Batterie > Optimisation → Chrome → Ne pas optimiser
+
+Ce point résout 80 % des problèmes.
+
+Pour une PWA installée via Chrome :
+désactiver l’optimisation pour Chrome, pas pour la PWA.
+
 ## TODO
 
 ### Must
 
-- [ ] push: make it works when browser is offline. maintenir la persistence? Add periodic background sync ?time merging all together with a global command
+- [ ] push: Add periodic background sync endpoint `/api/missed-notifications`
+- [ ] push: Register periodic background sync in main app (needs HTTPS and user engagement)
 - [ ] auth0: passer en mode prod
 - [ ] OPEN TO THE WORLD
 - [ ] main:watch(): check opdb_id when creating a Watching
 - [ ] setup stripe
 - [ ] améliorer le moteur de recherche (typo, ...)
 - [ ] my-account: add a link to /plans on "Not included in your plan" on my-account.html
+- [ ] switch to a dedicated domain
 
 ### Should
 
@@ -162,7 +176,6 @@ For best notification experience on Android Chrome:
 - [ ] admin interface to see all scraped ads
 - [ ] declare an alert as invalid (will ask for a manual review)
 
-- [ ] push: add cache for images
 - [ ] base.html: cdn.tailwindcss.com should not be used in production
 - [ ] leboncoin_crawler: Enhance leboncoin search with typo (fliper, filpper)
 - [ ] pinballs.html: Price history only for Collector and Pro
@@ -172,6 +185,8 @@ For best notification experience on Android Chrome:
 
 ### Could
 
+- [X] push: add cache for images
+- [ ] all last ads in "my event" page
 - [ ] display stats on home page: number of ads scraped / month, number of alerts ?
 - [ ] use internal id of product as a foreign key in Watching instead of opdb_id. will allow to have graph with graphs/[internal-product-id}.svg instead of graphs/GrqL6-MLy7l.svg
 - [ ] manual fix / product check page for admins

@@ -12,8 +12,7 @@ import os
 from datetime import datetime
 from typing import List, Optional, Union
 from sqlalchemy import text, create_engine, Column, Integer, String, Text, Boolean, DateTime, JSON, Index, UniqueConstraint, Enum, func, ForeignKey
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session, relationship
+from sqlalchemy.orm import sessionmaker, Session, relationship, declarative_base
 from sqlalchemy.engine import Engine
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from dotenv import load_dotenv
