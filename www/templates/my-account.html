@@ -200,7 +200,7 @@
 <script>
     // Language handling with immediate save
     const languageSelect = document.getElementById('language');
-    const initialLanguage = languageSelect.value;
+    var initialLanguage = languageSelect.value;
 
     languageSelect.addEventListener('change', async function() {
         if (languageSelect.value !== initialLanguage) {
@@ -220,6 +220,9 @@
                 if (!response.ok) {
                     throw new Error('Failed to save language preference');
                 }
+
+                initialLanguage = languageSelect.value;
+
             } catch (error) {
                 alert('{{ _('Failed to save language preference') }}');
                 languageSelect.value = initialLanguage; // Revert

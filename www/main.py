@@ -71,17 +71,19 @@ app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=["*"])
 # app.add_middleware(TrustedHostMiddleware, allowed_hosts=["localhost", "192-168-0-11.nip.io"])
 
 # Mount static files
-app.mount("/static", StaticFiles(directory="static"), name="static")
+static_dir = os.path.join(os.path.dirname(__file__), "static")
+app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 # Setup Jinja2 templates
-templates = Jinja2Templates(directory="templates")
+
+templates_dir = os.path.join(os.path.dirname(__file__), "templates")
+templates = Jinja2Templates(directory=templates_dir)
 
 # Add i18n context processor
-def create_template_context(request: Request, locale: str|None, **kwargs):
+def create_template_context(locale: str|None, **kwargs):
     """Create template context with i18n support"""
     i18n_context = i18n.create_context(locale)
     context = {
-        "request": request,
         "locale": i18n_context.locale,
         "_": i18n_context._,  # Add simple _ function for Babel extraction
         "supported_locales": i18n.SUPPORTED_LOCALES,
@@ -130,13 +132,15 @@ async def auth_exception_handler(request: Request, exc: StarletteHTTPException):
         locale = path_parts[0] if path_parts and path_parts[0] else None
 
         return templates.TemplateResponse(
+            request,
             "login.html",
-            create_template_context(request, locale),
+            create_template_context(locale),
             status_code=exc.status_code
         )
     else:
         # For other HTTP exceptions, return default error page
         return templates.TemplateResponse(
+            request,
             "error.html",
             {
                 "request": request,
@@ -160,6 +164,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
             # This is an unsupported locale, return 404
             return templates.TemplateResponse(
+                request,
                 "error.html",
                 {
                     "request": request,
@@ -170,6 +175,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
     # For other validation errors, return 400
     return templates.TemplateResponse(
+        request,
         "error.html",
         {
             "request": request,
@@ -217,7 +223,9 @@ def url_base64_to_bytes(base64_string):
 @app.get("/sw.js")
 async def service_worker():
     """Serve the service worker with Service-Worker-Allowed header for root scope"""
-    response = FileResponse("sw.js", media_type="application/javascript")
+
+    sw_filename = os.path.join(os.path.dirname(__file__), "sw.js")
+    response = FileResponse(sw_filename, media_type="application/javascript")
     response.headers["Service-Worker-Allowed"] = "/"
     return response
 
@@ -240,7 +248,7 @@ async def get_graph(product_opdb_id: str, format: str):
     format = format.lower()
 
     # Define graph directory and paths
-    graph_dir = "var/graphs"
+    graph_dir =  os.path.join(os.path.dirname(__file__), "var/graphs")
     os.makedirs(graph_dir, exist_ok=True)
 
     graph_path = os.path.join(graph_dir, f"{product_opdb_id}.{format}")
@@ -350,8 +358,9 @@ async def homepage(
     user = get_user(request)
 
     return templates.TemplateResponse(
+        request,
         "home.html",
-        create_template_context(request, locale, user=user)
+        create_template_context(locale, user=user)
     )
 
 @app.get("/login")
@@ -523,9 +532,9 @@ async def pinballs(
     total_pages = 1 if total_pages == 0 else total_pages
 
     return templates.TemplateResponse(
+        request,
         "pinballs.html",
         create_template_context(
-            request,
             locale,
             user=user,
             products=products,
@@ -574,9 +583,9 @@ async def plans(
             session.close()
 
     return templates.TemplateResponse(
+        request,
         "plans.html",
         create_template_context(
-            request,
             locale,
             user=user,
             current_plan=current_plan
@@ -595,8 +604,9 @@ async def legal_notice(
     template_name = f"legal-notice.{locale}.html"
 
     return templates.TemplateResponse(
+        request,
         template_name,
-        create_template_context(request, locale)
+        create_template_context(locale)
     )
 
 
@@ -611,8 +621,9 @@ async def terms_of_service(
     template_name = f"terms-of-use.{locale}.html"
 
     return templates.TemplateResponse(
+        request,
         template_name,
-        create_template_context(request, locale)
+        create_template_context(locale)
     )
 
 
@@ -646,9 +657,9 @@ async def my_account(
     vapid_public_key_bytes = url_base64_to_bytes(VAPID_PUBLIC_KEY)
 
     return templates.TemplateResponse(
+        request,
         "my-account.html",
         create_template_context(
-            request,
             locale,
             user=user,
             account=account,
@@ -848,5 +859,4 @@ async def watch(
     session.commit()
     session.close()
 
-    return HTMLResponse(status_code=status, content="")
-
+    return JSONResponse(status_code=status, content={'success': True})

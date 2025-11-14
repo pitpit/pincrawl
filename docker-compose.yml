@@ -19,7 +19,7 @@ services:
       - .pip-cache:/root/.cache/pip
     working_dir: /app
     # Default command (can be overridden when running)
-    entrypoint: ["sh", "-c", "pip install -e . && exec \"$@\"", "--"]
+    entrypoint: ["sh", "-c", "pip install -e . && pip install -r www/requirements.txt && exec \"$@\"", "--"]
     command: ["python", "cli.py", "--help"]
     # Allow interactive usage (REPL, stdin)
     tty: true
@@ -40,10 +40,11 @@ services:
       - ./:/app
       - .pip-cache:/root/.cache/pip
     working_dir: /app
-    command: ["sh", "-c", "pip install . && cd www/ && pip install -r requirements.txt && uvicorn main:app --host 0.0.0.0 --port 8080 --reload --reload-dir /app/pincrawl --reload-dir /app/www --reload-include='*.mo'"]
+    command: ["sh", "-c", "pip install . && pip install -r www/requirements.txt && uvicorn main:app --app-dir www/ --host 0.0.0.0 --port 8080 --reload --reload-dir /app/pincrawl --reload-dir /app/www --reload-include='*.mo'"]
     environment:
       - PYTHONPATH=/app
       - PYTHONUNBUFFERED=1
+      - PYTHONWARNINGS=default
     restart: unless-stopped
     depends_on:
       - postgres

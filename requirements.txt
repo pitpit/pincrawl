@@ -10,6 +10,7 @@ pinecone
 beautifulsoup4
 markdownify
 pytest==8.4.2
+pytest-cov==7.0.0
 scrapingbee
 matplotlib
 jinja2
