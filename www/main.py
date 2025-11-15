@@ -224,7 +224,7 @@ def url_base64_to_bytes(base64_string):
 async def service_worker():
     """Serve the service worker with Service-Worker-Allowed header for root scope"""
 
-    sw_filename = os.path.join(os.path.dirname(__file__), "OneSignalSDKWorker.js")
+    sw_filename = os.path.join(os.path.dirname(__file__), "dist", "OneSignalSDKWorker.js")
     response = FileResponse(sw_filename, media_type="application/javascript")
     return response
 

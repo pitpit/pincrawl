@@ -17,12 +17,6 @@ cp .env.dist .env
 # Edit .env and add your API keys (Firecrawl, OpenAI, Pinecone)
 ```
 
-Generate VAPID keys for Web Push notifications:
-```bash
-npx web-push generate-vapid-keys
-```
-And copy the env vars into your .env file.
-
 Start the console:
 ```bash
 docker-compose run --rm console bash

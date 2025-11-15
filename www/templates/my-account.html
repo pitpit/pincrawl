@@ -39,12 +39,29 @@
                             <div class="flex flex-col sm:flex-row sm:items-center">
                                 <label class="text-gray-300 sm:w-80 mb-2 sm:mb-0">{{ _('Email Notifications:') }}</label>
                                 <div class="flex items-center justify-end sm:justify-start space-x-4">
-                                    <button type="button" id="emailButton" class="{% if account and account.email_notifications %}border border-retro-pink text-retro-pink{% else %}border border-retro-cyan bg-retro-cyan text-black{% endif %} px-4 py-2 text-sm font-bold hover:bg-retro-pink hover:border-retro-pink hover:text-black transition-colors duration-200">
-                                        {% if account and account.email_notifications %}
-                                            {{ _('DISABLE') }}
-                                        {% else %}
-                                            {{ _('ENABLE') }}
-                                        {% endif %}
+                                    <button
+                                        type="button"
+                                        class="border {% if account and account.email_notifications %}{{ _('DISABLE') }}border-retro-pink text-retro-pink{% else %}border-retro-cyan bg-retro-cyan text-black{{ _('ENABLE') }}{% endif %} px-4 py-2 text-sm font-bold hover:bg-retro-pink hover:border-retro-pink hover:text-black transition-colors duration-200"
+                                        id="emailButton"
+
+                                        data-state="{% if account and account.email_notifications %}enabled{% else %}disabled{% endif %}"
+
+                                        data-state[loading].text-content="{{ _('LOADING...') }}"
+                                        data-state[loading].classlist.add="border-retro-white text-retro-white"
+                                        data-state[loading].classlist.remove="border-retro-pink text-retro-pink text-pink border-retro-cyan bg-retro-cyan text-black"
+                                        data-state[loading].disabled="true"
+
+                                        data-state[enabled].text-content="{{ _('DISABLE') }}"
+                                        data-state[enabled].classlist.add="border-retro-pink text-retro-pink"
+                                        data-state[enabled].classlist.remove="border-retro-white text-retro-white border-retro-cyan bg-retro-cyan text-black"
+                                        data-state[enabled].disabled="false"
+
+                                        data-state[disabled].text-content="{{ _('ENABLE') }}"
+                                        data-state[disabled].classlist.add="border-retro-cyan bg-retro-cyan text-black"
+                                        data-state[disabled].classlist.remove="border-retro-white text-retro-white border-retro-pink text-retro-pink text-pink"
+                                        data-state[disabled].disabled="false"
+                                    >
+                                        {% if account and account.email_notifications %}{{ _('DISABLE') }}{% else %}{{ _('ENABLE') }}{% endif %}
                                     </button>
                                 </div>
                             </div>
@@ -52,14 +69,43 @@
                                 <label class="text-gray-300 sm:w-80 mb-2 sm:mb-0">{{ _('Push Notifications:') }}</label>
                                 <div class="flex items-center justify-end sm:justify-start flex-wrap gap-4">
                                     {% if current_plan and current_plan.is_granted_for_push() %}
-                                    <button type="button" id="pushButton" class="{% if account and account.push_subscription %}border border-retro-pink text-retro-pink{% else %}border border-retro-cyan bg-retro-cyan text-black{% endif %} px-4 py-2 text-sm font-bold hover:bg-retro-pink hover:border-retro-pink hover:text-black transition-colors duration-200">
-                                            {% if account and account.push_subscription %}
-                                                {{ _('DISABLE') }}
-                                            {% else %}
-                                                {{ _('ENABLE ON THIS DEVICE') }}
-                                            {% endif %}
+                                    <button
+                                        type="button"
+                                        class="border border-retro-white text-retro-white px-4 py-2 text-sm font-bold hover:bg-retro-pink hover:border-retro-pink hover:text-black transition-colors duration-200"
+                                        disabled="true"
+                                        id="pushButton"
+
+                                        data-state[loading].text-content="{{ _('LOADING...') }}"
+                                        data-state[loading].classlist.add="border-retro-white text-retro-white"
+                                        data-state[loading].classlist.remove="border-retro-pink text-retro-pink text-pink border-retro-cyan bg-retro-cyan text-black"
+                                        data-state[loading].disabled="true"
+
+                                        data-state[subscribed].text-content="{{ _('DISABLE') }}"
+                                        data-state[subscribed].classlist.add="border-retro-pink text-retro-pink text-pink"
+                                        data-state[subscribed].classlist.remove="border-retro-white text-retro-white border-retro-cyan bg-retro-cyan text-black"
+                                        data-state[subscribed].disabled="false"
+
+                                        data-state[unsubscribed].text-content="{{ _('ENABLE ON THIS DEVICE') }}"
+                                        data-state[unsubscribed].classlist.add="border-retro-cyan bg-retro-cyan text-black"
+                                        data-state[unsubscribed].classlist.remove="border-retro-white text-retro-white border-retro-pink text-retro-pink text-pink"
+                                        data-state[unsubscribed].disabled="false"
+                                    >
+                                        {{ _('LOADING...') }}
                                     </button>
-                                    <button type="button" id="testPushButton" class="border {% if account and account.push_subscription %}border-retro-cyan text-retro-cyan hover:bg-retro-cyan hover:text-black{% else %}border-gray-600 text-gray-600{% endif %} px-4 py-2 text-sm font-bold transition-colors duration-200" {% if not account and not account.push_subscription %}disabled{% endif %}>
+                                    <button
+                                        type="button"
+                                        id="testPushButton"
+                                        class="border border-gray-600 text-gray-600 px-4 py-2 text-sm font-bold transition-colors duration-200"
+                                        disabled="true"
+
+                                        data-state[disabled].classlist.add="border-gray-600 text-gray-600"
+                                        data-state[disabled].classlist.remove="border-retro-cyan text-retro-cyan hover:bg-retro-cyan hover:text-black"
+                                        data-state[disabled].disabled="true"
+
+                                        data-state[enabled].classlist.add="border-retro-cyan text-retro-cyan hover:bg-retro-cyan hover:text-black"
+                                        data-state[enabled].classlist.remove="border-gray-600 text-gray-600"
+                                        data-state[enabled].disabled="false"
+                                    >
                                         {{ _('TEST') }}
                                     </button>
                                     {% else %}
@@ -196,317 +242,5 @@
     </div>
 
     {% include '_footer.html' %}
-
-<script>
-    // Language handling with immediate save
-    const languageSelect = document.getElementById('language');
-    var initialLanguage = languageSelect.value;
-
-    languageSelect.addEventListener('change', async function() {
-        if (languageSelect.value !== initialLanguage) {
-            languageSelect.disabled = true;
-
-            try {
-                const response = await fetch('{{ "/api/my-account" }}', {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        language: languageSelect.value
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to save language preference');
-                }
-
-                initialLanguage = languageSelect.value;
-
-            } catch (error) {
-                alert('{{ _('Failed to save language preference') }}');
-                languageSelect.value = initialLanguage; // Revert
-            } finally {
-                languageSelect.disabled = false;
-            }
-        }
-    });
-
-    // Push notification handling
-    const pushButton = document.getElementById('pushButton');
-    const testPushButton = document.getElementById('testPushButton');
-    let pushEnabled = {% if account and account.push_subscription %}true{% else %}false{% endif %};
-
-    // Push email handling
-    const emailButton = document.getElementById('emailButton');
-    let emailEnabled = {% if account and account.email_notifications %}true{% else %}false{% endif %};
-
-    // VAPID public key from server (already converted to Uint8Array)
-    const vapidPublicKey = {{ vapid_public_key_bytes|tojson }};
-
-    async function subscribeToPush() {
-        if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-            alert('{{ _('Push notifications are not supported in this browser') }}');
-            return false;
-        }
-
-        if (!vapidPublicKey) {
-            alert('{{ _('Push notifications configuration error') }}');
-            return false;
-        }
-
-        try {
-            const registration = await navigator.serviceWorker.register('/sw.js');
-            await navigator.serviceWorker.ready;
-
-            if (!registration.pushManager) {
-                throw new Error('Push manager unavailable');
-            }
-
-            try {
-                const permissionState = await registration.pushManager.permissionState({
-                    userVisibleOnly: true
-                });
-            } catch (e) {
-                // Normal for some browsers
-            }
-
-            // Convert the array back to Uint8Array
-            const subscription = await registration.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey: new Uint8Array(vapidPublicKey)
-            });
-
-            const response = await fetch('{{ "/api/my-account" }}', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    push_subscription: subscription.toJSON()
-                })
-            });
-
-            if (response.ok) {
-                pushEnabled = true;
-                updatePushUI();
-                updatePushHint();
-                return true;
-            } else {
-                const errorText = await response.text();
-                throw new Error('Failed to save subscription: ' + errorText);
-                updatePushUI();
-            }
-        } catch (error) {
-            alert('{{ _('Failed to enable push notifications') }}: ' + error.message);
-
-            updatePushUI();
-            return false;
-        }
-    }
-
-    async function unsubscribeFromPush() {
-        try {
-            const registration = await navigator.serviceWorker.getRegistration();
-            if (registration) {
-                const subscription = await registration.pushManager.getSubscription();
-                if (subscription) {
-                    await subscription.unsubscribe();
-                }
-                // Unregister the service worker
-                await registration.unregister();
-            }
-
-            const response = await fetch('{{ "/api/my-account" }}', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    push_subscription: null
-                })
-            });
-
-            if (response.ok) {
-                pushEnabled = false;
-                updatePushUI();
-                updatePushHint();
-                return true;
-            } else {
-                const errorText = await response.text();
-                throw new Error('Failed to remove subscription: ' + errorText);
-            }
-        } catch (error) {
-            alert('{{ _('Failed to disable push notifications') }}: ' + error.message);
-            return false;
-        }
-    }
-
-    async function updatePushHint() {
-        const pushHint = document.getElementById('pushHint');
-        if (!pushHint) return;
-
-        try {
-            const registration = await navigator.serviceWorker.getRegistration();
-            const hasServiceWorker = !!registration;
-            const subscription = registration ? await registration.pushManager.getSubscription() : null;
-            const hasActiveSubscription = !!subscription;
-
-            if (pushEnabled && hasActiveSubscription) {
-                pushHint.textContent = '{{ _('Active on this browser and device') }}';
-                pushHint.className = 'text-sm text-retro-green';
-            } else if (pushEnabled && !hasActiveSubscription) {
-                pushHint.textContent = '{{ _('Active on another browser or device') }}';
-                pushHint.className = 'text-sm text-retro-gold';
-            } else {
-                pushHint.textContent = '';
-                pushHint.className = '';
-            }
-        } catch (error) {
-            pushHint.textContent = '';
-            pushHint.className = '';
-        }
-    }
-
-    function updatePushUI() {
-        if (pushButton) {  // Check if button exists
-            if (pushEnabled) {
-                pushButton.textContent = '{{ _('DISABLE') }}';
-                pushButton.classList.add('border-retro-pink', 'text-retro-pink');
-                pushButton.classList.remove('border-retro-cyan', 'bg-retro-cyan', 'text-black');
-            } else {
-                pushButton.textContent = '{{ _('ENABLE ON THIS DEVICE') }}';
-                pushButton.classList.remove('border-retro-pink', 'text-retro-pink');
-                pushButton.classList.add('border-retro-cyan', 'bg-retro-cyan', 'text-black');
-            }
-        }
-
-        // Update test button state
-        if (testPushButton) {
-            if (pushEnabled) {
-                testPushButton.disabled = false;
-                testPushButton.classList.remove('border-gray-600', 'text-gray-600');
-                testPushButton.classList.add('border-retro-cyan', 'text-retro-cyan',  'hover:bg-retro-cyan', 'hover:text-black');
-            } else {
-                testPushButton.disabled = true;
-                testPushButton.classList.add('border-gray-600', 'text-gray-600');
-                testPushButton.classList.remove('border-retro-cyan', 'text-retro-cyan',  'hover:bg-retro-cyan', 'hover:text-black');
-            }
-        }
-    }
-
-    function updateEmailUI() {
-        if (emailEnabled) {
-            emailButton.textContent = '{{ _('DISABLE') }}';
-            emailButton.classList.add('border-retro-pink', 'text-retro-pink');
-            emailButton.classList.remove('border-retro-cyan', 'bg-retro-cyan', 'text-black');
-        } else {
-            emailButton.textContent = '{{ _('ENABLE') }}';
-            emailButton.classList.remove('border-retro-pink', 'text-retro-pink');
-            emailButton.classList.add('border-retro-cyan', 'bg-retro-cyan', 'text-black');
-        }
-    }
-
-    async function toggleEmailPreference() {
-        try {
-            const response = await fetch('{{ "/api/my-account" }}', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    email_notifications: emailEnabled
-                })
-            });
-
-            if (response.ok) {
-                updateEmailUI();
-                return true;
-            } else {
-                const errorText = await response.text();
-                throw new Error('Failed to update email preference: ' + errorText);
-            }
-        } catch (error) {
-            alert('{{ _('Failed to update email preference') }}: ' + error.message);
-            return false;
-        }
-    }
-
-    if (pushButton) {
-        pushButton.addEventListener('click', async function() {
-            pushButton.disabled = true;
-            pushButton.textContent = '{{ _('LOADING...') }}';
-
-            try {
-                if (pushEnabled) {
-                    await unsubscribeFromPush();
-                } else {
-                    await subscribeToPush();
-                }
-            } catch (error) {
-                // Error already handled in the functions above
-            } finally {
-                pushButton.disabled = false;
-            }
-        });
-
-        // Initialize push hint on page load
-        updatePushHint();
-    }
-
-    // Test push notification handler
-    if (testPushButton) {
-        testPushButton.addEventListener('click', async function() {
-            if (!pushEnabled) return;
-
-            testPushButton.disabled = true;
-            const originalText = testPushButton.textContent;
-            testPushButton.textContent = '{{ _('SENDING...') }}';
-
-            try {
-                const response = await fetch('{{ "/api/test-push-notification" }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                });
-
-                if (response.ok) {
-                    testPushButton.textContent = '{{ _('SENT!') }}';
-                    setTimeout(() => {
-                        testPushButton.textContent = originalText;
-                        testPushButton.disabled = false;
-                    }, 2000);
-                } else {
-                    const errorText = await response.text();
-                    alert('{{ _('Failed to send test notification') }}: ' + errorText);
-                    testPushButton.textContent = originalText;
-                    testPushButton.disabled = false;
-                }
-            } catch (error) {
-                alert('{{ _('Failed to send test notification') }}: ' + error.message);
-                testPushButton.textContent = originalText;
-                testPushButton.disabled = false;
-            }
-        });
-    }
-
-    emailButton.addEventListener('click', async function() {
-        emailButton.disabled = true;
-        const originalText = emailButton.textContent;
-        emailButton.textContent = '{{ _('LOADING...') }}';
-
-        try {
-            emailEnabled = !emailEnabled;
-            await toggleEmailPreference();
-        } catch (error) {
-            // Revert on error
-            emailEnabled = !emailEnabled;
-            emailButton.textContent = originalText;
-        } finally {
-            emailButton.disabled = false;
-        }
-    });
-</script>
 
 {% endblock %}
