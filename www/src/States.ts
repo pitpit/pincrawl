@@ -33,8 +33,7 @@ class States {
         }
 
         this.element.textContent = stateAttributes['data-state[' + state + '].text-content'] || this.element.textContent || '';
-        this.element.classList.remove(...(stateAttributes['data-state[' + state + '].classlist.remove'] || ' ').split(' '));
-        this.element.classList.add(...(stateAttributes['data-state[' + state + '].classlist.add'] || ' ').split(' '));
+        this.element.className = stateAttributes['data-state[' + state + '].classname'] || '';
         if (this.element instanceof HTMLButtonElement) {
             this.element.disabled = (stateAttributes['data-state[' + state + '].disabled'] || 'false').toLowerCase() === 'true';
         }

@@ -41,25 +41,21 @@
                                 <div class="flex items-center justify-end sm:justify-start space-x-4">
                                     <button
                                         type="button"
-                                        class="border {% if account and account.email_notifications %}{{ _('DISABLE') }}border-retro-pink text-retro-pink{% else %}border-retro-cyan bg-retro-cyan text-black{{ _('ENABLE') }}{% endif %} px-4 py-2 text-sm font-bold hover:bg-retro-pink hover:border-retro-pink hover:text-black transition-colors duration-200"
+                                        class="{% if account and account.email_notifications %}button button-pink{% else %}button button-cyan{{ _('ENABLE') }}{% endif %}"
                                         id="emailButton"
 
                                         data-state="{% if account and account.email_notifications %}enabled{% else %}disabled{% endif %}"
 
                                         data-state[loading].text-content="{{ _('LOADING...') }}"
-                                        data-state[loading].classlist.add="border-retro-white text-retro-white"
-                                        data-state[loading].classlist.remove="border-retro-pink text-retro-pink text-pink border-retro-cyan bg-retro-cyan text-black"
+                                        data-state[loading].className="button button-disabled"
                                         data-state[loading].disabled="true"
 
                                         data-state[enabled].text-content="{{ _('DISABLE') }}"
-                                        data-state[enabled].classlist.add="border-retro-pink text-retro-pink"
-                                        data-state[enabled].classlist.remove="border-retro-white text-retro-white border-retro-cyan bg-retro-cyan text-black"
+                                        data-state[enabled].className="button button-pink"
                                         data-state[enabled].disabled="false"
 
                                         data-state[disabled].text-content="{{ _('ENABLE') }}"
-                                        data-state[disabled].classlist.add="border-retro-cyan bg-retro-cyan text-black"
-                                        data-state[disabled].classlist.remove="border-retro-white text-retro-white border-retro-pink text-retro-pink text-pink"
-                                        data-state[disabled].disabled="false"
+                                        data-state[disabled].className="button button-cyan"
                                     >
                                         {% if account and account.email_notifications %}{{ _('DISABLE') }}{% else %}{{ _('ENABLE') }}{% endif %}
                                     </button>
@@ -71,23 +67,20 @@
                                     {% if current_plan and current_plan.is_granted_for_push() %}
                                     <button
                                         type="button"
-                                        class="border border-retro-white text-retro-white px-4 py-2 text-sm font-bold hover:bg-retro-pink hover:border-retro-pink hover:text-black transition-colors duration-200"
+                                        class="button button-disabled"
                                         disabled="true"
                                         id="pushButton"
 
                                         data-state[loading].text-content="{{ _('LOADING...') }}"
-                                        data-state[loading].classlist.add="border-retro-white text-retro-white"
-                                        data-state[loading].classlist.remove="border-retro-pink text-retro-pink text-pink border-retro-cyan bg-retro-cyan text-black"
+                                        data-state[loading].className="button button-disabled"
                                         data-state[loading].disabled="true"
 
                                         data-state[subscribed].text-content="{{ _('DISABLE') }}"
-                                        data-state[subscribed].classlist.add="border-retro-pink text-retro-pink text-pink"
-                                        data-state[subscribed].classlist.remove="border-retro-white text-retro-white border-retro-cyan bg-retro-cyan text-black"
+                                        data-state[subscribed].className="button button-pink"
                                         data-state[subscribed].disabled="false"
 
                                         data-state[unsubscribed].text-content="{{ _('ENABLE ON THIS DEVICE') }}"
-                                        data-state[unsubscribed].classlist.add="border-retro-cyan bg-retro-cyan text-black"
-                                        data-state[unsubscribed].classlist.remove="border-retro-white text-retro-white border-retro-pink text-retro-pink text-pink"
+                                        data-state[unsubscribed].className="button button-cyan"
                                         data-state[unsubscribed].disabled="false"
                                     >
                                         {{ _('LOADING...') }}
@@ -95,15 +88,13 @@
                                     <button
                                         type="button"
                                         id="testPushButton"
-                                        class="border border-gray-600 text-gray-600 px-4 py-2 text-sm font-bold transition-colors duration-200"
+                                        class="button button-disabled"
                                         disabled="true"
 
-                                        data-state[disabled].classlist.add="border-gray-600 text-gray-600"
-                                        data-state[disabled].classlist.remove="border-retro-cyan text-retro-cyan hover:bg-retro-cyan hover:text-black"
+                                        data-state[disabled].className="button button-disabled"
                                         data-state[disabled].disabled="true"
 
-                                        data-state[enabled].classlist.add="border-retro-cyan text-retro-cyan hover:bg-retro-cyan hover:text-black"
-                                        data-state[enabled].classlist.remove="border-gray-600 text-gray-600"
+                                        data-state[enabled].className="button button-cyan"
                                         data-state[enabled].disabled="false"
                                     >
                                         {{ _('TEST') }}
@@ -113,11 +104,6 @@
                                     {% endif %}
                                 </div>
                             </div>
-                            {% if current_plan and current_plan.is_granted_for_push() %}
-                            <div class="sm:ml-80 mt-1 px-2 sm:px-0">
-                                <p id="pushHint" class="text-xs sm:text-sm text-gray-400 text-right sm:text-left"></p>
-                            </div>
-                            {% endif %}
                         </div>
                     </div>
                 </div>

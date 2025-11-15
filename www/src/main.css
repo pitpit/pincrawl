@@ -40,6 +40,20 @@
     box-shadow: 0 0 5px #00FFFF;
 }
 
+.button {
+    @apply px-4 py-2 text-sm font-bold transition-colors duration-200;
+}
+
+.button-pink {
+  @apply border border-retro-pink text-retro-pink hover:bg-retro-pink hover:border-retro-pink hover:text-black;
+}
+.button-cyan {
+    @apply border border-retro-cyan bg-retro-cyan text-black hover:bg-retro-pink hover:border-retro-pink hover:text-black;
+}
+.button-disabled {
+    @apply border border-gray-600 text-gray-600 cursor-not-allowed;
+}
+
 /* Custom slider styles */
 .slider-track::-webkit-slider-thumb {
     appearance: none;
