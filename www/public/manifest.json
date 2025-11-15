@@ -9,17 +9,17 @@
     "orientation": "portrait-primary",
     "icons": [
         {
-            "src": "/static/img/logo-32x32.png",
+            "src": "/dist/img/logo-32x32.png",
             "sizes": "32x32",
             "type": "image/png"
         },
         {
-            "src": "/static/img/logo-64x64.png",
+            "src": "/dist/img/logo-64x64.png",
             "sizes": "64x64",
             "type": "image/png"
         },
         {
-            "src": "/static/img/logo.png",
+            "src": "/dist/img/logo.png",
             "sizes": "768x768",
             "type": "image/png",
             "purpose": "any"
@@ -28,13 +28,13 @@
     "screenshots": [
 
         {
-            "src": "/static/img/screenshot-desktop.png",
+            "src": "/dist/img/screenshot-desktop.png",
             "sizes": "1280x720",
             "type": "image/png",
             "form_factor": "wide"
         },
         {
-            "src": "/static/img/screenshot-mobile.png",
+            "src": "/dist/img/screenshot-mobile.png",
             "sizes": "720x1280",
             "type": "image/png",
             "form_factor": "narrow"

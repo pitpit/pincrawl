@@ -11,42 +11,9 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="PINCRAWL">
-    <link rel="manifest" href="/static/manifest.json">
+    <link rel="manifest" href="/dist/manifest.json">
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindplus/elements@1" type="module"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'retro-cyan': '#00FFFF',
-                        'retro-pink': '#FF1493',
-                        'retro-green': '#00FF41',
-                        'retro-gold': '#FFD700',
-                        'retro-white': '#FFFFFF',
-                        'retro-dark': '#0D1117',
-                        'dark-grey': '#2D2D2D',
-                        'darker-grey': '#1A1A1A',
-                        'medium-grey': '#404040',
-                    },
-                    fontFamily: {
-                        'retro': ['Courier New', 'Monaco', 'monospace'],
-                    },
-                    animation: {
-                        'scan-line': 'scan-line 2s linear infinite',
-                    },
-                    keyframes: {
-                        'scan-line': {
-                            '0%': { transform: 'translateY(-100vh)' },
-                            '100%': { transform: 'translateY(100vh)' }
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-
+<!--
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script>
     window.OneSignalDeferred = window.OneSignalDeferred || [];
@@ -59,12 +26,13 @@
         },
         });
     });
-    </script>
+    </script> -->
 
-    <link rel="stylesheet" href="/static/css/main.css">
-    <link rel="icon" type="image/png" href="/static/favicon.ico">
+    <link rel="stylesheet" href="/dist/css/main.css">
+    <link rel="icon" type="image/png" href="/dist/favicon.ico">
 </head>
 <body class="font-retro text-white bg-dark-grey">
 {% block content %}{% endblock %}
+<script type="module" src="/dist/js/main.js"></script>
 </body>
 </html>

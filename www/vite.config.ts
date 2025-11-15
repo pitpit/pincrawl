@@ -1,18 +1,23 @@
 import { defineConfig } from 'vite'
+import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
+  plugins: [
+    tailwindcss(),
+  ],
   build: {
     outDir: 'dist',
     rollupOptions: {
+      input: '/src/main.ts',
       output: {
         assetFileNames: (assetInfo) => {
           if (assetInfo?.name?.endsWith('.css')) {
-            return 'css/[name]-[hash][extname]'
+            return 'css/[name][extname]'
           }
-          return 'css/[name]-[hash][extname]'
+          return 'css/[name][extname]'
         },
-        chunkFileNames: 'js/[name]-[hash].js',
-        entryFileNames: 'js/[name]-[hash].js',
+        chunkFileNames: 'js/[name].js',
+        entryFileNames: 'js/[name].js',
       }
     }
   }

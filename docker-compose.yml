@@ -43,7 +43,7 @@ services:
     working_dir: /app/www
     # Default command (can be overridden when running)
     entrypoint: ["sh", "-c", "npm install && exec \"$@\"", "--"]
-    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+    command: ["npm", "run", "build:watch"]
     # Allow interactive usage (REPL, stdin)
     tty: true
     stdin_open: true

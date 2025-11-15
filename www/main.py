@@ -71,8 +71,8 @@ app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=["*"])
 # app.add_middleware(TrustedHostMiddleware, allowed_hosts=["localhost", "192-168-0-11.nip.io"])
 
 # Mount static files
-static_dir = os.path.join(os.path.dirname(__file__), "static")
-app.mount("/static", StaticFiles(directory=static_dir), name="static")
+dist_dir = os.path.join(os.path.dirname(__file__), "dist")
+app.mount("/dist", StaticFiles(directory=dist_dir), name="dist")
 
 # Setup Jinja2 templates
 
