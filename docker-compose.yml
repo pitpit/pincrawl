@@ -11,6 +11,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
 
+
   console:
     image: python:3.13-slim
     # Mount source for live editing without rebuilds
@@ -31,6 +32,21 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - DATABASE_URL=postgresql://pincrawl:pincrawl@postgres:5432/pincrawl
+
+  node:
+    image: node:25-slim
+    ports:
+      - "5173:5173"
+    # Mount source for live editing without rebuilds
+    volumes:
+      - ./:/app
+    working_dir: /app/www
+    # Default command (can be overridden when running)
+    entrypoint: ["sh", "-c", "npm install && exec \"$@\"", "--"]
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+    # Allow interactive usage (REPL, stdin)
+    tty: true
+    stdin_open: true
 
   www:
     image: python:3.13-slim

@@ -70,7 +70,7 @@ class EmailNotificationService:
 
         # For debugging: save rendered HTML to file
         # TODO comment
-        debug_html_path = 'www/static/test_email.html'
+        debug_html_path = 'www/var/test_email.html'
         with open(debug_html_path, 'w') as f:
             f.write(html_body)
 

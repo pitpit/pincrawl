@@ -220,13 +220,12 @@ def url_base64_to_bytes(base64_string):
 
 
 # Add this route before the other routes, after the static files mount
-@app.get("/sw.js")
+@app.get("/OneSignalSDKWorker.js")
 async def service_worker():
     """Serve the service worker with Service-Worker-Allowed header for root scope"""
 
-    sw_filename = os.path.join(os.path.dirname(__file__), "sw.js")
+    sw_filename = os.path.join(os.path.dirname(__file__), "OneSignalSDKWorker.js")
     response = FileResponse(sw_filename, media_type="application/javascript")
-    response.headers["Service-Worker-Allowed"] = "/"
     return response
 
 # Public endpoint for graph generation
