@@ -1,35 +1,59 @@
 """Web Push notification service for sending alerts to users."""
 
 import json
+import os
 import logging
 from typing import Optional, Dict, Any
-from pywebpush import webpush, WebPushException
 from pincrawl.database import Ad, Account
 from pincrawl.i18n import I18n
+from typing import List
+import onesignal
+from onesignal.api import default_api
+from onesignal.model.notification import Notification
+# from onesignal.model.rate_limit_error import RateLimitError
+# from onesignal.model.generic_error import GenericError
+# from onesignal.model.create_notification_success_response import CreateNotificationSuccessResponse
 
 logger = logging.getLogger(__name__)
+
+ONESIGNAL_API_KEY = os.getenv("ONESIGNAL_API_KEY")
+if not ONESIGNAL_API_KEY:
+    raise Exception("ONESIGNAL_API_KEY environment variable is not set.")
+
+ONESIGNAL_APP_ID = os.getenv("ONESIGNAL_APP_ID")
+if not ONESIGNAL_APP_ID:
+    raise Exception("ONESIGNAL_APP_ID environment variable is not set.")
+
+class NotSubscribedPushException(Exception):
+    """Exception raised when trying to send push notification to user who is not subscribed."""
+    pass
 
 class PushNotificationService:
     """Service for sending Web Push notifications."""
 
-    def __init__(self, vapid_private_key: str, vapid_claims: Dict[str, str], i18n: I18n):
+    def __init__(self, i18n: I18n):
         """
         Initialize push notification service.
 
         Args:
-            vapid_private_key: VAPID private key for authentication
-            vapid_claims: VAPID claims including 'sub' (contact email)
+            i18n: Internationalization service for localized messages
         """
-        self.vapid_private_key = vapid_private_key
-        self.vapid_claims = vapid_claims
         self.i18n = i18n
 
-    def send_notification(self, subscription: Dict[str, Any], title: str, body: str, url: str):
+        configuration = onesignal.Configuration(
+            rest_api_key = ONESIGNAL_API_KEY,
+        )
+
+        api_client = onesignal.ApiClient(configuration)
+        self.api_instance = default_api.DefaultApi(api_client)
+
+
+    def send_notification(self, remote_ids: list[str], title: str, body: str, url: str):
         """
         Send a push notification to a subscriber.
 
         Args:
-            subscription: Push subscription data from browser
+            remote_ids: List of OneSignal remote IDs
             title: Notification title
             body: Notification body text
             url: URL to open when notification is clicked
@@ -38,27 +62,37 @@ class PushNotificationService:
             bool: True if notification was sent successfully
         """
         try:
-            payload = {
-                'title': title,
-                'body': body,
-                'url': url
-            }
-
-            webpush(
-                subscription_info=subscription,
-                data=json.dumps(payload),
-                vapid_private_key=self.vapid_private_key,
-                vapid_claims=self.vapid_claims
+            notification = Notification(
+                app_id=ONESIGNAL_APP_ID,
+                headings={"en": title},
+                contents={"en": body},
+                url=url,
+                include_aliases= { "external_id": remote_ids },
+                target_channel="push"
             )
 
-            logger.info(f"Push notification sent successfully to endpoint: {subscription.get('endpoint', 'unknown')}")
-            return True
+            logger.debug(f"notification: {notification}")
 
-        except WebPushException as e:
-            if e.response and e.response.status_code == 410:
-                # Subscription is no longer valid
-                logger.warning(f"Push subscription expired: {subscription.get('endpoint', 'unknown')}")
-            raise
+            api_response = self.api_instance.create_notification(notification)
+
+            logger.debug(f"OneSignal API response: {api_response}")
+
+            if "errors" in api_response and api_response.errors:
+                logger.debug(f"OneSignal API errors: {api_response}")
+
+                invalid_aliases = []
+
+                for error_type, error_data in api_response.errors.items():
+                    if "invalid_aliases" == error_type:
+                        invalid_aliases = error_data
+                    else:
+                        raise Exception(f"Push notification error: {api_response.errors}")
+
+                if invalid_aliases:
+                    raise NotSubscribedPushException(f"Invalid push subscription for remote IDs: {invalid_aliases}")
+
+            logger.info(f"Push notification sent successfully to remote IDs: {remote_ids}")
+
         except Exception as e:
             raise
 
@@ -94,7 +128,7 @@ class PushNotificationService:
 
         # Send push notification
         self.send_notification(
-            subscription=account.push_subscription,
+            remote_ids=[str(account.remote_id)],
             title=title,
             body=body,
             url=ad.url

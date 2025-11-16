@@ -10,7 +10,7 @@ from pincrawl.database import Database, Watching, Ad, Task, TaskStatus, Product,
 from pincrawl.task_manager import TaskManager
 from pincrawl.smtp import Smtp
 from pincrawl.email_notification_service import EmailNotificationService
-from pincrawl.push_notification_service import PushNotificationService
+from pincrawl.push_notification_service import PushNotificationService, NotSubscribedPushException
 import random
 from pincrawl.i18n import I18n
 from importlib.resources import files
@@ -22,12 +22,6 @@ if not SMTP_URL:
 
 FROM_EMAIL = os.getenv("FROM_EMAIL", "noreply@localhost")
 PING_EMAIL = os.getenv("PING_EMAIL", None)
-
-# Push notification configuration
-VAPID_PRIVATE_KEY = os.getenv('VAPID_PRIVATE_KEY')
-if not VAPID_PRIVATE_KEY:
-    raise Exception("VAPID_PRIVATE_KEY environment variable not set")
-VAPID_CONTACT_EMAIL = os.getenv('VAPID_CONTACT_EMAIL', 'pincrawl@pitp.it')
 
 # Database and task manager instances
 database = Database()
@@ -134,8 +128,7 @@ def watching_send():
             smtp_client = Smtp(SMTP_URL)
             email_notification_service = EmailNotificationService(smtp_client, i18n)
 
-            vapid_claims = {'sub': f'mailto:{VAPID_CONTACT_EMAIL}'}
-            push_notification_service = PushNotificationService(VAPID_PRIVATE_KEY, vapid_claims, i18n)
+            push_notification_service = PushNotificationService(i18n)
 
             # mail control
             # if this fails, we want to know before sending user emails
@@ -165,20 +158,19 @@ def watching_send():
                     logging.info(f"Email notifications disabled for account {account.email}")
 
                 # Send push notifications if enabled and service is available
-                if account.push_notifications:
-                    current_plan = account.get_current_plan(session)
-                    if (current_plan and current_plan.is_granted_for_push()):
-                        try:
-                            for ad in ads:
-                                push_notification_service.send_ad_notification_push(account, ad)
-                                push_count += 1
-                            logging.info(f"Sent 1 push notification to account {account.email}")
-                        except Exception as e:
-                            logging.exception(f"Failed to send 1 push notification to account {account.email}")
-                    else:
-                        logging.info(f"Push notifications not allowed for account {account.email} due to plan restrictions")
+                current_plan = account.get_current_plan(session)
+                if (current_plan and current_plan.is_granted_for_push()):
+                    try:
+                        for ad in ads:
+                            push_notification_service.send_ad_notification_push(account, ad)
+                            push_count += 1
+                        logging.info(f"Sent {len(ads)} push notifications to account {account.email}")
+                    except NotSubscribedPushException as e:
+                        logging.info(f"Account {account.email} is not subscribed for push notifications: {e}")
+                    except Exception as e:
+                        logging.exception(f"Failed to send push notifications to account {account.email}")
                 else:
-                    logging.info(f"Push notifications disabled for account {account.email}")
+                    logging.info(f"Push notifications not allowed for account {account.email} due to plan restrictions")
 
             # Mark task as successful
             task_manager.update_task_status(session, current_task, TaskStatus.SUCCESS)
@@ -244,9 +236,6 @@ def test_push(email):
     if not account:
         raise click.ClickException(f"Account with email {email} not found")
 
-    if not account.push_notifications:
-        raise click.ClickException(f"Push notifications not enabled for account {email}")
-
     current_plan = account.get_current_plan(session)
     if not current_plan or not current_plan.is_granted_for_push():
         raise click.ClickException(f"Push notifications not allowed for account {email} due to plan restrictions")
@@ -254,17 +243,20 @@ def test_push(email):
     # Initialize services
     i18n = I18n(files('pincrawl').joinpath('translations'))
     smtp_client = Smtp(SMTP_URL)
-    vapid_claims = {'sub': f'mailto:{VAPID_CONTACT_EMAIL}'}
-    push_notification_service = PushNotificationService(VAPID_PRIVATE_KEY, vapid_claims, i18n)
+
+    push_notification_service = PushNotificationService(i18n)
 
     # Create fake ad data for testing using real Ad entities
     fake_ads = get_fake_ads()
 
     # Send test push notifications
     push_count = 0
-    for ad in fake_ads:
-        push_notification_service.send_ad_notification_push(account, ad)
-        push_count += 1
+    try:
+        for ad in fake_ads:
+            push_notification_service.send_ad_notification_push(account, ad)
+            push_count += 1
+    except NotSubscribedPushException as e:
+        click.echo(f"✗ Account {account.email} is not subscribed for push notifications: {e}")
 
     click.echo(f"✓ {push_count} notifications sent successfully to {email}")
 

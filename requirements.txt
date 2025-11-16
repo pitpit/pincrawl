@@ -14,5 +14,5 @@ pytest-cov==7.0.0
 scrapingbee
 matplotlib
 jinja2
-pywebpush
+onesignal-python-api>=5.3.0b1
 cryptography

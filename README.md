@@ -154,6 +154,8 @@ désactiver l’optimisation pour Chrome, pas pour la PWA.
 
 ### Must
 
+- [ ] main.py: switch user id to uuid
+- [ ] main.py: link a user with its auth0 id, not his email
 - [ ] push: Add periodic background sync endpoint `/api/missed-notifications`
 - [ ] push: Register periodic background sync in main app (needs HTTPS and user engagement)
 - [ ] auth0: passer en mode prod
@@ -166,6 +168,8 @@ désactiver l’optimisation pour Chrome, pas pour la PWA.
 
 ### Should
 
+- send same notifications with onesignal to everyone at the same time  (remote_ids)
+- [ ] inject user and account with a middleware in all routes & template
 - [ ] tracker le dernier prix et la suppression d'une annonce
 - [ ] admin interface to see all scraped ads
 - [ ] declare an alert as invalid (will ask for a manual review)

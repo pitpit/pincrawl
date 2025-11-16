@@ -27,7 +27,7 @@ from fastapi.exceptions import RequestValidationError
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 # from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
-from pincrawl.push_notification_service import PushNotificationService
+from pincrawl.push_notification_service import PushNotificationService, NotSubscribedPushException
 
 # Load environment variables
 load_dotenv()
@@ -51,15 +51,6 @@ SESSION_SECRET_KEY = os.getenv("SESSION_SECRET_KEY")
 if not SESSION_SECRET_KEY:
     raise ValueError("SESSION_SECRET_KEY environment variable is required")
 
-VAPID_PUBLIC_KEY = os.getenv('VAPID_PUBLIC_KEY')
-if not VAPID_PUBLIC_KEY:
-    raise ValueError("VAPID_PUBLIC_KEY environment variable is required")
-
-VAPID_PRIVATE_KEY = os.getenv('VAPID_PRIVATE_KEY')
-if not VAPID_PRIVATE_KEY:
-    raise Exception("VAPID_PRIVATE_KEY environment variable not set")
-VAPID_CONTACT_EMAIL = os.getenv('VAPID_CONTACT_EMAIL', 'pincrawl@pitp.it')
-
 PINCRAWL_BASE_URL = os.getenv('PINCRAWL_BASE_URL')
 if not PINCRAWL_BASE_URL:
     raise Exception("PINCRAWL_BASE_URL environment variable not set")
@@ -80,8 +71,9 @@ templates_dir = os.path.join(os.path.dirname(__file__), "templates")
 templates = Jinja2Templates(directory=templates_dir)
 
 # Add i18n context processor
-def create_template_context(locale: str|None, **kwargs):
+def create_template_context(locale: str|None,  user: dict|None = None, account: Account|None = None, **kwargs):
     """Create template context with i18n support"""
+
     i18n_context = i18n.create_context(locale)
     context = {
         "locale": i18n_context.locale,
@@ -89,6 +81,11 @@ def create_template_context(locale: str|None, **kwargs):
         "supported_locales": i18n.SUPPORTED_LOCALES,
         **kwargs
     }
+    if account:
+        context["account"] = account
+    if user:
+        context["user"] = user
+
     return context
 
 # Auth0 configuration
@@ -218,16 +215,6 @@ def url_base64_to_bytes(base64_string):
     except Exception as e:
         raise ValueError(f"Failed to decode base64 string: {str(e)}")
 
-
-# Add this route before the other routes, after the static files mount
-@app.get("/OneSignalSDKWorker.js")
-async def service_worker():
-    """Serve the service worker with Service-Worker-Allowed header for root scope"""
-
-    sw_filename = os.path.join(os.path.dirname(__file__), "dist", "OneSignalSDKWorker.js")
-    response = FileResponse(sw_filename, media_type="application/javascript")
-    return response
-
 # Public endpoint for graph generation
 @app.get("/graphs/{product_opdb_id}.{format}")
 async def get_graph(product_opdb_id: str, format: str):
@@ -355,11 +342,14 @@ async def homepage(
     """Protected homepage - only for authenticated users"""
 
     user = get_user(request)
+    account = None
+    if user:
+        account = Account.get_by_email(db.get_db(), user.get('email'))
 
     return templates.TemplateResponse(
         request,
         "home.html",
-        create_template_context(locale, user=user)
+        create_template_context(locale, user=user, account=account)
     )
 
 @app.get("/login")
@@ -485,6 +475,7 @@ async def pinballs(
 
     # Get user email and account
     user_email = user.get('email')
+    account = None
 
     session = db.get_db()
 
@@ -536,6 +527,7 @@ async def pinballs(
         create_template_context(
             locale,
             user=user,
+            account=account,
             products=products,
             manufacturers=manufacturers,
             query=query,
@@ -567,6 +559,7 @@ async def plans(
     # Get user's current plan to show appropriate buttons
     user_email = user.get('email')
     current_plan = None
+    account = None
 
     if user_email:
         session = db.get_db()
@@ -587,6 +580,7 @@ async def plans(
         create_template_context(
             locale,
             user=user,
+            account=account,
             current_plan=current_plan
         )
     )
@@ -602,10 +596,19 @@ async def legal_notice(
     # Select template based on locale
     template_name = f"legal-notice.{locale}.html"
 
+    user = get_user(request)
+    account = None
+    if user:
+        account = Account.get_by_email(db.get_db(), user.get('email'))
+
     return templates.TemplateResponse(
         request,
         template_name,
-        create_template_context(locale)
+        create_template_context(
+            locale,
+            user=user,
+            account=account
+        )
     )
 
 
@@ -619,10 +622,19 @@ async def terms_of_service(
     # Select template based on locale
     template_name = f"terms-of-use.{locale}.html"
 
+    user = get_user(request)
+    account = None
+    if user:
+        account = Account.get_by_email(db.get_db(), user.get('email'))
+
     return templates.TemplateResponse(
         request,
         template_name,
-        create_template_context(locale)
+        create_template_context(
+            locale,
+            user=user,
+            account=account
+        )
     )
 
 
@@ -652,9 +664,6 @@ async def my_account(
         finally:
             session.close()
 
-    # Convert VAPID key server-side
-    vapid_public_key_bytes = url_base64_to_bytes(VAPID_PUBLIC_KEY)
-
     return templates.TemplateResponse(
         request,
         "my-account.html",
@@ -662,8 +671,7 @@ async def my_account(
             locale,
             user=user,
             account=account,
-            current_plan=current_plan,
-            vapid_public_key_bytes=vapid_public_key_bytes
+            current_plan=current_plan
         )
     )
 
@@ -701,26 +709,6 @@ async def update_my_account(
             account.email_notifications = email_notifications
             logger.info(f"✓ Updated email_notifications for user {user_email} to {email_notifications}")
 
-        # Handle push subscription (subscribe or unsubscribe)
-        if 'push_subscription' in data:
-            push_subscription_data = data.get('push_subscription')
-
-            if push_subscription_data is None:
-                # Unsubscribe from push notifications
-                account.push_subscription = None
-                logger.info(f"✓ Removed push subscription for user {user_email}")
-            else:
-                # Subscribe to push notifications
-                current_plan = account.get_current_plan(session)
-                if not current_plan or not current_plan.is_granted_for_push():
-                    raise HTTPException(status_code=402, detail="Your plan does not include push notifications")
-
-                if not push_subscription_data:
-                    raise HTTPException(status_code=400, detail="Invalid subscription data")
-
-                account.push_subscription = push_subscription_data
-                logger.info(f"✓ Updated push subscription for user {user_email}")
-
         session.commit()
 
         return JSONResponse(content={'success': True})
@@ -752,29 +740,24 @@ async def test_push_notification(
         if not account:
             raise HTTPException(status_code=400, detail="Account not found")
 
-        if not account.push_notifications:
-            raise HTTPException(status_code=400, detail="Push notifications not enabled for this account")
-
         current_plan = account.get_current_plan(session)
         if not current_plan or not current_plan.is_granted_for_push():
             raise HTTPException(status_code=402, detail="Push notifications not allowed for this account due to plan restrictions")
 
-        if not account.push_subscription:
-            raise HTTPException(status_code=400, detail="No push subscription found for this account")
-
-        # Initialize push notification service
-
-        vapid_claims = {'sub': f'mailto:{VAPID_CONTACT_EMAIL}'}
-        push_notification_service = PushNotificationService(VAPID_PRIVATE_KEY, vapid_claims, i18n)
+        push_notification_service = PushNotificationService(i18n)
 
         i18n_context = i18n.create_context(account.language)
 
-        push_notification_service.send_notification(
-            subscription=account.push_subscription,
-            title=i18n_context._("Test notification from PINCRAWL"),
-            body=i18n_context._("This is a test push notification to verify it is working correctly."),
-            url=PINCRAWL_BASE_URL
-        )
+        try:
+            push_notification_service.send_notification(
+                remote_ids=[str(account.remote_id)],
+                title=i18n_context._("Test notification from PINCRAWL"),
+                body=i18n_context._("This is a test push notification to verify it is working correctly."),
+                url=PINCRAWL_BASE_URL
+            )
+        except NotSubscribedPushException as e:
+            logger.info(f"Account {user_email} is not subscribed for push notifications: {e}")
+            raise HTTPException(status_code=400, detail="Push notification test failed: User not subscribed")
 
         logger.info(f"✓ Test push notification sent successfully to {user_email}")
 

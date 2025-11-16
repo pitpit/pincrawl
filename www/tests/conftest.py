@@ -5,10 +5,9 @@ import sys
 import os
 from pincrawl.database import Account, PlanType, Product
 
-# Add parent directory to path to import main
-# sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-
 from main import app, db
+
+from pincrawl.push_notification_service import NotSubscribedPushException
 
 
 @pytest.fixture
@@ -50,8 +49,6 @@ def mock_free_account(mock_session):
     account.email = 'test@example.com'
     account.language = 'en'
     account.email_notifications = True
-    account.push_subscription = None
-    account.push_notifications = False
 
     # Mock get_current_plan
     plan = MagicMock()
@@ -72,8 +69,6 @@ def mock_pro_account(mock_session):
     account.email = 'pro@example.com'
     account.language = 'en'
     account.email_notifications = True
-    account.push_subscription = None
-    account.push_notifications = False
 
     # Mock get_current_plan
     plan = MagicMock()
@@ -94,3 +89,20 @@ def mock_product(mock_session):
     product.opdb_id = 'test-opdb-id'
 
     return product
+
+@pytest.fixture
+def mock_push_service():
+    with patch('main.PushNotificationService') as mock_service_class:
+        mock_instance = MagicMock()
+        mock_service_class.return_value = mock_instance
+        yield mock_instance
+
+@pytest.fixture
+def mock_push_service_but_not_subscribed():
+    with patch('main.PushNotificationService') as mock_service_class:
+        mock_instance = MagicMock()
+
+        mock_instance.send_notification.side_effect = NotSubscribedPushException("Send failed")
+
+        mock_service_class.return_value = mock_instance
+        yield mock_instance

@@ -26,9 +26,9 @@ class PushNotificationComponent {
                 try {
                     const optedIn = await this.OneSignal.User.PushSubscription.optedIn;
                     if (optedIn) {
-                        await this.unsubscribe();
+                        await this.OneSignal.User.PushSubscription.optOut();
                     } else {
-                        await this.subscribe();
+                        await this.OneSignal.User.PushSubscription.optIn();
                     }
                 } catch (error) {
                     console.error('Error toggling push subscription:', error);
@@ -37,39 +37,39 @@ class PushNotificationComponent {
                 }
             });
         }
-    }
 
-    async subscribe() {
-        await this.OneSignal.User.PushSubscription.optIn();
+        if (this.testPushButton) {
 
-        // const response = await fetch('{{ "/api/my-account" }}', {
-        //     method: 'PUT',
-        //     headers: {
-        //         'Content-Type': 'application/json',
-        //     },
-        //     body: JSON.stringify({
-        //         push_subscription: subscription.toJSON()
-        //     })
-        // });
+            this.testPushButton.addEventListener('click', async () => {
+                var previousState = this.testPushButtonStates.getCurrent();
+                this.testPushButtonStates.change('sending');
 
-        // if (response.ok) {
-        //     pushEnabled = true;
-        //     updatePushUI();
-        //     updatePushHint();
-        //     return true;
-        // } else {
-        //     const errorText = await response.text();
-        //     throw new Error('Failed to save subscription: ' + errorText);
-        //     updatePushUI();
-        // }
-    }
+                try {
+                    const response = await fetch('/api/test-push-notification', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    });
 
-    async unsubscribe() {
-        await this.OneSignal.User.PushSubscription.optOut();
+                    if (response.ok) {
+                        this.testPushButtonStates.change('sent');
+                    } else {
+                        throw new Error('Failed to send test push notification');
+                    }
+                } catch (error) {
+                    this.testPushButtonStates.change('error');
+                } finally {
+                    setTimeout(() => {
+                        this.testPushButtonStates.change(previousState);
+                    }, 2000);
+                }
+            });
+        };
     }
 
     async refreshUI() {
-        const optedIn = await this.OneSignal.User.PushSubscription.optedIn;
+        const optedIn = await this.OneSignal?.User.PushSubscription.optedIn;
         if (optedIn) {
             this.pushButtonStates.change('subscribed');
             this.testPushButtonStates.change('enabled');

@@ -14,7 +14,8 @@ from typing import List, Optional, Union
 from sqlalchemy import text, create_engine, Column, Integer, String, Text, Boolean, DateTime, JSON, Index, UniqueConstraint, Enum, func, ForeignKey
 from sqlalchemy.orm import sessionmaker, Session, relationship, declarative_base
 from sqlalchemy.engine import Engine
-from sqlalchemy.dialects.postgresql import TSVECTOR
+from sqlalchemy.dialects.postgresql import TSVECTOR, UUID
+import uuid
 from dotenv import load_dotenv
 import enum
 
@@ -70,7 +71,7 @@ class Database:
         self.session_local = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
 
         # Create tables
-        Base.metadata.create_all(bind=self.engine)
+        # Base.metadata.create_all(bind=self.engine)
 
         return self.engine
 
@@ -724,9 +725,9 @@ class Account(Base):
     __tablename__ = "accounts"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    remote_id = Column(UUID(as_uuid=True), unique=True, index=True, nullable=False, default=uuid.uuid4)
     email = Column(String, unique=True, index=True, nullable=False)
     language = Column(String(2), nullable=True, default=None)  # ISO 639-1 language code for communication (email, SMS, WhatsApp) - does not affect UI navigation
-    push_subscription = Column(JSON, nullable=True)  # Web Push subscription data
     email_notifications = Column(Boolean, nullable=True, default=True)  # Email notifications preference
     created_at = Column(DateTime, default=datetime.now, nullable=False)
 
@@ -738,6 +739,8 @@ class Account(Base):
         # Index for email lookups (already created by unique=True and index=True)
         # Index for created_at sorting
         Index('ix_accounts_created_at', 'created_at'),
+        # Index for remote_id lookups
+        Index('ix_accounts_remote_id', 'remote_id'),
     )
 
     @staticmethod
@@ -811,16 +814,6 @@ class Account(Base):
             AccountHistory.account_id == self.id,
             AccountHistory.end_date.is_(None)
         ).first()
-
-    @property
-    def push_notifications(self) -> bool:
-        """
-        Check if push notifications are enabled for this account.
-
-        Returns:
-            bool: True if push notifications are enabled
-        """
-        return self.push_subscription is not None and bool(self.push_subscription)
 
 class AccountHistory(Base):
     """SQLAlchemy model for account_history table."""

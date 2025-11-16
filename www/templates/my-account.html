@@ -93,9 +93,24 @@
 
                                         data-state[disabled].className="button button-disabled"
                                         data-state[disabled].disabled="true"
+                                        data-state[disabled].text-content="{{ _('TEST') }}"
 
                                         data-state[enabled].className="button button-cyan"
                                         data-state[enabled].disabled="false"
+                                        data-state[enabled].text-content="{{ _('TEST') }}"
+
+                                        data-state[sending].className="button button-disabled"
+                                        data-state[sending].disabled="true"
+                                        data-state[sending].text-content="{{ _('SENDING...') }}"
+
+                                        data-state[sent].className="button button-disabled"
+                                        data-state[sent].disabled="true"
+                                        data-state[sent].text-content="{{ _('SENT!') }}"
+
+
+                                        data-state[error].className="button button-disabled"
+                                        data-state[error].disabled="true"
+                                        data-state[error].text-content="{{ _('ERROR!') }}"
                                     >
                                         {{ _('TEST') }}
                                     </button>
