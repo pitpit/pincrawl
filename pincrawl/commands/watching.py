@@ -166,7 +166,7 @@ def watching_send():
                             push_count += 1
                         logging.info(f"Sent {len(ads)} push notifications to account {account.email}")
                     except NotSubscribedPushException as e:
-                        logging.info(f"Account {account.email} is not subscribed for push notifications: {e}")
+                        logging.info(f"Account {account.email} is not subscribed for push notifications")
                     except Exception as e:
                         logging.exception(f"Failed to send push notifications to account {account.email}")
                 else:
@@ -256,7 +256,7 @@ def test_push(email):
             push_notification_service.send_ad_notification_push(account, ad)
             push_count += 1
     except NotSubscribedPushException as e:
-        click.echo(f"✗ Account {account.email} is not subscribed for push notifications: {e}")
+        click.echo(f"✗ Account {account.email} is not subscribed for push notifications")
 
     click.echo(f"✓ {push_count} notifications sent successfully to {email}")
 

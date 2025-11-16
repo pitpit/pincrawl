@@ -78,15 +78,21 @@ class PushNotificationService:
             logger.debug(f"OneSignal API response: {api_response}")
 
             if "errors" in api_response and api_response.errors:
-                logger.debug(f"OneSignal API errors: {api_response}")
 
                 invalid_aliases = []
 
-                for error_type, error_data in api_response.errors.items():
-                    if "invalid_aliases" == error_type:
-                        invalid_aliases = error_data
-                    else:
-                        raise Exception(f"Push notification error: {api_response.errors}")
+                if isinstance(api_response.errors, dict):
+                    for error_type, error_data in api_response.errors.items():
+                        if "invalid_aliases" == error_type:
+                            invalid_aliases = error_data
+                        else:
+                            raise Exception(f"Push notification error: {api_response.errors}")
+                elif isinstance(api_response.errors, list):
+                    for error_data in api_response.errors:
+                        if "All included players are not subscribed" == error_data:
+                            invalid_aliases = remote_ids
+                        else:
+                            raise Exception(f"Push notification error: {api_response.errors}")
 
                 if invalid_aliases:
                     raise NotSubscribedPushException(f"Invalid push subscription for remote IDs: {invalid_aliases}")

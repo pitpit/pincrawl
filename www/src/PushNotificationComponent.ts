@@ -20,11 +20,9 @@ class PushNotificationComponent {
 
         if (this.pushButton) {
             this.pushButton.addEventListener('click', async () => {
-                if (!this.OneSignal) {
-                    console.error('OneSignal is not initialized.');
-                }
+                this.pushButtonStates.change('loading');
                 try {
-                    const optedIn = await this.OneSignal.User.PushSubscription.optedIn;
+                    const optedIn = this.OneSignal.User.PushSubscription.optedIn;
                     if (optedIn) {
                         await this.OneSignal.User.PushSubscription.optOut();
                     } else {
@@ -39,7 +37,6 @@ class PushNotificationComponent {
         }
 
         if (this.testPushButton) {
-
             this.testPushButton.addEventListener('click', async () => {
                 var previousState = this.testPushButtonStates.getCurrent();
                 this.testPushButtonStates.change('sending');
@@ -62,14 +59,14 @@ class PushNotificationComponent {
                 } finally {
                     setTimeout(() => {
                         this.testPushButtonStates.change(previousState);
-                    }, 2000);
+                    }, 1000);
                 }
             });
         };
     }
 
     async refreshUI() {
-        const optedIn = await this.OneSignal?.User.PushSubscription.optedIn;
+        const optedIn = this.OneSignal.User.PushSubscription.optedIn;
         if (optedIn) {
             this.pushButtonStates.change('subscribed');
             this.testPushButtonStates.change('enabled');
