@@ -71,6 +71,10 @@
                                         disabled="true"
                                         id="pushButton"
 
+                                        data-state[disabled].text-content="{{ _('ENABLE ON THIS DEVICE') }}"
+                                        data-state[disabled].className="button button-disabled"
+                                        data-state[disabled].disabled="true"
+
                                         data-state[loading].text-content="{{ _('LOADING...') }}"
                                         data-state[loading].className="button button-disabled"
                                         data-state[loading].disabled="true"
@@ -119,6 +123,11 @@
                                     {% endif %}
                                 </div>
                             </div>
+                            {% if current_plan and current_plan.is_granted_for_push() %}
+                            <div id="pushNotSupportedHint" class="hidden sm:ml-80 mt-1 px-2 sm:px-0">
+                                <p class="text-xs sm:text-sm text-gray-400 text-right sm:text-left">Not supported on this device</p>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
