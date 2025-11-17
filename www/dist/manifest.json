@@ -1,0 +1,43 @@
+{
+    "name": "PINCRAWL",
+    "short_name": "PINCRAWL",
+    "description": "Find your dream pinball machine!",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#0D1117",
+    "theme_color": "#0D1117",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/dist/img/logo-32x32.png",
+            "sizes": "32x32",
+            "type": "image/png"
+        },
+        {
+            "src": "/dist/img/logo-64x64.png",
+            "sizes": "64x64",
+            "type": "image/png"
+        },
+        {
+            "src": "/dist/img/logo.png",
+            "sizes": "768x768",
+            "type": "image/png",
+            "purpose": "any"
+        }
+    ],
+    "screenshots": [
+
+        {
+            "src": "/dist/img/screenshot-desktop.png",
+            "sizes": "1280x720",
+            "type": "image/png",
+            "form_factor": "wide"
+        },
+        {
+            "src": "/dist/img/screenshot-mobile.png",
+            "sizes": "720x1280",
+            "type": "image/png",
+            "form_factor": "narrow"
+        }
+    ]
+}
