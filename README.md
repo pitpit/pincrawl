@@ -168,6 +168,7 @@ désactiver l’optimisation pour Chrome, pas pour la PWA.
 
 ### Should
 
+- [ ] translate push notifications
 - send same notifications with onesignal to everyone at the same time  (remote_ids)
 - [ ] inject user and account with a middleware in all routes & template
 - [ ] tracker le dernier prix et la suppression d'une annonce

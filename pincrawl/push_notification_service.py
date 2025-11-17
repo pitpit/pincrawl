@@ -10,6 +10,8 @@ from typing import List
 import onesignal
 from onesignal.api import default_api
 from onesignal.model.notification import Notification
+import time
+import uuid
 # from onesignal.model.rate_limit_error import RateLimitError
 # from onesignal.model.generic_error import GenericError
 # from onesignal.model.create_notification_success_response import CreateNotificationSuccessResponse
@@ -62,13 +64,17 @@ class PushNotificationService:
             bool: True if notification was sent successfully
         """
         try:
+            idempotency_key = str(uuid.uuid5(uuid.NAMESPACE_DNS, f"{body}-{','.join(remote_ids)}-{int(time.time())}"))
             notification = Notification(
                 app_id=ONESIGNAL_APP_ID,
                 headings={"en": title},
                 contents={"en": body},
                 url=url,
                 include_aliases= { "external_id": remote_ids },
-                target_channel="push"
+                target_channel="push",
+                priority=10,
+                web_push_topic=idempotency_key, # be sure to not replace previous notifications on the client side
+                idempotency_key=idempotency_key
             )
 
             logger.debug(f"notification: {notification}")
@@ -102,7 +108,7 @@ class PushNotificationService:
         except Exception as e:
             raise
 
-    def send_ad_notification_push(self, account: Account, ad: Ad):
+    def send_ad_notification_push(self, account: Account, ads: List[Ad]):
         """
         Send push notifications for new ads to a user account.
 
@@ -119,23 +125,26 @@ class PushNotificationService:
 
         i18n_context = self.i18n.create_context(account.language)
 
-        title = i18n_context._("New pinball machine found!")
-        body = f"{ad.product}"
-        if ad.manufacturer:
-            body += f", {ad.manufacturer}"
-        if ad.year:
-            body += f", {ad.year}"
-        if ad.amount and ad.currency:
-            body += "\n" + i18n_context._('Price: %s %s') % (ad.amount, ad.currency)
-        if ad.city:
-            body += "\n" + i18n_context._('Location: %s') % (ad.city)
-            if ad.zipcode:
-                body += f", {ad.zipcode}"
+        title = i18n_context._("New pinball machine(s) found!")
 
-        # Send push notification
-        self.send_notification(
-            remote_ids=[str(account.remote_id)],
-            title=title,
-            body=body,
-            url=ad.url
-        )
+        for ad in ads:
+            body = ""
+            body += f"{ad.product}"
+            if ad.manufacturer:
+                body += f", {ad.manufacturer}"
+            if ad.year:
+                body += f", {ad.year}"
+            if ad.amount and ad.currency:
+                body += "\n" + i18n_context._('Price: %s %s') % (ad.amount, ad.currency)
+            if ad.city:
+                body += "\n" + i18n_context._('Location: %s') % (ad.city)
+                if ad.zipcode:
+                    body += f", {ad.zipcode}"
+
+            # Send push notification
+            self.send_notification(
+                remote_ids=[str(account.remote_id)],
+                title=title,
+                body=body,
+                url=ad.url
+            )

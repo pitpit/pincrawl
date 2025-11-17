@@ -8,7 +8,9 @@ class EmailNotificationComponent {
     constructor(emailButtonId: string) {
         this.emailButton = document.getElementById(emailButtonId) as HTMLButtonElement | null;
         this.emailButtonStates = new States(this.emailButton);
+    }
 
+    public async mount() {
         if (this.emailButton) {
             this.emailButton.addEventListener('click', async () => {
                 if (!this.emailButton) {
@@ -30,7 +32,7 @@ class EmailNotificationComponent {
         }
     }
 
-    async pushEmailNotification(enabled: boolean): Promise<void> {
+    private async pushEmailNotification(enabled: boolean): Promise<void> {
         const response = await fetch('/api/my-account', {
             method: 'PUT',
             headers: {

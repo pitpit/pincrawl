@@ -16,7 +16,7 @@ class PushNotificationComponent {
 
         this.pushButtonStates.change('disabled');
         this.testPushButtonStates.change('disabled');
-console.log('PushNotificationComponent initialized');
+
         // Wait for OneSignal to be ready
 
         // const isSupported = OneSignal.Notifications && OneSignal.Notifications.isPushSupported();
@@ -36,7 +36,7 @@ console.log('PushNotificationComponent initialized');
     async mount() {
         await this.waitForOneSignal();
 
-        this.refreshUI();
+        await this.refreshUI();
 
         if (this.pushButton) {
             this.pushButton.addEventListener('click', async () => {
