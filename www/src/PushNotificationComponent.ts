@@ -33,7 +33,7 @@ class PushNotificationComponent {
             this.pushButton.addEventListener('click', async () => {
                 this.pushButtonStates.change('loading');
                 try {
-                    const optedIn = this.OneSignal.User.PushSubscription.optedIn;
+                    const optedIn = this.OneSignal && this.OneSignal.User && this.OneSignal.User.PushSubscription.optedIn;
                     if (optedIn) {
                         await this.OneSignal.User.PushSubscription.optOut();
                     } else {
@@ -77,7 +77,7 @@ class PushNotificationComponent {
     }
 
     async refreshUI() {
-        const optedIn = this.OneSignal.User.PushSubscription.optedIn;
+        const optedIn = this.OneSignal && this.OneSignal.User && this.OneSignal.User.PushSubscription.optedIn;
         if (optedIn) {
             this.pushButtonStates.change('subscribed');
             this.testPushButtonStates.change('enabled');
