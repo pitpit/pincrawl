@@ -16,16 +16,16 @@ class PushNotificationComponent {
         this.pushButtonStates = new States(this.pushButton);
         this.testPushButtonStates = new States(this.testPushButton);
 
-        const isSupported = OneSignal.Notifications.isPushSupported();
-        if (!isSupported) {
-            this.pushButtonStates.change('disabled');
-            this.testPushButtonStates.change('disabled');
-            const pushNotSupportedHint = document.getElementById('pushNotSupportedHint');
-            if (pushNotSupportedHint) {
-                pushNotSupportedHint.classList.remove('hidden');
-            }
-            return;
-        }
+        // const isSupported = OneSignal.Notifications && OneSignal.Notifications.isPushSupported();
+        // if (!isSupported) {
+        //     this.pushButtonStates.change('disabled');
+        //     this.testPushButtonStates.change('disabled');
+        //     const pushNotSupportedHint = document.getElementById('pushNotSupportedHint');
+        //     if (pushNotSupportedHint) {
+        //         pushNotSupportedHint.classList.remove('hidden');
+        //     }
+        //     return;
+        // }
 
         this.refreshUI();
 
