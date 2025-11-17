@@ -5,16 +5,19 @@ class PushNotificationComponent {
 
     pushButton: HTMLButtonElement | null = null;
     testPushButton: HTMLButtonElement | null = null;
-    OneSignal: any;
     pushButtonStates: States;
     testPushButtonStates: States;
 
-    constructor(OneSignal: any, pushButtonId: string, testPushButtonId: string) {
-        this.OneSignal = OneSignal;
+    constructor(pushButtonId: string, testPushButtonId: string) {
         this.pushButton = document.getElementById(pushButtonId) as HTMLButtonElement | null;
         this.testPushButton = document.getElementById(testPushButtonId) as HTMLButtonElement | null;
         this.pushButtonStates = new States(this.pushButton);
         this.testPushButtonStates = new States(this.testPushButton);
+
+        this.pushButtonStates.change('disabled');
+        this.testPushButtonStates.change('disabled');
+console.log('PushNotificationComponent initialized');
+        // Wait for OneSignal to be ready
 
         // const isSupported = OneSignal.Notifications && OneSignal.Notifications.isPushSupported();
         // if (!isSupported) {
@@ -27,17 +30,23 @@ class PushNotificationComponent {
         //     return;
         // }
 
+
+    }
+
+    async mount() {
+        await this.waitForOneSignal();
+
         this.refreshUI();
 
         if (this.pushButton) {
             this.pushButton.addEventListener('click', async () => {
                 this.pushButtonStates.change('loading');
                 try {
-                    const optedIn = this.OneSignal && this.OneSignal.User && this.OneSignal.User.PushSubscription.optedIn;
+                    const optedIn = OneSignal.User.PushSubscription.optedIn;
                     if (optedIn) {
-                        await this.OneSignal.User.PushSubscription.optOut();
+                        await OneSignal.User.PushSubscription.optOut();
                     } else {
-                        await this.OneSignal.User.PushSubscription.optIn();
+                        await OneSignal.User.PushSubscription.optIn();
                     }
                 } catch (error) {
                     console.error('Error toggling push subscription:', error);
@@ -76,8 +85,21 @@ class PushNotificationComponent {
         };
     }
 
-    async refreshUI() {
-        const optedIn = this.OneSignal && this.OneSignal.User && this.OneSignal.User.PushSubscription.optedIn;
+    private waitForOneSignal(): Promise<void> {
+        return new Promise((resolve) => {
+            if (typeof OneSignal !== 'undefined') {
+                resolve();
+            } else {
+                window.OneSignalDeferred = window.OneSignalDeferred || [];
+                window.OneSignalDeferred.push(() => {
+                    resolve();
+                });
+            }
+        });
+    }
+
+    private async refreshUI() {
+        const optedIn = OneSignal.User.PushSubscription.optedIn;
         if (optedIn) {
             this.pushButtonStates.change('subscribed');
             this.testPushButtonStates.change('enabled');

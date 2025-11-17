@@ -6,8 +6,8 @@ import LanguageSelectorComponent from './LanguageSelectorComponent';
 import EmailNotificationComponent from './EmailNotificationComponent';
 
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   new EmailNotificationComponent('emailButton');
-  new PushNotificationComponent((window as any).OneSignal, 'pushButton', 'testPushButton');
+  (new PushNotificationComponent('pushButton', 'testPushButton')).mount();
   new LanguageSelectorComponent('language');
 });
