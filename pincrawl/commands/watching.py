@@ -151,7 +151,6 @@ def watching_send():
                     try:
                         email_notification_service.send_ad_notification_email(FROM_EMAIL, account, ads)
                         email_count += 1
-                        logging.info(f"Sent email to {account.email} with {len(ads)} ads")
                     except Exception as e:
                         logging.exception(f"Failed to send email to {account.email}")
                 else:
@@ -161,10 +160,8 @@ def watching_send():
                 current_plan = account.get_current_plan(session)
                 if (current_plan and current_plan.is_granted_for_push()):
                     try:
-                        for ad in ads:
-                            push_notification_service.send_ad_notification_push(account, ad)
-                            push_count += 1
-                        logging.info(f"Sent {len(ads)} push notifications to account {account.email}")
+                        push_notification_service.send_ad_notification_push(account, ads)
+                        push_count += len(ads)
                     except NotSubscribedPushException as e:
                         logging.info(f"Account {account.email} is not subscribed for push notifications")
                     except Exception as e:
@@ -174,6 +171,7 @@ def watching_send():
 
             # Mark task as successful
             task_manager.update_task_status(session, current_task, TaskStatus.SUCCESS)
+
             click.echo(f"✓ Notification task completed. Sent {email_count} emails and {push_count} push notifications")
 
         except Exception as e:
@@ -252,9 +250,8 @@ def test_push(email):
     # Send test push notifications
     push_count = 0
     try:
-        for ad in fake_ads:
-            push_notification_service.send_ad_notification_push(account, ad)
-            push_count += 1
+            push_notification_service.send_ad_notification_push(account, fake_ads)
+            push_count += len(fake_ads)
     except NotSubscribedPushException as e:
         click.echo(f"✗ Account {account.email} is not subscribed for push notifications")
 
@@ -266,7 +263,7 @@ def get_fake_ads():
     # Create fake ad data for testing using real Ad entities
     fake_ads = [
         Ad(
-            product="[Fake] Medieval Madness",
+            product="[Fake] 1 -Medieval Madness",
             manufacturer="Williams",
             opdb_id="G5pe4-MePZv",
             year="1997",
@@ -277,7 +274,7 @@ def get_fake_ads():
             url="https://example.com/test-ad/123"
         ),
         Ad(
-            product="[Fake] Attack from Mars",
+            product="[Fake] 2 -Attack from Mars",
             manufacturer="Bally",
             opdb_id="G4do5-MDlN7",
             year="1995",
