@@ -4,12 +4,19 @@ on:
   pull_request:
     types: [opened, synchronize]
 
+defaults:
+  run:
+    working-directory: www/
+
 jobs:
+
   build-frontend:
     runs-on: ubuntu-latest
     permissions:
       contents: write
       pull-requests: write
+
+
 
     steps:
       - name: Checkout code
