@@ -11,6 +11,7 @@ beautifulsoup4
 markdownify
 pytest==8.4.2
 pytest-cov==7.0.0
+pytest-dotenv
 scrapingbee
 matplotlib
 jinja2
