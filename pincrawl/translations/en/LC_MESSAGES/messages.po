@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Pincrawl 1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-11-11 11:47+0100\n"
+"POT-Creation-Date: 2025-11-17 09:17+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -18,20 +18,20 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.10.3\n"
 
-#: email_notification_service.py:66
+#: email_notification_service.py:69
 msgid "New pinball machines found"
 msgstr ""
 
-#: push_notification_service.py:82
+#: push_notification_service.py:122
 msgid "New pinball machine found!"
 msgstr ""
 
-#: push_notification_service.py:89
+#: push_notification_service.py:129
 #, python-format
 msgid "Price: %s %s"
 msgstr ""
 
-#: push_notification_service.py:91
+#: push_notification_service.py:131
 #, python-format
 msgid "Location: %s"
 msgstr ""
@@ -47,36 +47,32 @@ msgid ""
 "subscriptions:"
 msgstr ""
 
-#: templates/email_notification.html:121
-#, python-format
-msgid "Price: <strong>%s %s</strong>"
+#: templates/email_notification.html:127
+msgid "Price: "
 msgstr ""
 
-#: templates/email_notification.html:125
+#: templates/email_notification.html:138
 #, python-format
 msgid "Location: <strong>%s, %s</strong>"
 msgstr ""
 
-#: templates/email_notification.html:131
+#: templates/email_notification.html:144
 #, python-format
 msgid "Price timeline for %s"
 msgstr ""
 
-#: templates/email_notification.html:136
+#: templates/email_notification.html:149
 msgid "View Ad"
 msgstr ""
 
-#: templates/email_notification.html:143
+#: templates/email_notification.html:156
 msgid "Best regards,"
 msgstr ""
 
-#: templates/email_notification.html:143
+#: templates/email_notification.html:156
 #, python-format
 msgid ""
 "The <a style=\"color: #00FFFF;text-decoration: none;\" "
 "href=\"%s\">PINCRAWL</a> Team"
 msgstr ""
-
-#~ msgid "Location: <strong>%s</strong>"
-#~ msgstr ""
 

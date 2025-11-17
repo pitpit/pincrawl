@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Pincrawl 1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-11-11 14:32+0100\n"
+"POT-Creation-Date: 2025-11-17 09:17+0100\n"
 "PO-Revision-Date: 2025-10-12 15:55+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -18,11 +18,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.10.3\n"
 
-#: main.py:764
+#: main.py:754
 msgid "Test notification from PINCRAWL"
 msgstr "Notification de test de PINCRAWL"
 
-#: main.py:765
+#: main.py:755
 msgid "This is a test push notification to verify it is working correctly."
 msgstr "Ceci est un test de notification pour en vérifier le bon fonctionnement."
 
@@ -51,6 +51,14 @@ msgstr "Déconnexion"
 #: templates/_header.html:29 templates/_header.html:74 templates/login.html:3
 msgid "Login"
 msgstr "Connexion"
+
+#: templates/_header.html:103
+msgid "Install PINCRAWL app to make notifications work better!"
+msgstr "Installe PINCRAWL pour que les notifications fonctionnent mieux!"
+
+#: templates/_header.html:107
+msgid "Install"
+msgstr "Installer"
 
 #: templates/_pagination.html:7
 msgid "Previous"
@@ -146,97 +154,68 @@ msgid "Email Notifications:"
 msgstr "Notifications Email:"
 
 #: templates/my-account.html:44 templates/my-account.html:57
-#: templates/my-account.html:375 templates/my-account.html:401
-msgid "DISABLE"
-msgstr "DÉSACTIVER"
-
-#: templates/my-account.html:46 templates/my-account.html:405
+#: templates/my-account.html:60
 msgid "ENABLE"
 msgstr "ACTIVER"
 
-#: templates/my-account.html:52
-msgid "Push Notifications:"
-msgstr "Notifications Push:"
-
-#: templates/my-account.html:59 templates/my-account.html:379
-msgid "ENABLE ON THIS DEVICE"
-msgstr "ACTIVER SUR CET APPAREIL"
-
-#: templates/my-account.html:63
-msgid "TEST"
-msgstr "TEST"
-
-#: templates/my-account.html:66
-msgid "Not included in your plan"
-msgstr "Non disponible dans votre abonnement"
-
-#: templates/my-account.html:83
-msgid "Current Plan:"
-msgstr "Abonnement actuel: "
-
-#: templates/my-account.html:86 templates/plans.html:27
-msgid "Free"
-msgstr "Free"
-
-#: templates/my-account.html:88
-msgid "Alpha"
-msgstr "Alpha"
-
-#: templates/my-account.html:90 templates/plans.html:76
-msgid "Collector"
-msgstr "Collector"
-
-#: templates/my-account.html:92
-msgid "Pro"
-msgstr "Pro"
-
-#: templates/my-account.html:228
-msgid "Failed to save language preference"
-msgstr "Échec de l'enregistrement des préférences de language"
-
-#: templates/my-account.html:250
-msgid "Push notifications are not supported in this browser"
-msgstr ""
-
-#: templates/my-account.html:255
-msgid "Push notifications configuration error"
-msgstr "Erreur de configuration des notifications Push"
-
-#: templates/my-account.html:302
-msgid "Failed to enable push notifications"
-msgstr "Erreur à l'activation des notifications push"
-
-#: templates/my-account.html:341
-msgid "Failed to disable push notifications"
-msgstr "Erreur à la désactivation des notifications push\""
-
-#: templates/my-account.html:357
-msgid "Active on this browser and device"
-msgstr "Actif sur ce navigateur et cet appareil"
-
-#: templates/my-account.html:360
-msgid "Active on another browser or device"
-msgstr "Actif sur un autre navigateur ou appareil"
-
-#: templates/my-account.html:431
-msgid "Failed to update email preference"
-msgstr "Échec de l'enregistrement des préférences email"
-
-#: templates/my-account.html:439 templates/my-account.html:498
+#: templates/my-account.html:49 templates/my-account.html:78
+#: templates/my-account.html:90
 msgid "LOADING..."
 msgstr "CHARGEMENT..."
 
-#: templates/my-account.html:465
+#: templates/my-account.html:53 templates/my-account.html:60
+#: templates/my-account.html:82
+msgid "DISABLE"
+msgstr "DÉSACTIVER"
+
+#: templates/my-account.html:65
+msgid "Push Notifications:"
+msgstr "Notifications Push:"
+
+#: templates/my-account.html:74 templates/my-account.html:86
+msgid "ENABLE ON THIS DEVICE"
+msgstr "ACTIVER SUR CET APPAREIL"
+
+#: templates/my-account.html:100 templates/my-account.html:104
+#: templates/my-account.html:119
+msgid "TEST"
+msgstr "TEST"
+
+#: templates/my-account.html:108
 msgid "SENDING..."
 msgstr "ENVOI..."
 
-#: templates/my-account.html:476
+#: templates/my-account.html:112
 msgid "SENT!"
 msgstr "ENVOYÉ"
 
-#: templates/my-account.html:483 templates/my-account.html:488
-msgid "Failed to send test notification"
-msgstr "Erreur d'envoi de la notification de test"
+#: templates/my-account.html:117
+msgid "ERROR!"
+msgstr "ERREUR!"
+
+#: templates/my-account.html:122
+msgid "Not included in your plan"
+msgstr "Non disponible dans votre abonnement"
+
+#: templates/my-account.html:139
+msgid "Current Plan:"
+msgstr "Abonnement actuel: "
+
+#: templates/my-account.html:142 templates/plans.html:27
+msgid "Free"
+msgstr "Free"
+
+#: templates/my-account.html:144
+msgid "Alpha"
+msgstr "Alpha"
+
+#: templates/my-account.html:146 templates/plans.html:76
+msgid "Collector"
+msgstr "Collector"
+
+#: templates/my-account.html:148
+msgid "Pro"
+msgstr "Pro"
 
 #: templates/pinballs.html:15
 msgid "Browse Pinball Machines"
@@ -441,4 +420,3 @@ msgstr ""
 "Oui ! Notre abonnement Gratuit vous permet de surveiller jusqu'à 3 "
 "flippers avec des alertes par e-mail. Vous pouvez commencer à utiliser "
 "Pincrawl immédiatement sans aucune information de paiement."
-
