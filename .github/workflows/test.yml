@@ -13,6 +13,7 @@ jobs:
     strategy:
       matrix:
         python-version: ['3.13']
+        node-version: ['25']
 
     steps:
     - uses: actions/checkout@v4
@@ -22,6 +23,11 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
+    - name: Set up Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+
     - name: Cache pip packages
       uses: actions/cache@v3
       with:
@@ -30,14 +36,28 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pip-
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install . && cd www/ && pip install -r requirements.txt
+    - name: Cache node modules
+      uses: actions/cache@v3
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
 
     - name: Setup test environment
       run: |
         cp .env.dist .env
+
+    - name: Build frontend
+      working-directory: ./www
+      run: |
+        npm ci
+        npm run build
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install . && cd www/ && pip install -r requirements.txt
 
     - name: Run tests
       run: |
