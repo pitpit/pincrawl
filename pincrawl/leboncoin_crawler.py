@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import logging
 import os
 import re
@@ -10,7 +8,7 @@ from sqlalchemy.orm import Session
 from dotenv import load_dotenv
 from pincrawl.database import Ad, Database
 from pincrawl.product_matcher import ProductMatcher
-from pincrawl.wrapped_scraper import WrappedScraper, RetryNowScrapingError, RetryLaterScrapingError, UnrecoverableScrapingError
+from pincrawl.scraper import Scraper, RetryNowScrapingError, RetryLaterScrapingError, UnrecoverableScrapingError
 import time
 
 # Load environment variables
@@ -27,14 +25,14 @@ class LeboncoinCrawler:
     A class to handle ad crawling, scraping, and product identification.
     """
 
-    def __init__(self, database: Database, matcher: ProductMatcher, scraper: WrappedScraper):
+    def __init__(self, database: Database, matcher: ProductMatcher, scraper: Scraper):
         """
         Initialize the LeboncoinCrawler.
 
         Args:
             database: Database instance for storing and retrieving ads
             matcher: ProductMatcher instance for product identification
-            scraper: WrappedScraper instance
+            scraper: Scraper instance
         """
         self.database = database
 

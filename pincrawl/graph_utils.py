@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Utilities for generating price timeline graphs for pinball machines."""
 
 import os

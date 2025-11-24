@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import os
 from typing import List, Optional
 
@@ -8,13 +6,13 @@ from firecrawl import Firecrawl
 from firecrawl.v2.types import Document
 from firecrawl.v2.utils.error_handler import RequestTimeoutError, InternalServerError, RateLimitError, PaymentRequiredError, BadRequestError, UnauthorizedError, WebsiteNotSupportedError, FirecrawlError
 
-# Import base classes and exceptions from wrapped_scraper
-from .wrapped_scraper import WrappedScraper, ScrapeResult, LinksResult, RetryNowScrapingError, RetryLaterScrapingError, UnrecoverableScrapingError
+# Import base classes and exceptions from scraper
+from .scraper import Scraper, ScrapeResult, LinksResult, RetryNowScrapingError, RetryLaterScrapingError, UnrecoverableScrapingError
 
 
-class FirecrawlWrappedScraper(WrappedScraper):
+class FirecrawlScraper(Scraper):
     """
-    Firecrawl implementation of the WrappedScraper.
+    Firecrawl implementation of the Scraper.
     Wraps the Firecrawl API for web scraping.
     """
 

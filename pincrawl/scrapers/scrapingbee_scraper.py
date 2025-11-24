@@ -1,21 +1,19 @@
-#!/usr/bin/env python3
-
 import os
 import requests
 import logging
 from typing import List, Optional
 
-# Import base classes and exceptions from wrapped_scraper
-from .wrapped_scraper import WrappedScraper, ScrapeResult, LinksResult, RetryNowScrapingError, RetryLaterScrapingError, UnrecoverableScrapingError
+# Import base classes and exceptions from scraper
+from .scraper import Scraper, ScrapeResult, LinksResult, RetryNowScrapingError, RetryLaterScrapingError, UnrecoverableScrapingError
 from requests.exceptions import RequestException, Timeout
 from urllib.parse import urlparse
 from scrapingbee import ScrapingBeeClient
 
 logger = logging.getLogger(__name__)
 
-class ScrapingbeeWrappedScraper(WrappedScraper):
+class ScrapingbeeScraper(Scraper):
     """
-    Scrapingbee implementation of the WrappedScraper.
+    Scrapingbee implementation of the Scraper.
     Wraps the Scrapingbee API for web scraping.
     """
 

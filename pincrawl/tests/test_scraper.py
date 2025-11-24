@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 """
 Comprehensive pytest test suite for scraper wrapper implementations.
 Tests scrape() and get_links() methods against various scenarios including:
@@ -14,15 +12,15 @@ import os
 from typing import Dict, Any, List
 from unittest.mock import patch, MagicMock
 from dotenv import load_dotenv
-from pincrawl.wrapped_scraper import (
+from pincrawl.scrapers.scraper import (
     ScrapeResult,
     LinksResult,
     UnrecoverableScrapingError,
     RetryLaterScrapingError,
     RetryNowScrapingError,
 )
-from pincrawl.firecrawl_wrapped_scraper import FirecrawlWrappedScraper
-from pincrawl.scrapingbee_wrapped_scraper import ScrapingbeeWrappedScraper
+from pincrawl.scrapers.firecrawl import FirecrawlScraper
+from pincrawl.scrapers.scrapingbee import ScrapingbeeScraper
 
 load_dotenv()
 
@@ -38,17 +36,17 @@ def available_scrapers():
     # FireCrawl (if API key available)
     if os.getenv("FIRECRAWL_API_KEY"):
         try:
-            scrapers['FirecrawlWrappedScraper'] = FirecrawlWrappedScraper(timeout=TIMEOUT)
+            scrapers['FirecrawlScraper'] = FirecrawlScraper(timeout=TIMEOUT)
         except Exception as e:
-            print("FirecrawlWrappedScraper will not be tested: ", e)
+            print("FirecrawlScraper will not be tested: ", e)
             pass
 
     # ScrapingBee (if API key available)
     if os.getenv("SCRAPINGBEE_API_KEY"):
         try:
-            scrapers['ScrapingbeeWrappedScraper'] = ScrapingbeeWrappedScraper(timeout=TIMEOUT)
+            scrapers['ScrapingbeeScraper'] = ScrapingbeeScraper(timeout=TIMEOUT)
         except Exception as e:
-            print("ScrapingbeeWrappedScraper will not be tested: ", e)
+            print("ScrapingbeeScraper will not be tested: ", e)
             pass
 
     return scrapers

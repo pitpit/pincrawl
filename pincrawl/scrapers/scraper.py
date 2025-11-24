@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import os
 from abc import ABC, abstractmethod
 from typing import List, Dict, Any, Optional
@@ -44,7 +42,7 @@ class LinksResult:
     credits_used: int = 0
 
 
-class WrappedScraper(ABC):
+class Scraper(ABC):
     """
     Abstract base class for web scraping implementations.
     Provides a common interface for different scraping backends.
