@@ -1,8 +1,8 @@
 import click
-from pincrawl.product_matcher import ProductMatcher
+from pincrawl.matchers.pinecone_matcher import PineconeMatcher
 
 # service instances
-matcher = ProductMatcher()
+matcher = PineconeMatcher()
 
 @click.group()
 def products():

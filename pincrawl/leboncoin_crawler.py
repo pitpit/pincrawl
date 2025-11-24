@@ -7,8 +7,9 @@ from sqlalchemy import and_
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
 from pincrawl.database import Ad, Database
-from pincrawl.product_matcher import ProductMatcher
-from pincrawl.scraper import Scraper, RetryNowScrapingError, RetryLaterScrapingError, UnrecoverableScrapingError
+from pincrawl.matchers.pinecone_matcher import Matcher
+from pincrawl.extractors.extractor import Extractor
+from pincrawl.scrapers.scraper import Scraper, RetryNowScrapingError, RetryLaterScrapingError, UnrecoverableScrapingError
 import time
 
 # Load environment variables
@@ -25,22 +26,27 @@ class LeboncoinCrawler:
     A class to handle ad crawling, scraping, and product identification.
     """
 
-    def __init__(self, database: Database, matcher: ProductMatcher, scraper: Scraper):
+    def __init__(self, database: Database, scraper: Scraper, extractor: Extractor, matcher: Optional[Matcher] = None):
         """
         Initialize the LeboncoinCrawler.
 
         Args:
             database: Database instance for storing and retrieving ads
-            matcher: ProductMatcher instance for product identification
             scraper: Scraper instance
+            matcher: Matcher instance
+            extractor: Extractor instance
         """
         self.database = database
 
         # Initialize scraper (default to Firecrawl if not provided)
         self.scraper = scraper
 
-        # Initialize ProductMatcher for identification
-        self.product_matcher = matcher
+        # Initialize Leboncoin OpenAI data extractor
+        self.extractor = extractor
+
+        # Initialize PineconeMatcher for identification
+        self.matcher = matcher
+
 
     def crawl(self) -> [Ad]:
         """
@@ -82,20 +88,8 @@ class LeboncoinCrawler:
 
         logger.info(f"Found {len(filtered_links)} ad links")
 
-        session = self.database.get_db()
-
         for link in filtered_links:
-            # Check if URL already exists in database using efficient exists query
-            if not Ad.exists(session, link):
-                # Create new ad record using store method
-                ad_record = Ad(url=link)
-
-                ad_records.append(ad_record)
-                logger.info(f"Added: {link}")
-            else:
-                logger.info(f"Skipped (exists): {link}")
-
-        session.close()
+            ad_records.append(Ad(url=link))
 
         return ad_records
 
@@ -173,9 +167,8 @@ class LeboncoinCrawler:
         # Use the content for identification
         search_text = ad_record.content.strip()
 
-        # Identify the product and extract ad info using ChatGPT + Pinecone
-        info, product = self.product_matcher.extract(search_text)
-        product = self.product_matcher.match_product(product)
+        # Extract ad info and product data using OpenAI
+        info, product = self.extractor.extract(search_text)
 
         # Update basic ad information
         ad_record.title = info.get('title', None)
@@ -192,23 +185,27 @@ class LeboncoinCrawler:
             logger.info(f"✓ Seller URL found for {ad_record.url}: {ad_record.seller_url}")
             ad_record.seller_url = None
 
-        if product:
-            logger.info(f"✓ Product identified in {ad_record.url}: {str(product)}")
+        if self.matcher and product:
+            # Match product with OPDB using Pinecone
+            product = self.matcher.match(product)
 
-            ad_record.identified_at = datetime.now()
-            ad_record.product = product.get('name', None)
-            ad_record.manufacturer = product.get('manufacturer', None)
-            ad_record.year = product.get('year', None)
+            if product:
+                logger.info(f"✓ Product identified in {ad_record.url}: {str(product)}")
 
-            opdb_id = product.get('opdb_id', None)
-            if opdb_id:
-                ad_record.opdb_id = opdb_id
-                logger.info(f"✓ OPDB product confirmed for {ad_record.url}: {opdb_id}")
+                ad_record.identified_at = datetime.now()
+                ad_record.product = product.get('name', None)
+                ad_record.manufacturer = product.get('manufacturer', None)
+                ad_record.year = product.get('year', None)
+
+                opdb_id = product.get('opdb_id', None)
+                if opdb_id:
+                    ad_record.opdb_id = opdb_id
+                    logger.info(f"✓ OPDB product confirmed for {ad_record.url}: {opdb_id}")
+                else:
+                    logger.warning(f"✓ OPDB Product not confirmed for {ad_record.url}")
+                    ad_record.ignored = True
             else:
-                logger.warning(f"✓ OPDB Product not confirmed for {ad_record.url}")
+                logger.warning(f"✗ No product identified in {ad_record.url}")
                 ad_record.ignored = True
-        else:
-            logger.warning(f"✗ No product identified in {ad_record.url}")
-            ad_record.ignored = True
 
         return ad_record

@@ -88,9 +88,9 @@ graph TD
 
     B5 -->B6
     subgraph B6["LeboncoinCrawler.identify()"]
-        B7["ProductMatcher.extract() - ChatGPT (gpt-4o-mini)"]
+        B7["OpenaiExtractor.extract() - ChatGPT (gpt-4o-mini)"]
         B7 -->|info & product | B8[Ad.info, Ad.product updated]
-        B8 --> B9["ProductMatcher.match_product() - ChatGpPT (text-embedding-3-small)"]
+        B8 --> B9["PineconeMatcher.match() - ChatGpPT (text-embedding-3-small)"]
         B9 -->|text embedding| B10["Search in Pinecone (Vector Database)"]
     end
 
@@ -101,7 +101,7 @@ graph TD
 
 ```
 
-[mermaid](https://mermaid.live/edit#pako:eNqFU2tv2jAU_StX_jBRiSBCeCXSJrWlb7ailW3SSFWZ-ALWiB0ZR5QR_vtuHArrumn5kDjX55x7jh9blmiBLGJzw7MFjAexAnpOJ5lUieHrJXCxghUNM3wEz_tQDLXOQCtQuKY5-PJ5uCrgbBKzIU61SrRU5yUPTaNi1U5i9lipnpUCg-03KmcoHty0gRtl0cx4grsKNXBt7jMrqYtfwAVpO6xU8ynia_bbJq_orQIuiX4pDbo0_yNfOHLKzQ-h1woSTd6ULeBqcioah3KeCW5R7DmX_-JU09X7qgRd_22VpCC0nG1-c3Fdgm8IPDJa5In9yG2yICg-W8MTWzsBD84X3F6NxlCbZ9Zray-VSh4VbpwnqWYa3kFWqUABt2WMsloHGrzUX8e5ddT9XAF3b22k5fdpjziayUo3ljx6mE5RCNouL_BWKV8uj8bunHqJggOqgGG5xchNsgCpYCQV0ioi1L5iYrWBAbd8yldYyVRCQyfkLMFM50oUcD85hnIBU65yOlg2N2hcQWdi-iTFH4krqU8aXLACRm6V5kobFPAexibHPZLVWYom5VLQjdmWtZjZBaYYs4iGgs5AzGK1IxzPrX7YqIRFlvh1ZnQ-X7Boxpcr-qsMDCSna5ceqhlX37VOXyhzU_bZ01EJNOcU1LLI7_RDh2bRlj2zqOX7jY7fbPaDrh82u61mu842LPLazbDRbAd-K_SDoBP0ut1dnf10HfxGL_TDIOiHbb_TI2Bv9wvUzU8M)
+[mermaid](https://mermaid.live/edit#pako:eNqNlG1r2zAUhf_KRR9GCnHwW-3EsIHdsjHoRlm7DRaPolhKIhpLRpZpuzT_fdeymy5eujVfYkvnHJ37RGRLCsU4SchK02oN1-e5BPyk3rwSstD0bgOU1WCffoLjvIPU7yR1s-g8qT_PyQVfKFkoIc9aJdcT6xid5ORnJ7epwTYn39FUcXaFgopr-CgN10ta8Jzs_lR2Z4UpZlupkKsF54fmFw7prRla3wvNreg1xjBtnY8bIW_rR0hP56mdnFPD2YEuO9R1W1yyXPb0Tm2FbACxtodbio8XSlWgJEh-h3vw9csFRmVDtNlRtF3OoH32arZZByj7D9sXTum9_4J73NnTLam-ZepOQqGwnTQ4dQt6sl9vKjYAnvXAj1kP2HcvmaWfRUOW0TGWgmGQWD4M28YovtSKNYX5RE2xRim_N5oWZnQCDpytqflweQ2jVWWcUDmlkGKYYDsLuVTwBqouCrDytJ22XR4DPjxtHJl62qGe_d2kbL9veutzn6otZLCmw8sFZwx_Vidw6pJuNoNuM9utlcJeitU8t70RnOpiDULCpZAcUXMYfeOFURrOqaELWvPntD34Hr3n2uS-LyxVI1kb7KXz52Ht4CWVDV5N02iu7YKq2OJGsAGJp8TPCuzUNiyzCFdSac7gLVzrhqOcjEnJdUkFw7-zbWvPiVnzEm9_go8Mb09OcrlDHW2MunqQBUkMesdEq2a1JsmSbmp86xqcC4oXp9yvVlT-UKp8sqx0e05vRwxcn-GwhiTeNLJikmzJPUn82J9MQ9ebxrHnxpEfB2PygMu-P4miMPC80J2FuB_sxuSXzXcn0SyIwtlp4MZuMAujcPcbIbPCFA)
 
 ### Scraper tests
 

@@ -19,8 +19,8 @@ from pincrawl.scrapers.scraper import (
     RetryLaterScrapingError,
     RetryNowScrapingError,
 )
-from pincrawl.scrapers.firecrawl import FirecrawlScraper
-from pincrawl.scrapers.scrapingbee import ScrapingbeeScraper
+from pincrawl.scrapers.firecrawl_scraper import FirecrawlScraper
+from pincrawl.scrapers.scrapingbee_scraper import ScrapingbeeScraper
 
 load_dotenv()
 

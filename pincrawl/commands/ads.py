@@ -3,8 +3,9 @@ import logging
 from pincrawl.database import Database, Ad, Product
 from pincrawl.leboncoin_crawler import LeboncoinCrawler
 # from pincrawl.scrapers.firecrawl_scraper import FirecrawlScraper
-from pincrawl.scrapers.scrapingbee import ScrapingbeeScraper
-from pincrawl.product_matcher import ProductMatcher
+from pincrawl.scrapers.scrapingbee_scraper import ScrapingbeeScraper
+from pincrawl.matchers.pinecone_matcher import PineconeMatcher
+from pincrawl.extractors.openai_extractor import OpenaiExtractor
 from datetime import datetime, timedelta
 import os
 
@@ -12,9 +13,11 @@ logger = logging.getLogger(__name__)
 
 # service instances
 database = Database()
-matcher = ProductMatcher()
-scraper = LeboncoinCrawler(database, matcher, ScrapingbeeScraper())
-# scraper = LeboncoinCrawler(database, matcher, FirecrawlScraper())
+# scraper = FirecrawlScraper()
+scraper = ScrapingbeeScraper()
+extractor = OpenaiExtractor()
+matcher = PineconeMatcher()
+scraper = LeboncoinCrawler(database, scraper, extractor, matcher)
 
 @click.group()
 def ads():
@@ -29,20 +32,26 @@ def ads_crawl():
 
     logger.info("Starting ads crawl...")
 
-    # Use LeboncoinCrawler to crawl for new ads
-    ad_records = scraper.crawl()
+    # Use LeboncoinCrawler to crawl for last ads
+    ads = scraper.crawl()
 
     session = database.get_db()
 
     # Store each new ad record
-    for ad_record in ad_records:
-        try:
-            Ad.store(session, ad_record)
-        except Exception as e:
-            logger.exception(f"✗ Exception when storing {ad_record.url}: {str(e)}")
-            continue
+    for ad in ads:
+        # Check if URL already exists in database using efficient exists query
+        if not Ad.exists(session, ad.url):
+            try:
+                Ad.store(session, ad)
+                logger.info(f"Added: {ad.url}")
 
-    click.echo(f"✓ Recorded {len(ad_records)} new ads in database")
+            except Exception as e:
+                logger.exception(f"✗ Exception when storing {ad.url}: {str(e)}")
+                continue
+        else:
+            logger.info(f"Skipped (exists): {ad.url}")
+
+    click.echo(f"✓ Recorded {len(ads)} new ads in database")
 
     # Get total count using count method
     total_ads = Ad.count(session)
