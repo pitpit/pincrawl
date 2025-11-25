@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import os
 import json
 import sys
@@ -19,7 +17,6 @@ from starlette.middleware.sessions import SessionMiddleware
 from authlib.integrations.starlette_client import OAuth
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
-from pincrawl.product_matcher import ProductMatcher
 from pincrawl.database import Database, Watching, Product, Account, PLAN_WATCHING_LIMITS, Ad
 from pincrawl.graph_utils import generate_price_graph
 from pincrawl.i18n import I18n
@@ -486,7 +483,7 @@ async def pinballs(
         if account:
             account_id = account.id
 
-    # Initialize ProductMatcher and get products
+    # get products
     products, total = Product.fetch(
         session,
         query=query,

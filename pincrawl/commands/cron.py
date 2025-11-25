@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import click
 import logging
 from pincrawl.commands.ads import ads_crawl, ads_scrape

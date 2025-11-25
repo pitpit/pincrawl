@@ -5,7 +5,9 @@ class LanguageSelectorComponent {
 
     constructor(selectId: string) {
         this.select = document.getElementById(selectId) as HTMLSelectElement | null;
+    }
 
+    public async mount() {
         if (this.select) {
             this.initialLanguage = this.select.value;
             this.select.addEventListener('change', async () => {

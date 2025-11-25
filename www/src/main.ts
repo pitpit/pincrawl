@@ -6,8 +6,12 @@ import LanguageSelectorComponent from './LanguageSelectorComponent';
 import EmailNotificationComponent from './EmailNotificationComponent';
 
 
+const emailNotificationComponent = new EmailNotificationComponent('emailButton');
+const pushNotificationComponent = new PushNotificationComponent('pushButton', 'testPushButton');
+const languageSelectorComponent = new LanguageSelectorComponent('language');
+
 document.addEventListener('DOMContentLoaded', async () => {
-  new EmailNotificationComponent('emailButton');
-  (new PushNotificationComponent('pushButton', 'testPushButton')).mount();
-  new LanguageSelectorComponent('language');
+  languageSelectorComponent.mount();
+  emailNotificationComponent.mount();
+  pushNotificationComponent.mount();
 });

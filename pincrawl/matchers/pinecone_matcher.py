@@ -1,18 +1,16 @@
-#!/usr/bin/env python3
-
 import logging
 import os
 import json
 import time
+from typing import Optional
 from dotenv import load_dotenv
 import openai
 from pinecone import Pinecone
 import click
-from .database import Database, Product, Watching
+from ..database import Database, Product, Watching
+from .matcher import Matcher
+from ..extractors.extractor import ProductInfo
 from sqlalchemy import case, func, text, Integer
-
-# Module exports
-__all__ = ['ProductMatcher']
 
 # Load environment variables from .env file
 load_dotenv()
@@ -29,13 +27,14 @@ PINECONE_DIMENSION = int(os.getenv("PINECONE_DIMENSION", 512))
 OPENAI_EMBEDDING_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
 
 
-class ProductMatcher:
+class PineconeMatcher(Matcher):
     """
     A class for managing Pinecone index operations and product matching.
     """
 
     def __init__(self):
         """Initialize the ProductMatcher with API configuration."""
+        super().__init__()
         self.openai_api_key = OPENAI_API_KEY
         self.openai_model = OPENAI_MODEL
         self.pinecone_api_key = PINECONE_API_KEY
@@ -399,105 +398,20 @@ class ProductMatcher:
             session.close()
             db.close_db()
 
-    def extract(self, text):
-        """
-        Extract product identification and ad information from text using ChatGPT.
-
-        Args:
-            text: Text to analyze for product identification and information extraction
-
-        Returns:
-            dict: Product information with opdb_id, ipdb_id, name, manufacturer, year,
-                  plus extracted ad info (title, description, price amount and currency, location city and zipcode, seller and seller_url)
-        """
-
-        chatgpt_prompt = f"""
-You are an expert at analyzing pinball machine ads and extracting structured information.
-
-Here is a scraped ad in markdown format:
-
-```markdown
-{text}
-```
-
-Please analyze the ad text and:
-
-1. AD INFORMATION - Extract these details from the ad:
-- title: A clear, concise title for this ad (what would appear as the listing title)
-- description: The main description text of the ad (without title, price, location)
-- price: The asking price (extract amount and currency)
-- location: The location where the item is located (extract city and zipcode)
-- seller: The seller name
-- seller_url: The seller's profile URL or seller's shop URL (link on the seller name if available)
-
-2. PRODUCT IDENTIFICATION: The pinball machine being sold:
-- Identify the specific pinball machine name
-- Determine the manufacturer
-- Determine the year of release
-
-
-Return your response as a JSON object with this exact structure:
-{{
-"info": {{
-    "title": "extracted ad title. Escape double quotes with a backslash and remove non-ascii chars.",
-    "description": "extracted ad description. Escape double quotes with a backslash and remove non-ascii chars. Transform newlines to spaces.",
-    "amount": "extracted price amount without currency as an integer or null if not found",
-    "currency": "EUR",
-    "city": "location city name or null",
-    "zipcode": "location zipcode as a string or null",
-    "seller": "seller name or null",
-    "seller_url": "seller profile URL or seller's shop URL or null"
-}},
-"product": {{
-    "name": "exact product name (should match exactly a known product name)",
-    "manufacturer": "manufacturer name",
-    "year": "year of release as an integer or null"
-}}
-}}
-
-Extract ad information even if you cannot identify the specific pinball machine.
-If you cannot identify a pinball machine, set the product field to null.
-Only return valid JSON - no additional text or formatting (do not add fenced code blocks).
-"""
-
-        completion = openai.chat.completions.create(
-            model=self.openai_model,
-            messages=[{"role": "user", "content": chatgpt_prompt}],
-            temperature=0.1
-        )
-
-        response_text = completion.choices[0].message.content
-
-        # Check if response is empty or None
-        if not response_text or not response_text.strip():
-            raise Exception("ChatGPT returned empty response")
-
-        response_text = response_text.strip()
-
-        logger.debug(f"ChatGPT Raw response: {response_text}")
-
-        # Parse ChatGPT response
-        chatgpt_response = json.loads(response_text)
-        if chatgpt_response is None or not isinstance(chatgpt_response, dict):
-            raise Exception("Invalid ChatGPT response format")
-
-        # Extract product and ad information
-        info = chatgpt_response.get('info', {})
-        product = chatgpt_response.get('product')
-
-        return info, product
-
-    def match_product(self, product):
+    def match(self, product: ProductInfo) -> Optional[ProductInfo]:
         """
         Match a product with OPDB using Pinecone vector search.
+
+        Args:
+            product: ProductInfo containing product information
+
+        Returns:
+            ProductInfo with matched OPDB information, or None if no match
         """
 
-        if product is None:
-            return None
-
-        name = product.get('name', None) if product else None
-        manufacturer = product.get('manufacturer', None) if product else None
-        year = product.get('year', None) if product else None
+        name = product.get('name', None)
+        manufacturer = product.get('manufacturer', None)
+        year = product.get('year', None)
 
         if name is None:
             logger.info("No pinball machine to match")
@@ -574,46 +488,3 @@ Only return valid JSON - no additional text or formatting (do not add fenced cod
 
         return text_for_embedding.strip()
 
-    def _apply_filters(self, db_query, manufacturer=None, year_min=None, year_max=None, subscribed_only_user_email=None):
-        """
-        Apply manufacturer, year, and subscription filters to a database query.
-
-        Args:
-            db_query: SQLAlchemy query object
-            manufacturer: Optional manufacturer filter
-            year_min: Optional minimum year filter
-            year_max: Optional maximum year filter
-            subscribed_only_user_email: Optional string to show only subscribed products
-
-        Returns:
-            Modified query object with filters applied
-        """
-        # Apply manufacturer filter if specified
-        if manufacturer is not None and manufacturer.strip() != "":
-            logger.info(f"Filtering by manufacturer: '{manufacturer}'")
-            db_query = db_query.filter(Product.manufacturer == manufacturer)
-
-        # Apply year filters if specified
-        if year_min is not None:
-            try:
-                year_min_int = int(year_min)
-                logger.info(f"Filtering by year >= {year_min_int}")
-                db_query = db_query.filter(Product.year.cast(Integer) >= year_min_int)
-            except (ValueError, TypeError):
-                logger.warning(f"Invalid year_min value: {year_min}")
-
-        if year_max is not None:
-            try:
-                year_max_int = int(year_max)
-                logger.info(f"Filtering by year <= {year_max_int}")
-                db_query = db_query.filter(Product.year.cast(Integer) <= year_max_int)
-            except (ValueError, TypeError):
-                logger.warning(f"Invalid year_max value: {year_max}")
-
-        # Apply subscription filter if specified
-        if subscribed_only_user_email is not None:
-            logger.info(f"Filtering by subscriptions for user: '{subscribed_only_user_email}'")
-            # Join with subscriptions table to only show subscribed products
-            db_query = db_query.join(Watching, Product.opdb_id == Watching.opdb_id).filter(Watching.email == subscribed_only_user_email)
-
-        return db_query

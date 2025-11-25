@@ -1,20 +1,34 @@
-#!/usr/bin/env python3
-
 import os
-from typing import List, Optional
+from typing import Any
 
 # FireCrawl imports
 from firecrawl import Firecrawl
 from firecrawl.v2.types import Document
-from firecrawl.v2.utils.error_handler import RequestTimeoutError, InternalServerError, RateLimitError, PaymentRequiredError, BadRequestError, UnauthorizedError, WebsiteNotSupportedError, FirecrawlError
+from firecrawl.v2.utils.error_handler import (
+    RequestTimeoutError,
+    InternalServerError,
+    RateLimitError,
+    PaymentRequiredError,
+    BadRequestError,
+    UnauthorizedError,
+    WebsiteNotSupportedError,
+    FirecrawlError,
+)
 
-# Import base classes and exceptions from wrapped_scraper
-from .wrapped_scraper import WrappedScraper, ScrapeResult, LinksResult, RetryNowScrapingError, RetryLaterScrapingError, UnrecoverableScrapingError
+# Import base classes and exceptions from scraper
+from .scraper import (
+    Scraper,
+    ScrapeResult,
+    LinksResult,
+    RetryNowScrapingError,
+    RetryLaterScrapingError,
+    UnrecoverableScrapingError,
+)
 
 
-class FirecrawlWrappedScraper(WrappedScraper):
+class FirecrawlScraper(Scraper):
     """
-    Firecrawl implementation of the WrappedScraper.
+    Firecrawl implementation of the Scraper.
     Wraps the Firecrawl API for web scraping.
     """
 
@@ -47,9 +61,13 @@ class FirecrawlWrappedScraper(WrappedScraper):
             response = self._firecrawl.scrape(url, **kwargs)
 
             if response.metadata.status_code in [401, 403, 500]:
-                raise RetryNowScrapingError(response.metadata.error, response.metadata.status_code)
+                raise RetryNowScrapingError(
+                    response.metadata.error, response.metadata.status_code
+                )
             elif response.metadata.status_code >= 400:
-                raise UnrecoverableScrapingError(response.metadata.error, response.metadata.status_code)
+                raise UnrecoverableScrapingError(
+                    response.metadata.error, response.metadata.status_code
+                )
 
         except (BadRequestError, WebsiteNotSupportedError) as e:
             raise UnrecoverableScrapingError(str(e)) from e
@@ -62,7 +80,7 @@ class FirecrawlWrappedScraper(WrappedScraper):
 
         return response
 
-    def get_links(self, url: str) -> LinksResult:
+    def get_links(self, url: str, options: dict[str, Any] = {}) -> LinksResult:
         """
         Extract links from a URL using Firecrawl.
 
@@ -74,11 +92,11 @@ class FirecrawlWrappedScraper(WrappedScraper):
         """
         # Default options for link extraction
         options = {
-            'proxy': self._proxy,
-            'formats': ['links'],
-            'parsers': [],
-            'only_main_content': True,
-            'max_age': 0
+            "proxy": self._proxy,
+            "formats": ["links"],
+            "parsers": [],
+            "only_main_content": True,
+            "max_age": 0,
         }
 
         response = self._scrape(url, **options)
@@ -86,10 +104,10 @@ class FirecrawlWrappedScraper(WrappedScraper):
         return LinksResult(
             links=response.links or [],
             status_code=response.metadata.status_code,
-            credits_used=response.metadata.credits_used
+            credits_used=response.metadata.credits_used,
         )
 
-    def scrape(self, url: str) -> ScrapeResult:
+    def scrape(self, url: str, options: dict[str, Any] = {}) -> ScrapeResult:
         """
         Scrape a URL using Firecrawl and return markdown content.
 
@@ -100,22 +118,19 @@ class FirecrawlWrappedScraper(WrappedScraper):
             ScrapeResult with markdown content
         """
         options = {
-            'only_main_content': False,
-            'proxy': self._proxy,
-            'parsers': [],
-            'formats': ['markdown'],
-            'location': {
-                'country': 'FR',
-                'languages': ['fr']
-            },
-            'timeout': self._timeout * 1000
+            "only_main_content": False,
+            "proxy": self._proxy,
+            "parsers": [],
+            "formats": ["markdown"],
+            "location": {"country": "FR", "languages": ["fr"]},
+            "timeout": self._timeout * 1000,
         }
 
         response = self._scrape(url, **options)
 
         return ScrapeResult(
-            markdown=response.markdown,
+            content=response.markdown,
             status_code=response.metadata.status_code,
             credits_used=response.metadata.credits_used,
-            scrape_id=response.metadata.scrape_id
+            scrape_id=response.metadata.scrape_id,
         )
