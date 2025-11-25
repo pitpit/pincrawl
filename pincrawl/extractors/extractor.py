@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
-from typing import Tuple, TypedDict, Optional
+from typing import Tuple, TypedDict, Optional, Any
+
 
 class AdInfo(TypedDict, total=False):
     """Type definition for ad information"""
+
     title: Optional[str]
     description: Optional[str]
     amount: Optional[int]
@@ -15,6 +17,7 @@ class AdInfo(TypedDict, total=False):
 
 class ProductInfo(TypedDict, total=False):
     """Type definition for product information"""
+
     name: Optional[str]
     manufacturer: Optional[str]
     year: Optional[int]
@@ -32,7 +35,9 @@ class Extractor(ABC):
     """
 
     @abstractmethod
-    def extract(self, text: str) -> Tuple[AdInfo, Optional[ProductInfo]]:
+    def extract(
+        self, text: str, options: dict[str, Any] = {}
+    ) -> Tuple[AdInfo, Optional[ProductInfo]]:
         """
         Extract product identification and ad information from text.
 

@@ -1,7 +1,7 @@
 import logging
 import os
 import json
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Any
 from dotenv import load_dotenv
 import openai
 
@@ -83,7 +83,9 @@ If you cannot identify a pinball machine, set the product field to null.
 Only return valid JSON - no additional text or formatting (do not add fenced code blocks).
 """
 
-    def extract(self, text: str) -> Tuple[AdInfo, Optional[ProductInfo]]:
+    def extract(
+        self, text: str, options: dict[str, Any] = {}
+    ) -> Tuple[AdInfo, Optional[ProductInfo]]:
         """
         Extract product identification and ad information from text using ChatGPT.
 
@@ -101,7 +103,7 @@ Only return valid JSON - no additional text or formatting (do not add fenced cod
         completion = openai.chat.completions.create(
             model=self.openai_model,
             messages=[{"role": "user", "content": formatted_prompt}],
-            temperature=0.1
+            temperature=0.1,
         )
 
         response_text = completion.choices[0].message.content
@@ -120,7 +122,7 @@ Only return valid JSON - no additional text or formatting (do not add fenced cod
             raise Exception("Invalid ChatGPT response format")
 
         # Extract product and ad information
-        info: AdInfo = chatgpt_response.get('info', {})
-        product: Optional[ProductInfo] = chatgpt_response.get('product')
+        info: AdInfo = chatgpt_response.get("info", {})
+        product: Optional[ProductInfo] = chatgpt_response.get("product")
 
         return info, product
