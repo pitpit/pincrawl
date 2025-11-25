@@ -81,7 +81,7 @@ graph TD
         B3{"WrappedScraper Interface"}
         B3 --> B4A["ScrapingbeeWrappedScraper.scrape()"]
         B3 --> B4B["FirecrawlWrappedScraper.scrape()"]
-        B4A -->|markdown content| B5[Ad.markdown updated]
+        B4A -->|markdown content| B5[Ad.content updated]
         B4B -->|markdown content| B5
     end
 

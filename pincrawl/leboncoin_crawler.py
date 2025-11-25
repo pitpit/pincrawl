@@ -118,7 +118,7 @@ class LeboncoinCrawler:
                 )
 
                 ad_record.scraped_at = datetime.now()
-                ad_record.content = result.markdown
+                ad_record.content = result.content
                 ad_record.scrape_id = result.scrape_id
 
                 credits_used += result.credits_used

@@ -113,10 +113,10 @@ def _scrape_basic_functionality(available_scrapers):
 
         # Basic type assertions
         assert isinstance(result, ScrapeResult), f"{name} should return ScrapeResult"
-        assert isinstance(result.markdown, str), f"{name} markdown should be string"
+        assert isinstance(result.content, str), f"{name} content should be string"
         assert isinstance(result.status_code, int), f"{name} status_code should be int"
         assert isinstance(result.credits_used, int), f"{name} credits_used should be int"
-        assert len(result.markdown) > 0, f"{name} should return non-empty markdown"
+        assert len(result.content) > 0, f"{name} should return non-empty content"
 
         results[name] = result
 
@@ -133,7 +133,7 @@ def test_scrape(available_scrapers):
     normalized_markdown = "# Example Domain\n\nThis domain is for use in documentation examples without needing permission. Avoid use in operations.\n\n[Learn more](https://iana.org/domains/example)"
 
     for name, result in results.items():
-        assert result.markdown == normalized_markdown, f"{name} should return normalized markdown content"
+        assert result.content == normalized_markdown, f"{name} should return normalized markdown content"
 
 # ============================================================================
 # Error Handling Tests

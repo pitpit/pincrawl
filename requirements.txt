@@ -17,3 +17,4 @@ matplotlib
 jinja2
 onesignal-python-api>=5.3.0b1
 cryptography
+parsel

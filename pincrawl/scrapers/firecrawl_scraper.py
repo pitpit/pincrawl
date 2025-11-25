@@ -112,7 +112,7 @@ class FirecrawlScraper(Scraper):
         response = self._scrape(url, **options)
 
         return ScrapeResult(
-            markdown=response.markdown,
+            content=response.markdown,
             status_code=response.metadata.status_code,
             credits_used=response.metadata.credits_used,
             scrape_id=response.metadata.scrape_id

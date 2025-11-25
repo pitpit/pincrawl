@@ -29,7 +29,7 @@ class UnrecoverableScrapingError(ScrapingError):
 @dataclass
 class ScrapeResult:
     """Result of a scrape operation"""
-    markdown: str
+    content: str
     status_code: int
     credits_used: int = 0
     scrape_id: Optional[str] = None
